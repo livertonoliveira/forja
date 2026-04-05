@@ -16,6 +16,11 @@ Forja is a set of Claude Code slash commands (`/forja:*`) that automates the com
 | `/forja:review` | Code review (SOLID, DRY, KISS) |
 | `/forja:homolog` | Final report + user homologation |
 | `/forja:pr` | Create PR with atomic commits and aggregated quality report |
+| `/forja:audit:backend` | Project-wide backend performance audit (3 parallel agents) |
+| `/forja:audit:frontend` | Project-wide frontend performance audit (Next.js 5-layer or generic 11-category) |
+| `/forja:audit:database` | Project-wide database audit (MongoDB / PostgreSQL / MySQL) |
+| `/forja:audit:security` | Project-wide AppSec audit — OWASP Top 10, A-F score, PoC for critical/high |
+| `/forja:audit:run` | Run all applicable audits in parallel; consolidated gate report |
 
 ## Storage Modes
 
@@ -33,14 +38,20 @@ All artifacts live in `forja/changes/<feature>/` as markdown:
 ```
 forja/
 ├── config.md                    # Project context (always local)
-└── changes/
-    ├── <feature-name>/
-    │   ├── proposal.md          # Requirements, acceptance criteria, scope
-    │   ├── design.md            # Technical decisions, architecture
-    │   ├── tasks.md             # Granular tasks (<400 lines each)
-    │   ├── report-<task>.md     # Quality reports per task
-    │   └── tracking.md          # Issue tracking
-    └── archive/                 # Completed features
+├── changes/
+│   ├── <feature-name>/
+│   │   ├── proposal.md          # Requirements, acceptance criteria, scope
+│   │   ├── design.md            # Technical decisions, architecture
+│   │   ├── tasks.md             # Granular tasks (<400 lines each)
+│   │   ├── report-<task>.md     # Quality reports per task
+│   │   └── tracking.md          # Issue tracking
+│   └── archive/                 # Completed features
+└── audits/                      # Project-wide audit reports
+    ├── backend-<date>.md
+    ├── database-<date>.md
+    ├── frontend-<date>.md
+    ├── security-<date>.md
+    └── run-<date>.md            # Consolidated audit suite report
 ```
 
 ## Conventions
@@ -74,6 +85,11 @@ forja/
 - All analysis commands adapt their checks based on `forja/config.md`.
 - Never hardcode stack-specific assumptions — always read from config.
 
+### Audit vs Pipeline Phases
+- **Pipeline phases** (`/forja:perf`, `/forja:security`) are diff-scoped: they analyze only changed code during the development pipeline.
+- **Audit commands** (`/forja:audit:*`) are project-wide: they scan the entire codebase for systemic issues. Run them periodically or before releases.
+- `/forja:audit:run` launches all applicable audits in parallel and produces a consolidated gate report.
+
 ### Integration with Global Skills
-- If the user has global performance/security audit skills, reference their methodology but scope analysis to the diff only
+- The `/forja:audit:*` commands incorporate the methodology from global skills (`backend-performance-audit`, `security-audit`, `mongodb-audit`, `frontend-performance-audit`, `nextjs-performance-audit`) translated to English and adapted to Forja conventions.
 - `/forja:pr` can replace the default PR workflow by adding the aggregated quality report
