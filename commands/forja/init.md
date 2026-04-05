@@ -58,7 +58,8 @@ With the results from both agents, create:
 1. **`forja/` directory** at the project root
 2. **`forja/changes/` directory** for active features
 3. **`forja/changes/archive/` directory** for completed features
-4. **`forja/config.md`** with the following format:
+4. **`forja/audits/` directory** for project-wide audit reports
+5. **`forja/config.md`** with the following format:
 
 ```markdown
 # Forja — Project Configuration

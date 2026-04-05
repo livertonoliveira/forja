@@ -181,7 +181,7 @@ Format:
 
 ## Rules
 
-- **Analyze ONLY the diff**: do not audit the entire codebase
+- **Analyze ONLY the diff**: do not audit the entire codebase. For project-wide security audit, run `/forja:audit:security`.
 - **No false positives**: only report with concrete evidence. "There might be a vulnerability" is not a finding.
 - **Proof of Concept required for critical/high**: show how the attack would work
 - **Fixes with code**: every fix must include a code example using the project's patterns

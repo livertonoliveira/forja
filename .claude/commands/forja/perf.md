@@ -188,7 +188,7 @@ Format:
 
 ## Rules
 
-- **Analyze ONLY the diff**: do not audit the entire codebase, only the new/modified code
+- **Analyze ONLY the diff**: do not audit the entire codebase, only the new/modified code. For project-wide analysis, run `/forja:audit:backend` or `/forja:audit:frontend`.
 - **No false positives**: only report if there is concrete evidence in the code. "There might be a problem" is not a finding.
 - **Consider the context**: an admin endpoint with 10 req/day has a different threshold than a public endpoint with 1000 req/s
 - **Stack-specific**: adapt the analysis based on the stack from config.md. Do not recommend React patterns for a Vue project.

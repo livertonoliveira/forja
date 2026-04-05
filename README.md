@@ -210,6 +210,8 @@ If [Linear](https://linear.app) is connected via MCP:
 
 ## Commands
 
+### Pipeline Commands
+
 | Command | What it does |
 |---------|-------------|
 | `/forja:init` | Auto-detect stack, conventions, create `forja/config.md` |
@@ -217,13 +219,26 @@ If [Linear](https://linear.app) is connected via MCP:
 | `/forja:run` | Development pipeline for a task: develop → test → quality → accept |
 | `/forja:develop` | Implement code following project conventions |
 | `/forja:test` | Generate & run unit, integration, and e2e tests |
-| `/forja:perf` | Analyze diff for N+1 queries, missing indexes, bundle size |
-| `/forja:security` | OWASP scan: injection, auth, data exposure |
+| `/forja:perf` | Analyze **diff** for N+1 queries, missing indexes, bundle size |
+| `/forja:security` | OWASP scan of **diff**: injection, auth, data exposure |
 | `/forja:review` | SOLID, DRY, KISS, Clean Code analysis |
 | `/forja:homolog` | Present quality report for user approval |
 | `/forja:pr` | Atomic commits + PR with aggregated report |
 
-**Every command works standalone** — run `/forja:security` on its own to scan your current diff, or `/forja:test` to generate tests for recent changes.
+### Audit Commands (Project-Wide)
+
+| Command | What it does |
+|---------|-------------|
+| `/forja:audit:backend` | Full backend performance audit: N+1, missing indexes, memory leaks, concurrency, architecture — 3 parallel agents |
+| `/forja:audit:frontend` | Full frontend performance audit: auto-routes to Next.js 5-layer or generic 11-category analysis — 3 parallel agents |
+| `/forja:audit:database` | Full database audit: MongoDB, PostgreSQL, or MySQL — indexes, queries, modeling, config — 3 parallel agents |
+| `/forja:audit:security` | Full AppSec audit: OWASP Top 10, CWE mapping, A-F score, PoC for critical/high — 4 parallel agents |
+| `/forja:audit:run` | Run all applicable audits in parallel based on project type; consolidated PASS/WARN/FAIL report |
+
+**Pipeline phases** (`/forja:perf`, `/forja:security`) analyze only the current diff — fast and task-scoped.
+**Audit commands** analyze the entire codebase — run them periodically or before releases.
+
+**Every command works standalone** — run `/forja:security` on its own to scan your current diff, or `/forja:audit:security` for a project-wide deep dive.
 
 ---
 
@@ -237,9 +252,14 @@ Forja maximizes Claude Code's Agent tool for parallel execution:
 | Develop | N | One agent per independent module |
 | Test | 3 | Unit + integration + e2e tests |
 | Quality | 3 | Performance + security + review **(simultaneously)** |
-| Perf | 2 | Backend analysis + frontend analysis |
-| Security | 3 | Injection/input + auth/access + data/config |
+| Perf (diff) | 2 | Backend analysis + frontend analysis |
+| Security (diff) | 3 | Injection/input + auth/access + data/config |
 | Review | N | One agent per code area (large diffs) |
+| audit:backend | 3 | DB+NET / CPU+MEM+CONC / CODE+CONF+ARCH |
+| audit:frontend | 3 | Rendering+Boundary / Data+Cache / Bundle+Assets (Next.js path) |
+| audit:database | 3 | Modeling+Writes / Index analysis / Queries+Config |
+| audit:security | 4 | Injection / Auth+Access / Data+Config / BusinessLogic+Compliance |
+| audit:run | N | All applicable audits simultaneously |
 
 ---
 
@@ -299,6 +319,22 @@ Runs 3 parallel agents scanning for injection, auth/access control, and data exp
 ```
 
 Detects if your project is backend, frontend, fullstack, or monorepo and runs the appropriate analysis — N+1 queries, missing indexes, bundle size, re-renders, and more.
+
+### Project-wide audit before a release
+
+```
+/forja:audit:run
+```
+
+Reads `forja/config.md`, determines your project type, and launches all applicable audits in parallel — backend performance, database, frontend performance, and security. Produces a consolidated PASS/WARN/FAIL report. Critical and high findings are automatically created as Linear issues (if Linear is connected).
+
+### Targeted deep audits
+
+```
+/forja:audit:security    # Full AppSec audit — OWASP Top 10, A-F score, PoC for each critical/high
+/forja:audit:database    # Index analysis, N+1 queries, schema anti-patterns (MongoDB/PostgreSQL/MySQL)
+/forja:audit:frontend    # Core Web Vitals, bundle size, rendering strategy (auto-routes for Next.js)
+```
 
 ---
 
