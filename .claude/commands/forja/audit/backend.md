@@ -178,7 +178,8 @@ Each agent must produce findings in the following format:
    - **"Critical Fixes"** — if any `critical` findings exist
    - **"High Fixes"** — if any `high` findings exist
    - **"Medium Fixes"** — if any `medium` findings exist
-4. For each `critical` or `high` finding, create a Linear issue linked to this new project with:
+   - **"Low Fixes"** — if any `low` findings exist
+4. For each finding at any severity (critical, high, medium, low), create a Linear issue linked to this new project with:
    - Title: "[PERF] <finding title>"
    - Description (rich, structured):
      ```markdown
@@ -205,8 +206,8 @@ Each agent must produce findings in the following format:
      - **Maintenance window required:** <Yes | No>
      ```
    - Label: `performance` or closest available
-   - Priority: Urgent (critical) / High (high)
-   - Milestone: link to the corresponding severity milestone ("Critical Fixes" or "High Fixes")
+   - Priority: Urgent (critical) / High (high) / Medium (medium) / Low (low)
+   - Milestone: link to the corresponding severity milestone ("Critical Fixes", "High Fixes", "Medium Fixes", or "Low Fixes")
 
 **Report format:**
 
