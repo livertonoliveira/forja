@@ -178,25 +178,19 @@ Each quality phase (performance, security, review) produces findings with severi
 | `medium` | **WARN** | Pipeline pauses. Asks: fix now or continue? |
 | `low` / none | **PASS** | Pipeline continues automatically. |
 
-### Persistent Artifacts
+### Dual Storage
 
-Forja creates a `forja/` directory in your project with durable markdown files:
+Forja adapts to your tooling:
 
-```
-forja/
-├── config.md                         # Project context (auto-detected)
-└── changes/
-    ├── abc-123-add-auth/
-    │   ├── proposal.md               # Requirements & acceptance criteria
-    │   ├── design.md                 # Architecture & technical decisions
-    │   ├── tasks.md                  # Implementation checklist ✅
-    │   ├── report.md                 # Quality report (perf + sec + review)
-    │   └── tracking.md              # Issue tracking (Linear fallback)
-    └── archive/                      # Completed features (post-merge)
-        └── 2026-04-04-add-auth/
-```
+| | With Linear | Without Linear |
+|---|---|---|
+| **Proposal & Design** | Linear Documents | `forja/changes/<feature>/proposal.md` + `design.md` |
+| **Tasks** | Linear Issues (milestones + labels) | `forja/changes/<feature>/tasks.md` |
+| **Quality Reports** | Comments on issues | `forja/changes/<feature>/report-*.md` |
+| **Tracking** | Linear sub-issues | `forja/changes/<feature>/tracking.md` |
+| **Local files** | Only `forja/config.md` | Full `forja/` workspace |
 
-These serve as **durable memory** — if the Claude Code session breaks, all context is preserved. They're also valuable documentation for your project.
+Either way, if the session breaks, all context is preserved — in Linear or in local files.
 
 ### Linear Integration
 

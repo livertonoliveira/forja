@@ -17,20 +17,29 @@ Forja is a set of Claude Code slash commands (`/forja:*`) that automates the com
 | `/forja:homolog` | Final report + user homologation |
 | `/forja:pr` | Create PR with atomic commits and aggregated quality report |
 
-## Persistent Artifacts
+## Storage Modes
 
-All artifacts live in `forja/` at the project root and are version-controlled:
+Forja operates in two modes based on whether Linear is connected:
 
+### Linear Mode (recommended)
+All artifacts live in Linear — zero local files except `forja/config.md`:
+- **Proposal & Design** → Linear Documents linked to the project
+- **Tasks** → Linear Issues with milestones and labels
+- **Quality Reports** → Comments on task issues
+- **Tracking** → Linear sub-issues
+
+### Local Mode (fallback)
+All artifacts live in `forja/changes/<feature>/` as markdown:
 ```
 forja/
-├── config.md                    # Project context (stack, conventions, rules)
+├── config.md                    # Project context (always local)
 └── changes/
     ├── <feature-name>/
     │   ├── proposal.md          # Requirements, acceptance criteria, scope
     │   ├── design.md            # Technical decisions, architecture
-    │   ├── tasks.md             # Granular tasks (<400 lines each) with milestones
-    │   ├── report.md            # Quality report (perf + sec + review)
-    │   └── tracking.md          # Issue tracking (fallback when no Linear)
+    │   ├── tasks.md             # Granular tasks (<400 lines each)
+    │   ├── report-<task>.md     # Quality reports per task
+    │   └── tracking.md          # Issue tracking
     └── archive/                 # Completed features
 ```
 

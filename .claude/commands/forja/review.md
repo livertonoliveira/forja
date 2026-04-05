@@ -11,10 +11,18 @@ You are the Forja code review agent. Your mission is to review the new/modified 
 
 ---
 
+## Determine storage mode
+
+Read `forja/config.md` and check the `Linear Integration` section:
+- If `Configured: yes` → **Linear mode** (design context lives in Linear)
+- If `Configured: no` → **Local mode** (design context lives in `forja/changes/`)
+
+---
+
 ## Execution mode
 
 Check if you are running inside the `/forja:run` pipeline:
-- **Pipeline mode**: Read the artifacts from `forja/changes/<feature>/` and use the diff.
+- **Pipeline mode**: Read the artifacts and use the diff.
 - **Standalone mode**: Use `$ARGUMENTS` to identify the feature. If not found, use `git diff`.
 
 ---
@@ -25,7 +33,14 @@ Check if you are running inside the `/forja:run` pipeline:
 
 Read:
 1. `forja/config.md` — Project conventions
+
+**Linear mode:**
+2. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the **Design** document (technical decisions — to avoid criticizing decisions already made)
+
+**Local mode:**
 2. `forja/changes/<feature>/design.md` — Technical decisions (to avoid criticizing decisions already made)
+
+**Both modes:**
 3. Run `git diff` to see the full diff
 
 ### 2. Determine agent strategy
@@ -142,6 +157,8 @@ For each issue found, use the format:
 
 Write the findings to the file `forja/changes/<feature>/review-findings.md` (pipeline mode) or directly in the Code Review section of `report.md` (standalone mode).
 
+**Note:** In both Linear mode and Local mode, the findings file is written locally. In Linear mode this is a temporary file — the orchestrator handles posting it to Linear and cleaning up.
+
 Format:
 
 ```markdown
@@ -169,10 +186,12 @@ Format:
 ## Rules
 
 - **Analyze ONLY the diff**: do not review the entire codebase
-- **Respect design.md decisions**: if a decision was made during the intake phase, do not question it in the review unless there is a serious problem
+- **Respect design decisions**: if a decision was made during the spec phase (in the Design document, whether in Linear or local), do not question it in the review unless there is a serious problem
 - **Do not be pedantic**: code review is not for imposing personal preferences. Focus on real problems that affect maintainability, readability, or extensibility.
 - **DRY with caution**: accidental duplication (coincidence) is NOT a DRY violation. Only flag intentional duplication that truly should be shared.
 - **KISS is the most important principle**: if the code is simple and works, do not suggest complicating it for "elegance"
 - **Suggestions with code**: every suggestion must include a concrete example of what the code would look like
 - **Everything in English**: findings and suggestions in English
 - **Parallelism by module**: if the diff is large, ALWAYS use parallel agents per code area
+- **Linear mode**: read design context from Linear document instead of local file; findings are still written to a local temporary file
+- **Local mode**: read design context from local `design.md`; findings are written to local file

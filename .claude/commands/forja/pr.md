@@ -11,11 +11,19 @@ You are the Forja PR agent. Your mission is to create a complete Pull Request wi
 
 ---
 
+## Determine storage mode
+
+Read `forja/config.md` and check the `Linear Integration` section:
+- If `Configured: yes` → **Linear mode** (artifacts live in Linear)
+- If `Configured: no` → **Local mode** (artifacts live in `forja/changes/`)
+
+---
+
 ## Execution mode
 
 Identify the feature:
-- If `$ARGUMENTS` specifies a name: use it to find the feature in `forja/changes/`
-- If empty: look for the most recent feature in `forja/changes/` (excluding `archive/`) that has approved acceptance in `report.md`
+- **Linear mode**: Use `$ARGUMENTS` as a Linear issue ID or project name. If empty, ask the user.
+- **Local mode**: If `$ARGUMENTS` specifies a name, use it to find the feature in `forja/changes/`. If empty, look for the most recent feature in `forja/changes/` (excluding `archive/`) that has approved acceptance in `report.md`.
 
 ---
 
@@ -23,12 +31,21 @@ Identify the feature:
 
 ### 1. Verify acceptance
 
-Read `forja/changes/<feature>/report.md` and verify that the Homologation section has:
-```
-- [x] User approves for PR
-```
+**Linear mode:**
+- Use `mcp__linear-server__get_issue` to fetch the task issue
+- Use `mcp__linear-server__list_comments` to find the quality report comment
+- Verify the Homologation section in the comment contains:
+  ```
+  - [x] User approves for PR
+  ```
+- If NOT: inform the user they need to run `/forja:homolog` first and STOP.
 
-If NOT: inform the user they need to run `/forja:homolog` first and STOP.
+**Local mode:**
+- Read `forja/changes/<feature>/report.md` and verify that the Homologation section has:
+  ```
+  - [x] User approves for PR
+  ```
+- If NOT: inform the user they need to run `/forja:homolog` first and STOP.
 
 ### 2. Verify there are no pending changes
 
@@ -40,7 +57,14 @@ Run `git status` to check the repository state.
 
 ### 1. Load artifacts
 
-Read:
+**Linear mode:**
+1. Read `forja/config.md` — Commit conventions and project settings
+2. Use `mcp__linear-server__get_issue` to get the task issue (title, description, acceptance criteria)
+3. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the **Proposal** document (for title, summary, and acceptance criteria)
+4. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the **Design** document (for change details)
+5. Use `mcp__linear-server__list_comments` to read the quality report comment posted during homolog
+
+**Local mode:**
 1. `forja/config.md` — Commit conventions and project settings
 2. `forja/changes/<feature>/proposal.md` — For title, summary, and acceptance criteria
 3. `forja/changes/<feature>/design.md` — For change details
@@ -49,7 +73,7 @@ Read:
 
 ### 2. Create branch
 
-Derive the branch name from proposal.md:
+Derive the branch name from the proposal (Linear document or local file):
 - If from Linear: `<type>/<issue-id>-<short-description>` (e.g., `feat/abc-123-add-health-check`)
 - If from free prompt: `<type>/<short-description>` (e.g., `feat/add-health-check`)
 
@@ -105,17 +129,17 @@ If there are conflicts during rebase: resolve them. If ambiguous, ask the user f
 
 ### 6. Create PR
 
-Build the PR body using the artifacts and create via `gh pr create`:
+Build the PR body using the artifacts (from Linear documents or local files) and create via `gh pr create`:
 
 ```markdown
 ## Summary
-<From proposal.md: Why section — 2-3 sentences about the problem and solution>
+<From Proposal: Why section — 2-3 sentences about the problem and solution>
 
 ## Changes
-<From design.md: Architecture overview + key technical decisions>
+<From Design: Architecture overview + key technical decisions>
 
 ### Files Changed
-<From design.md: Files to Create + Files to Modify tables>
+<From Design: Files to Create + Files to Modify tables>
 
 ## Test Results
 | Type | Count | Status |
@@ -125,7 +149,7 @@ Build the PR body using the artifacts and create via `gh pr create`:
 | E2E | <n> | Passing / N/A |
 
 ## Quality Gates
-<From report.md: Summary table>
+<From quality report: Summary table>
 | Phase | Gate | Critical | High | Medium | Low |
 |-------|------|----------|------|--------|-----|
 | Performance | <gate> | <n> | <n> | <n> | <n> |
@@ -133,11 +157,11 @@ Build the PR body using the artifacts and create via `gh pr create`:
 | Code Review | <gate> | <n> | <n> | <n> | <n> |
 
 ## Warnings
-<From report.md: any medium-level findings that were accepted>
+<From quality report: any medium-level findings that were accepted>
 <Or: "No warnings.">
 
 ## Test Plan
-<From proposal.md: acceptance criteria as checklist>
+<From Proposal: acceptance criteria as checklist>
 - [ ] <criterion 1>
 - [ ] <criterion 2>
 
@@ -155,16 +179,25 @@ EOF
 
 ### 7. Update artifacts
 
+**Linear mode:**
+1. Update the task issue status to "In Review" via `mcp__linear-server__save_issue`
+2. Attach the PR URL to the issue via `mcp__linear-server__create_attachment` with the PR URL
+3. Post a comment on the issue with the PR URL via `mcp__linear-server__save_comment`
+
+**Local mode:**
 1. Update `tasks.md`: mark item 4.2 (PR created) as completed
-2. If Linear is configured: update the issue to "In Review" via `mcp__linear-server__save_issue`
-3. Update `tasks.md`: mark item 4.3 as completed (if applicable)
+2. Update `tasks.md`: mark item 4.3 as completed (if applicable)
 
-### 8. Archive feature
+### 8. Archive feature (Local mode only)
 
+**Local mode:**
 Move the feature folder to the archive:
 ```bash
 mv forja/changes/<feature-name> forja/changes/archive/$(date +%Y-%m-%d)-<feature-name>
 ```
+
+**Linear mode:**
+No local files to archive. Linear artifacts remain in Linear.
 
 ### 9. Finalize
 
@@ -187,3 +220,5 @@ Inform the user:
 - **Never force push**: unless the user explicitly requests it
 - **Everything in English**: PR titles, commit messages, body
 - **Verify acceptance**: never create a PR without approved acceptance
+- **Linear mode**: update issue status to "In Review" and attach PR URL after creation
+- **Local mode**: archive the feature folder after PR creation

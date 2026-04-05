@@ -3,9 +3,12 @@ description: "Full development pipeline for a task: develop → test → perf �
 argument-hint: "<task-id | linear-issue-id | --project project-name>"
 ---
 
-# Forja Dev — Development Pipeline
+# Forja Run — Development Pipeline
 
-You are the main Forja development orchestrator. Your mission is to take a task (from Linear or markdown) and drive it through the full development pipeline: implementation → testing → quality checks → user acceptance. You maximize the use of parallel agents at every stage.
+You are the main Forja development orchestrator. Your mission is to take a task (from Linear or local markdown) and drive it through the full development pipeline: implementation → testing → quality checks → user acceptance. You maximize the use of parallel agents at every stage.
+
+**With Linear:** Task details, context, and quality reports all live in Linear. No local files needed.
+**Without Linear:** Everything lives in `forja/changes/<feature>/` as markdown files.
 
 **Input received:** $ARGUMENTS
 
@@ -18,11 +21,16 @@ You are the main Forja development orchestrator. Your mission is to take a task 
 Check if `forja/config.md` exists at the project root.
 - If it does NOT exist: inform the user they need to run `/forja:init` first and STOP.
 
-### 2. Check for specification
+### 2. Determine storage mode
 
-Check if `forja/changes/` contains any feature folders with a `proposal.md` and `design.md`.
-- If none exist: inform the user they should run `/forja:spec` first to create a specification.
-- Exception: if the user provides a Linear issue ID directly, you can proceed (the task details come from Linear).
+Read `forja/config.md` and check the `Linear Integration` section:
+- If `Configured: yes` → **Linear mode**
+- If `Configured: no` → **Local mode**
+
+### 3. Check for specification
+
+- **Linear mode**: The user should provide a Linear issue ID. If they don't, ask for one.
+- **Local mode**: Check if `forja/changes/` contains feature folders with tasks. If none exist, inform the user to run `/forja:spec` first.
 
 ---
 
@@ -49,16 +57,18 @@ For each task, execute the following phases:
 
 ### 1. Load task context
 
-Read the task details:
-- **From Linear**: Use `mcp__linear-server__get_issue` to get title, description, acceptance criteria, labels, milestone
-- **From markdown**: Read the task section from `forja/changes/<feature>/tasks.md`
+**Linear mode:**
+1. Use `mcp__linear-server__get_issue` to get task title, description, acceptance criteria, labels, milestone
+2. Use `mcp__linear-server__get_project` to get the project context
+3. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the Proposal and Design documents linked to the project
+4. Read `forja/config.md` for project stack and conventions
+5. Update issue status to "In Progress" via `mcp__linear-server__save_issue`
 
-Also read:
-- `forja/config.md` — Project stack and conventions
-- `forja/changes/<feature>/proposal.md` — Overall feature context (if exists)
-- `forja/changes/<feature>/design.md` — Technical decisions (if exists)
-
-Update Linear issue status to "In Progress" (if configured).
+**Local mode:**
+1. Read the task section from `forja/changes/<feature>/tasks.md`
+2. Read `forja/changes/<feature>/proposal.md` for overall feature context
+3. Read `forja/changes/<feature>/design.md` for technical decisions
+4. Read `forja/config.md` for project stack and conventions
 
 ### 2. PHASE: Development
 
@@ -98,17 +108,17 @@ Launch **3 agents in parallel** using the Agent tool in a SINGLE call:
 **Agent 1 — Performance:**
 - Read `.claude/commands/forja/perf.md` for full instructions
 - Analyze the diff for this task only
-- Write findings to `forja/changes/<feature>/perf-findings-<task-id>.md`
+- Write findings to a temporary file (local mode: `forja/changes/<feature>/perf-findings-<task-id>.md`)
 
 **Agent 2 — Security:**
 - Read `.claude/commands/forja/security.md` for full instructions
 - Analyze the diff for this task only
-- Write findings to `forja/changes/<feature>/security-findings-<task-id>.md`
+- Write findings to a temporary file (local mode: `forja/changes/<feature>/security-findings-<task-id>.md`)
 
 **Agent 3 — Code Review:**
 - Read `.claude/commands/forja/review.md` for full instructions
 - Analyze the diff for this task only
-- Write findings to `forja/changes/<feature>/review-findings-<task-id>.md`
+- Write findings to a temporary file (local mode: `forja/changes/<feature>/review-findings-<task-id>.md`)
 
 ### 5. GATE CHECK
 
@@ -124,8 +134,8 @@ After all 3 agents complete, read the findings and evaluate:
 **If FAIL:**
 1. Present the critical/high findings to the user
 2. Create tracking issues:
-   - **With Linear:** Create sub-issues linked to the current task via `mcp__linear-server__save_issue` with rich descriptions (Context, What to do, Acceptance Criteria)
-   - **Without Linear:** Record in `forja/changes/<feature>/tracking.md`
+   - **Linear mode:** Create sub-issues linked to the current task via `mcp__linear-server__save_issue` with rich descriptions (Context, What to do, Acceptance Criteria)
+   - **Local mode:** Record in `forja/changes/<feature>/tracking.md`
 3. Ask: "I found issues that need fixing. Would you like me to apply the fixes automatically?"
 4. If yes: launch an Agent to fix, then re-run ONLY the phases that failed
 5. If no: pause and let the user fix manually
@@ -144,19 +154,27 @@ Continue automatically.
 Use the **Agent** tool to execute acceptance. Instruct the agent to:
 
 1. Read `.claude/commands/forja/homolog.md` for full instructions
-2. Consolidate findings into `forja/changes/<feature>/report-<task-id>.md`
+2. Consolidate findings into a quality report
 3. Present the report for this task
 4. Wait for user approval
 
 ### 7. Task completion
 
 After acceptance:
-1. Clean up temporary findings files for this task
-2. Mark the task as completed:
-   - **Linear:** Update issue status to "Done" via `mcp__linear-server__save_issue`
-   - **Markdown:** Mark the task as `done` in `tasks.md`
-3. If working on multiple tasks: ask "Task '<name>' complete. Continue to the next task '<next-name>', or stop here?"
-4. If single task or user stops: inform "Task complete! Run `/forja:pr` when ready to create a Pull Request."
+
+**Linear mode:**
+1. Post the consolidated quality report as a **comment** on the task issue via `mcp__linear-server__save_comment`
+2. Update issue status to "Done" via `mcp__linear-server__save_issue`
+3. Clean up temporary findings files
+
+**Local mode:**
+1. Write the consolidated report to `forja/changes/<feature>/report-<task-id>.md`
+2. Mark the task as `done` in `tasks.md`
+3. Clean up temporary findings files
+
+**Both modes:**
+- If working on multiple tasks: ask "Task '<name>' complete. Continue to the next task '<next-name>', or stop here?"
+- If single task or user stops: inform "Task complete! Run `/forja:pr` when ready to create a Pull Request."
 
 ---
 
@@ -167,8 +185,7 @@ When working on multiple tasks (`--project`, `--milestone`, or multiple IDs):
 1. Sort tasks by milestone order, then by dependency order within each milestone
 2. Process one task at a time through the full pipeline
 3. After each task completion, ask the user before continuing
-4. Each task gets its own quality report (`report-<task-id>.md`)
-5. At the end, present a summary of all completed tasks
+4. At the end, present a summary of all completed tasks
 
 **Never process multiple tasks in parallel** — each task modifies code, so they must be sequential to avoid conflicts.
 
@@ -177,10 +194,10 @@ When working on multiple tasks (`--project`, `--milestone`, or multiple IDs):
 ## Orchestrator Rules
 
 - **1 task at a time by default**: Only work on multiple tasks if the user explicitly requests it.
-- **Parallelism within phases is mandatory**: Phases 4+5+6 ALWAYS run in parallel. Tests use 3 parallel agents.
+- **Parallelism within phases is mandatory**: Quality checks ALWAYS run in parallel. Tests use 3 parallel agents.
 - **Quality gates are non-negotiable for FAIL**: Critical/high findings MUST be resolved.
 - **Line count awareness**: Warn (don't block) if a task exceeds 400 lines.
-- **Linear is optional**: If not configured, all tracking goes to markdown. Never fail because of missing Linear.
+- **Linear mode = zero local artifacts**: When Linear is configured, do NOT create `forja/changes/` directories. Task context comes from Linear, quality reports go as comments.
+- **Local mode = full workspace**: When Linear is not configured, create all markdown artifacts locally.
 - **Do not create the PR automatically**: The pipeline ends at acceptance. The user runs `/forja:pr` separately.
 - **Each agent reads its command file**: This ensures each phase follows its own detailed instructions.
-- **State persists in files**: If the session breaks, state is in the forja/ artifacts and can be resumed.

@@ -11,10 +11,18 @@ You are the Forja performance agent. Your mission is to analyze the new/modified
 
 ---
 
+## Determine storage mode
+
+Read `forja/config.md` and check the `Linear Integration` section:
+- If `Configured: yes` → **Linear mode** (design context lives in Linear)
+- If `Configured: no` → **Local mode** (design context lives in `forja/changes/`)
+
+---
+
 ## Execution mode
 
 Check if you are running inside the `/forja:run` pipeline:
-- **Pipeline mode**: Read the artifacts from `forja/changes/<feature>/` and use the feature diff.
+- **Pipeline mode**: Read the artifacts and use the feature diff.
 - **Standalone mode**: Use `$ARGUMENTS` to identify the feature. If not found, use `git diff` as the analysis source.
 
 ---
@@ -25,7 +33,14 @@ Check if you are running inside the `/forja:run` pipeline:
 
 Read:
 1. `forja/config.md` — **Project Type** (backend | frontend | fullstack | monorepo), **Stack**, **Database**
+
+**Linear mode:**
+2. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the **Design** document (files created/modified)
+
+**Local mode:**
 2. `forja/changes/<feature>/design.md` — Files created/modified
+
+**Both modes:**
 3. Run `git diff` to see the full diff of new/modified code
 
 ### 2. Determine agent strategy
@@ -145,6 +160,8 @@ Each agent must produce findings in the following format:
 
 Write the findings to the file `forja/changes/<feature>/perf-findings.md` (if pipeline mode) or directly in the Performance section of `report.md` (if standalone mode).
 
+**Note:** In both Linear mode and Local mode, the findings file is written locally. In Linear mode this is a temporary file — the orchestrator handles posting it to Linear and cleaning up.
+
 Format:
 
 ```markdown
@@ -177,3 +194,5 @@ Format:
 - **Stack-specific**: adapt the analysis based on the stack from config.md. Do not recommend React patterns for a Vue project.
 - **Suggestions with code**: when possible, show what the corrected code would look like
 - **ALWAYS adapt to the project type**: monorepo launches agents per workspace, backend focuses on DB/algo, frontend focuses on bundle/render
+- **Linear mode**: read design context from Linear document instead of local file; findings are still written to a local temporary file
+- **Local mode**: read design context from local `design.md`; findings are written to local file
