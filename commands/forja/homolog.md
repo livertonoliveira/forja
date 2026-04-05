@@ -131,7 +131,8 @@ After approval:
    - [x] User has verified acceptance criteria
    - [x] User approves for PR — Approved on YYYY-MM-DD
    ```
-2. Update the task issue status if needed via `mcp__linear-server__save_issue`
+2. Update the task issue status to **"Done"** via `mcp__linear-server__save_issue`
+   - This must always happen after approval — whether running standalone or inside the pipeline
 3. Clean up temporary local findings files (perf-findings, security-findings, review-findings) — the data is now in the Linear comment
 4. Inform: "Acceptance approved! Run `/forja:pr` when you are ready to create the Pull Request."
 

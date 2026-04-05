@@ -43,7 +43,13 @@ Check if you are running inside the `/forja:run` pipeline:
 3. `forja/changes/<feature>/design.md` — Technical decisions, files to create/modify
 4. `forja/changes/<feature>/tasks.md` — Implementation checklist
 
-### 2. Plan parallelism
+### 2. Mark issue as In Progress
+
+**Linear mode only:**
+- Immediately call `mcp__linear-server__save_issue` to update the task issue status to **"In Progress"**
+- Do this before any code is written — the issue must reflect that work has started
+
+### 3. Plan parallelism
 
 Analyze the Design document (from Linear or local `design.md`) to identify independent modules:
 - Files that do not depend on each other can be implemented in parallel
@@ -55,7 +61,7 @@ Analyze the Design document (from Linear or local `design.md`) to identify indep
 - If the changes are interdependent (A depends on B) — implement sequentially
 - When in doubt, prefer sequential over incorrect
 
-### 3. Implement
+### 4. Implement
 
 For each file/module to implement:
 
@@ -67,7 +73,7 @@ For each file/module to implement:
 3. **Follow the Design document**: technical decisions have already been made, do not re-decide them
 4. **Follow config.md conventions**: naming, folder structure, imports
 
-### 4. Parallelism by module (when applicable)
+### 5. Parallelism by module (when applicable)
 
 If independent modules were identified, launch **parallel agents** via the Agent tool:
 
@@ -81,13 +87,13 @@ Each agent must:
 2. Implement the code
 3. Ensure the code compiles (no syntax errors)
 
-### 5. Integration
+### 6. Integration
 
 After all modules are implemented:
 1. Verify that integrations between modules are correct (imports, registrations, exports)
 2. Verify that modules are registered where necessary (e.g., NestJS Module imports, React component exports, route registration)
 
-### 6. Typecheck
+### 7. Typecheck
 
 Run the typecheck command configured in `forja/config.md`:
 - If `Typecheck` is configured — run the command (e.g., `pnpm typecheck`, `mypy`, `go vet`)
@@ -99,11 +105,11 @@ If typecheck fails:
 3. Re-run typecheck
 4. If it fails again after 2 attempts: record the errors and report to the orchestrator
 
-### 7. Update artifacts
+### 8. Update artifacts
 
 **Linear mode:**
 - No local artifacts to update. Task progress is tracked in Linear.
-- If `forja/config.md` indicates Linear is configured, use `mcp__linear-server__save_issue` to update the task issue status to "In Progress" (if not already set by the orchestrator).
+- Issue status was already set to "In Progress" in step 2.
 
 **Local mode:**
 1. Update `forja/changes/<feature>/tasks.md`:
