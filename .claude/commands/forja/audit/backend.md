@@ -174,7 +174,11 @@ Each agent must produce findings in the following format:
    - One-sentence summary of the most critical bottleneck found
    **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
 2. Create a Linear Document in this new project titled "Backend Performance Audit — <YYYY-MM-DD>" with the full report
-3. For each `critical` or `high` finding, create a Linear issue linked to this new project with:
+3. Create milestones (use `save_milestone`) linked to this project — only create a milestone if there are findings at that severity:
+   - **"Critical Fixes"** — if any `critical` findings exist
+   - **"High Fixes"** — if any `high` findings exist
+   - **"Medium Fixes"** — if any `medium` findings exist
+4. For each `critical` or `high` finding, create a Linear issue linked to this new project with:
    - Title: "[PERF] <finding title>"
    - Description (rich, structured):
      ```markdown
@@ -202,6 +206,7 @@ Each agent must produce findings in the following format:
      ```
    - Label: `performance` or closest available
    - Priority: Urgent (critical) / High (high)
+   - Milestone: link to the corresponding severity milestone ("Critical Fixes" or "High Fixes")
 
 **Report format:**
 
