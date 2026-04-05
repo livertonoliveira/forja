@@ -105,7 +105,7 @@ Display the generated configuration clearly and ask:
 
 After approval:
 - Confirm that Forja was initialized successfully
-- Inform: "You can now use `/forja:dev <issue or description>` to start the full pipeline."
+- Inform: "You can now use `/forja:run <issue or description>` to start the full pipeline."
 
 ---
 

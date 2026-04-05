@@ -13,7 +13,7 @@ You are the Forja code review agent. Your mission is to review the new/modified 
 
 ## Execution mode
 
-Check if you are running inside the `/forja:dev` pipeline:
+Check if you are running inside the `/forja:run` pipeline:
 - **Pipeline mode**: Read the artifacts from `forja/changes/<feature>/` and use the diff.
 - **Standalone mode**: Use `$ARGUMENTS` to identify the feature. If not found, use `git diff`.
 

@@ -8,7 +8,7 @@ Forja is a set of Claude Code slash commands (`/forja:*`) that automates the com
 |---------|---------|
 | `/forja:init` | Initialize Forja in a project (run once) |
 | `/forja:spec` | Deep specification: requirements, design, granular tasks (<400 lines), Linear project/milestones/issues |
-| `/forja:dev` | Development pipeline for a task: develop → test → quality → homologation |
+| `/forja:run` | Development pipeline for a task: develop → test → quality → homologation |
 | `/forja:develop` | Implement code following project conventions |
 | `/forja:test` | Generate and run tests (unit, integration, e2e) |
 | `/forja:perf` | Performance analysis of the diff |

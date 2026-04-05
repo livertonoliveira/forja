@@ -28,13 +28,13 @@ Forja is a framework of [Claude Code](https://claude.ai/code) slash commands tha
 
 ```
 /forja:spec "add user authentication with JWT"    # Specify & decompose
-/forja:dev ABC-123                                 # Implement one task
+/forja:run ABC-123                                 # Implement one task
 /forja:pr                                          # Ship it
 ```
 
 **`/forja:spec`** decomposes your feature into granular tasks (<400 lines each), organized in a Linear project with milestones, labels, and rich issue descriptions.
 
-**`/forja:dev`** takes a single task through the full pipeline: **Implementation → Testing → Performance → Security → Code Review → Acceptance** — with quality gates and maximum parallelism.
+**`/forja:run`** takes a single task through the full pipeline: **Implementation → Testing → Performance → Security → Code Review → Acceptance** — with quality gates and maximum parallelism.
 
 Everything produces persistent markdown artifacts that serve as durable memory for the LLM.
 
@@ -73,7 +73,7 @@ Creates a Linear project with milestones and granular tasks (<400 lines each), p
 ### 4. Develop (one task at a time)
 
 ```
-/forja:dev ABC-124    # Work on a specific task
+/forja:run ABC-124    # Work on a specific task
 ```
 
 Runs the full pipeline for that task: develop → test → perf → security → review → accept.
@@ -143,7 +143,7 @@ Open Claude Code in your project and type `/forja:init`. If it detects your stac
            └─────────────────────────────────────────────────┘
 
            ┌─────────────────────────────────────────────────┐
-           │          /forja:dev TASK-ID  (per task)          │
+           │          /forja:run TASK-ID  (per task)          │
            │                                                 │
            │   DEVELOP ──► TEST ──────────────────────┐      │
            │   (parallel    (3 parallel agents:       │      │
@@ -220,7 +220,7 @@ If [Linear](https://linear.app) is connected via MCP:
 |---------|-------------|
 | `/forja:init` | Auto-detect stack, conventions, create `forja/config.md` |
 | `/forja:spec` | Deep specification: decompose into tasks (<400 lines), create Linear project with milestones and labels |
-| `/forja:dev` | Development pipeline for a task: develop → test → quality → accept |
+| `/forja:run` | Development pipeline for a task: develop → test → quality → accept |
 | `/forja:develop` | Implement code following project conventions |
 | `/forja:test` | Generate & run unit, integration, and e2e tests |
 | `/forja:perf` | Analyze diff for N+1 queries, missing indexes, bundle size |
@@ -283,8 +283,8 @@ For **monorepos**, Forja detects workspaces and launches parallel agents per aff
 
 ```
 /forja:spec PROJ-42           # Decompose into tasks, create Linear project
-/forja:dev PROJ-43             # Work on the first task
-/forja:dev PROJ-44             # Work on the next task
+/forja:run PROJ-43             # Work on the first task
+/forja:run PROJ-44             # Work on the next task
 /forja:pr                      # Ship when ready
 ```
 

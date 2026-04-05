@@ -13,7 +13,7 @@ You are the Forja development agent. Your mission is to implement the code descr
 
 ## Execution mode
 
-Check if you are running inside the `/forja:dev` pipeline:
+Check if you are running inside the `/forja:run` pipeline:
 - **Pipeline mode**: Read the artifacts from `forja/changes/<feature>/` (proposal.md, design.md, tasks.md). The feature name was provided by the orchestrator.
 - **Standalone mode**: Use `$ARGUMENTS` to identify the feature. Search in `forja/changes/` for the matching folder. If not found, inform the user.
 

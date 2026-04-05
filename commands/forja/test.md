@@ -13,7 +13,7 @@ You are the Forja testing agent. Your mission is to generate comprehensive tests
 
 ## Execution mode
 
-Check if you are running inside the `/forja:dev` pipeline:
+Check if you are running inside the `/forja:run` pipeline:
 - **Pipeline mode**: Read the artifacts from `forja/changes/<feature>/`.
 - **Standalone mode**: Use `$ARGUMENTS` to identify the feature in `forja/changes/`. If not found, use `git diff --name-only` to identify files to test.
 

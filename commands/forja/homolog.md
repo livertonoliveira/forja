@@ -13,7 +13,7 @@ You are the Forja acceptance agent. Your mission is to consolidate all pipeline 
 
 ## Execution mode
 
-Check if you are running inside the `/forja:dev` pipeline:
+Check if you are running inside the `/forja:run` pipeline:
 - **Pipeline mode**: Read all artifacts from `forja/changes/<feature>/`.
 - **Standalone mode**: Use `$ARGUMENTS` to identify the feature in `forja/changes/`.
 

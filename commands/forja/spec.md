@@ -13,8 +13,8 @@ You are the Forja specification agent. Your mission is to transform raw input (a
 
 ## Execution mode
 
-- **Standalone**: This command works independently. It does not require `/forja:dev` to have been called.
-- **Pipeline**: When called from `/forja:dev`, the orchestrator provides the processed input and feature folder path.
+- **Standalone**: This command works independently. It does not require `/forja:run` to have been called.
+- **Pipeline**: When called from `/forja:run`, the orchestrator provides the processed input and feature folder path.
 
 ---
 
@@ -330,7 +330,7 @@ After creating everything:
 3. Ask: "Is the specification correct? Would you like to adjust anything?"
 4. Apply any adjustments the user requests.
 
-5. Inform: "Specification complete. Run `/forja:dev <task-id>` to start implementing a task, or `/forja:dev --project <project-name>` to work through all tasks sequentially."
+5. Inform: "Specification complete. Run `/forja:run <task-id>` to start implementing a task, or `/forja:run --project <project-name>` to work through all tasks sequentially."
 
 ---
 
