@@ -1,0 +1,65 @@
+# Forja — Development Pipeline Framework
+
+Forja is a set of Claude Code slash commands (`/forja:*`) that automates the complete development pipeline: from issue intake to PR creation, with persistent MD artifacts and continuous tracking.
+
+## Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/forja:init` | Initialize Forja in a project (run once) |
+| `/forja:dev` | Full pipeline: intake → develop → test → quality → homologation |
+| `/forja:intake` | Phase 1 — Extract requirements from Linear issue or free prompt |
+| `/forja:develop` | Phase 2 — Implement code following project conventions |
+| `/forja:test` | Phase 3 — Generate and run tests (unit, integration, e2e) |
+| `/forja:perf` | Phase 4 — Performance analysis of the diff |
+| `/forja:security` | Phase 5 — OWASP security scan of the diff |
+| `/forja:review` | Phase 6 — Code review (SOLID, DRY, KISS) |
+| `/forja:homolog` | Phase 7 — Final report + user homologation |
+| `/forja:pr` | Separate — Create PR with aggregated quality report |
+
+## Persistent Artifacts
+
+All artifacts live in `forja/` at the project root and are version-controlled:
+
+```
+forja/
+├── config.md                    # Project context (stack, conventions, rules)
+└── changes/
+    ├── <feature-name>/
+    │   ├── proposal.md          # Requirements, acceptance criteria, scope
+    │   ├── design.md            # Technical decisions, architecture
+    │   ├── tasks.md             # Implementation checklist
+    │   ├── report.md            # Quality report (perf + sec + review)
+    │   └── tracking.md          # Issue tracking (fallback when no Linear)
+    └── archive/                 # Completed features
+```
+
+## Conventions
+
+### Language
+- Everything in English: command instructions, generated artifacts, code, commits, PRs
+
+### Parallelism
+- Always use the Agent tool to parallelize work
+- Never execute sequentially what can be parallel
+- Each parallel agent writes to separate files (no race conditions)
+
+### Gates
+- `critical` or `high` findings → gate `fail` → pipeline stops
+- `medium` findings → gate `warn` → pipeline pauses, asks user
+- Only `low` or no findings → gate `pass` → pipeline continues
+
+### Tracking
+- With Linear: create detailed sub-issues for each finding, update status continuously
+- Without Linear: register everything in `tracking.md` with rich detail (Context, What to do, Acceptance Criteria)
+
+### Commits and PRs
+- Follow Conventional Commits: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`
+- Atomic commits — one logical change per commit
+- Never group unrelated changes
+- Branch naming: `<type>/<issue-id>-<short-description>`
+
+### Stack Agnostic
+- Forja works with any stack. The `/forja:init` command detects the project's stack dynamically.
+- All analysis commands adapt their checks based on `forja/config.md`.
+- Never hardcode stack-specific assumptions — always read from config.
