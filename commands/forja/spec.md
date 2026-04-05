@@ -141,11 +141,9 @@ Each task gets labels based on:
 
 When Linear is configured, ALL artifacts live in Linear. No local files are created (except `forja/config.md`).
 
-### 6.1 Create or find project
+### 6.1 Create project
 
-Use `mcp__linear-server__list_projects` to check if a project for this feature already exists.
-- If yes: use it
-- If no: create one via `mcp__linear-server__save_project` with the feature name and a brief summary description
+Always create a **new** Linear project via `mcp__linear-server__save_project` with the feature name and a brief summary description. **Never search for or reuse an existing project** — not even one with a similar name. Each spec gets its own dedicated project.
 
 ### 6.2 Create Proposal document
 
