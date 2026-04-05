@@ -47,6 +47,7 @@ fi
 # Create commands directory
 echo -e "${BLUE}Creating ${COMMANDS_DIR}/...${NC}"
 mkdir -p "$COMMANDS_DIR"
+mkdir -p "$COMMANDS_DIR/audit"
 
 # List of command files
 COMMANDS=(
@@ -62,11 +63,26 @@ COMMANDS=(
   "pr.md"
 )
 
+AUDIT_COMMANDS=(
+  "backend.md"
+  "frontend.md"
+  "database.md"
+  "security.md"
+  "run.md"
+)
+
 # Download commands
-echo -e "${BLUE}Downloading Forja commands...${NC}"
+echo -e "${BLUE}Downloading Forja pipeline commands...${NC}"
 for cmd in "${COMMANDS[@]}"; do
   echo -e "  Fetching ${cmd}..."
   curl -sL "${FORJA_REPO}/commands/forja/${cmd}" -o "${COMMANDS_DIR}/${cmd}"
+done
+
+# Download audit commands
+echo -e "${BLUE}Downloading Forja audit commands...${NC}"
+for cmd in "${AUDIT_COMMANDS[@]}"; do
+  echo -e "  Fetching audit/${cmd}..."
+  curl -sL "${FORJA_REPO}/commands/forja/audit/${cmd}" -o "${COMMANDS_DIR}/audit/${cmd}"
 done
 
 # Append Forja section to CLAUDE.md if not already present
@@ -86,17 +102,24 @@ fi
 echo ""
 echo -e "${GREEN}${BOLD}Forja installed successfully!${NC}"
 echo ""
-echo -e "Available commands:"
-echo -e "  ${BOLD}/forja:init${NC}      — Initialize Forja (detect stack, create config)"
-echo -e "  ${BOLD}/forja:spec${NC}      — Specify feature, decompose into tasks"
-echo -e "  ${BOLD}/forja:run${NC}       — Full pipeline for a task (develop → homologation)"
-echo -e "  ${BOLD}/forja:develop${NC}   — Implement code"
-echo -e "  ${BOLD}/forja:test${NC}      — Generate & run tests"
-echo -e "  ${BOLD}/forja:perf${NC}      — Performance analysis"
-echo -e "  ${BOLD}/forja:security${NC}  — Security scan"
-echo -e "  ${BOLD}/forja:review${NC}    — Code review"
-echo -e "  ${BOLD}/forja:homolog${NC}   — User homologation"
-echo -e "  ${BOLD}/forja:pr${NC}        — Create pull request"
+echo -e "Pipeline commands:"
+echo -e "  ${BOLD}/forja:init${NC}              — Initialize Forja (detect stack, create config)"
+echo -e "  ${BOLD}/forja:spec${NC}              — Specify feature, decompose into tasks"
+echo -e "  ${BOLD}/forja:run${NC}               — Full pipeline for a task (develop → homologation)"
+echo -e "  ${BOLD}/forja:develop${NC}           — Implement code"
+echo -e "  ${BOLD}/forja:test${NC}              — Generate & run tests"
+echo -e "  ${BOLD}/forja:perf${NC}              — Performance analysis (diff)"
+echo -e "  ${BOLD}/forja:security${NC}          — Security scan (diff)"
+echo -e "  ${BOLD}/forja:review${NC}            — Code review"
+echo -e "  ${BOLD}/forja:homolog${NC}           — User homologation"
+echo -e "  ${BOLD}/forja:pr${NC}               — Create pull request"
+echo ""
+echo -e "Audit commands (project-wide):"
+echo -e "  ${BOLD}/forja:audit:run${NC}         — Run all applicable audits in parallel"
+echo -e "  ${BOLD}/forja:audit:backend${NC}     — Full backend performance audit"
+echo -e "  ${BOLD}/forja:audit:frontend${NC}    — Full frontend performance audit"
+echo -e "  ${BOLD}/forja:audit:database${NC}    — Full database audit (MongoDB/PostgreSQL/MySQL)"
+echo -e "  ${BOLD}/forja:audit:security${NC}    — Full AppSec audit (OWASP Top 10)"
 echo ""
 echo -e "${BLUE}Next step:${NC} Run ${BOLD}/forja:init${NC} in Claude Code to configure your project."
 echo ""
