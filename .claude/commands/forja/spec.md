@@ -204,6 +204,29 @@ Content:
 <How this feature fits into the existing architecture.
 Describe the flow end-to-end.>
 
+## Sequence Diagrams
+<Include when the feature involves multi-step flows, async operations,
+cross-service interactions, auth flows, webhooks, or anything where
+the order of calls matters. Skip if the feature is purely structural
+(e.g., a schema change or a config file). Use Mermaid syntax.>
+
+<!-- Example: Happy path for a login flow -->
+```mermaid
+sequenceDiagram
+    actor User
+    participant API
+    participant AuthService
+    participant DB
+
+    User->>API: POST /auth/login
+    API->>AuthService: validateCredentials(email, password)
+    AuthService->>DB: findUserByEmail(email)
+    DB-->>AuthService: User | null
+    AuthService-->>API: { accessToken, refreshToken } | AuthError
+    API-->>User: 200 OK { token } | 401 Unauthorized
+```
+<!-- Add one diagram per distinct flow (happy path, error path, async flow, etc.) -->
+
 ## Technical Decisions
 
 ### 1. <Decision Title>
