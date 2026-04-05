@@ -51,8 +51,8 @@ mkdir -p "$COMMANDS_DIR"
 # List of command files
 COMMANDS=(
   "init.md"
+  "spec.md"
   "dev.md"
-  "intake.md"
   "develop.md"
   "test.md"
   "perf.md"

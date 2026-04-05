@@ -1,11 +1,11 @@
 ---
-description: "Full development pipeline: from issue to user acceptance. Executes intake, develop, test, perf, security, review, and homolog with gates and continuous tracking."
-argument-hint: "<linear-url | issue-id | free text description>"
+description: "Full development pipeline for a task: develop → test → perf → security → review → homolog. Works on 1 task by default, or N tasks / entire project if requested."
+argument-hint: "<task-id | linear-issue-id | --project project-name>"
 ---
 
-# Forja Dev — Full Development Pipeline
+# Forja Dev — Development Pipeline
 
-You are the main Forja orchestrator. Your mission is to drive the full development pipeline, from requirements extraction to user acceptance, maximizing the use of parallel agents and ensuring quality at every stage.
+You are the main Forja development orchestrator. Your mission is to take a task (from Linear or markdown) and drive it through the full development pipeline: implementation → testing → quality checks → user acceptance. You maximize the use of parallel agents at every stage.
 
 **Input received:** $ARGUMENTS
 
@@ -18,126 +18,101 @@ You are the main Forja orchestrator. Your mission is to drive the full developme
 Check if `forja/config.md` exists at the project root.
 - If it does NOT exist: inform the user they need to run `/forja:init` first and STOP.
 
-### 2. Check for existing pipeline
+### 2. Check for specification
 
-Check if there is any folder in `forja/changes/` (excluding `archive/`) that contains a `tasks.md` with pending items (unchecked checkboxes).
-- If one exists: inform the user and ask: "In-progress feature '<name>' found. Resume where it left off or start a new feature?"
-- If resume: identify the last completed phase by the tasks.md checkboxes and continue from the next one.
-- If new: proceed normally.
-
-### 3. Detect input type
-
-Analyze `$ARGUMENTS`:
-- If it contains `linear.app` — it is a **Linear URL**. Extract the issue ID.
-- If it matches `^[A-Z]+-\d+$` — it is a **Linear issue ID** (e.g., ABC-123).
-- Otherwise — it is **free text** describing the feature/fix.
-
-### 4. Derive feature name
-
-From the input, derive a kebab-case name for the feature folder:
-- If Linear: use the issue ID + short title (e.g., `abc-123-add-health-check`)
-- If free text: derive from the text (e.g., `add-health-check-endpoint`)
-
-Create the folder: `forja/changes/<feature-name>/`
+Check if `forja/changes/` contains any feature folders with a `proposal.md` and `design.md`.
+- If none exist: inform the user they should run `/forja:spec` first to create a specification.
+- Exception: if the user provides a Linear issue ID directly, you can proceed (the task details come from Linear).
 
 ---
 
-## Pipeline Execution
+## Detect input mode
 
-### PHASE 1 — Intake
+Analyze `$ARGUMENTS` to determine what to work on:
 
-Use the **Agent** tool to execute the intake. Instruct the agent to:
+### Single task (default, recommended)
+- **Linear issue ID** (e.g., `ABC-123`): Work on this specific task. Fetch details via `mcp__linear-server__get_issue`.
+- **Local task ID** (e.g., `TASK-001`): Find the task in `forja/changes/<feature>/tasks.md`.
 
-1. Read the file `.claude/commands/forja/intake.md` to understand the full instructions
-2. Use as input: the processed argument (Linear URL/ID or free text)
-3. Read `forja/config.md` for project context
-4. Generate artifacts in `forja/changes/<feature-name>/`:
-   - `proposal.md` — Requirements, acceptance criteria, scope
-   - `design.md` — Technical decisions, files to create/modify
-   - `tasks.md` — Complete checklist
+### Multiple tasks
+- **`--project <name>`**: Work through ALL pending tasks in the specified project/feature, one at a time, in milestone order.
+- **`--milestone <name>`**: Work through all pending tasks in a specific milestone.
+- **Multiple IDs** (e.g., `ABC-123 ABC-124 ABC-125`): Work on these specific tasks in order.
 
-**The agent MUST use parallel sub-agents internally** as described in intake.md.
+**Default behavior**: Work on **1 task at a time**. After completing each task, ask the user: "Task complete. Continue to the next task, or stop here?"
 
-### PAUSE — User Approval
+---
 
-After intake completes:
-1. Read `forja/changes/<feature-name>/proposal.md` and `design.md`
-2. Present a summary to the user:
-   - Identified requirements
-   - Proposed technical decisions
-   - Files to create/modify
-   - Scope (in/out)
-3. Ask: "Is the plan correct? Would you like to adjust anything before starting development?"
-4. If the user requests changes: apply them to the artifacts and re-present.
-5. Only proceed after explicit approval.
+## Pipeline Execution (per task)
 
-### PHASE 2 — Development
+For each task, execute the following phases:
+
+### 1. Load task context
+
+Read the task details:
+- **From Linear**: Use `mcp__linear-server__get_issue` to get title, description, acceptance criteria, labels, milestone
+- **From markdown**: Read the task section from `forja/changes/<feature>/tasks.md`
+
+Also read:
+- `forja/config.md` — Project stack and conventions
+- `forja/changes/<feature>/proposal.md` — Overall feature context (if exists)
+- `forja/changes/<feature>/design.md` — Technical decisions (if exists)
+
+Update Linear issue status to "In Progress" (if configured).
+
+### 2. PHASE: Development
 
 Use the **Agent** tool to execute development. Instruct the agent to:
 
 1. Read `.claude/commands/forja/develop.md` for full instructions
-2. Read the feature artifacts: `proposal.md`, `design.md`, `tasks.md`
+2. Use the task description as the implementation spec (not the full feature — just THIS task)
 3. Read `forja/config.md` for project conventions
-4. Implement all required code
-5. Run typecheck (if configured in config.md)
-6. Update `tasks.md` marking implementation items as completed
+4. Implement the code described in the task
+5. Run typecheck (if configured)
+6. Verify the change is under 400 lines: run `git diff --stat` and check
 
 **The agent MUST use parallel sub-agents** for independent modules when applicable.
 
-If Linear is configured in config.md: update the issue status to "In Progress" via `mcp__linear-server__save_issue`.
+**Line count check**: After development, run `git diff --stat` to verify total lines changed. If it exceeds 400 lines:
+- Warn the user: "This task produced ~X lines (target: <400). Consider splitting it."
+- Do NOT block — this is a warning, not a gate.
 
-### PHASE 3 — Tests
+### 3. PHASE: Testing
 
 Use the **Agent** tool to execute tests. Instruct the agent to:
 
 1. Read `.claude/commands/forja/test.md` for full instructions
-2. Read the feature artifacts: `proposal.md`, `design.md`, `tasks.md`
-3. Read `forja/config.md` for test frameworks
-4. Generate and run tests
+2. Use the task's acceptance criteria to guide test generation
+3. Generate and run tests scoped to THIS task only
 
 **The agent MUST launch 3 sub-agents in parallel**: unit tests, integration tests, e2e tests.
 
-After completion: read the updated `tasks.md`. If the testing section has items marked with a cross (failing tests):
-- The pipeline STOPS. Inform the user about the failing tests.
+If any test fails after fix attempts:
+- The pipeline STOPS. Inform the user.
 - Ask if they want an automatic fix attempt.
 
-### PHASES 4 + 5 + 6 — Quality Checks (PARALLEL)
+### 4. PHASES: Quality Checks (PARALLEL)
 
 Launch **3 agents in parallel** using the Agent tool in a SINGLE call:
 
 **Agent 1 — Performance:**
 - Read `.claude/commands/forja/perf.md` for full instructions
-- Read `design.md` + `forja/config.md` for context
-- Analyze the diff for performance issues
-- Write findings in the Performance section of `forja/changes/<feature-name>/report.md`
+- Analyze the diff for this task only
+- Write findings to `forja/changes/<feature>/perf-findings-<task-id>.md`
 
 **Agent 2 — Security:**
 - Read `.claude/commands/forja/security.md` for full instructions
-- Read `design.md` for context
-- Analyze the diff for vulnerabilities
-- Write findings in the Security section of `forja/changes/<feature-name>/report.md`
+- Analyze the diff for this task only
+- Write findings to `forja/changes/<feature>/security-findings-<task-id>.md`
 
 **Agent 3 — Code Review:**
 - Read `.claude/commands/forja/review.md` for full instructions
-- Read `design.md` for context
-- Analyze the diff for quality principles
-- Write findings in the Code Review section of `forja/changes/<feature-name>/report.md`
+- Analyze the diff for this task only
+- Write findings to `forja/changes/<feature>/review-findings-<task-id>.md`
 
-**IMPORTANT:** The 3 agents write to DIFFERENT sections of the same `report.md`. To avoid conflicts:
-- Agent 1 creates `report.md` with the base structure (header + Summary table + all empty sections)
-- Agents 2 and 3 fill in their respective sections
-- After ALL complete, the orchestrator consolidates by reading the final report.md
+### 5. GATE CHECK
 
-**Safer alternative (recommended):** Each agent writes to a separate file:
-- Agent 1 → `forja/changes/<feature-name>/perf-findings.md`
-- Agent 2 → `forja/changes/<feature-name>/security-findings.md`
-- Agent 3 → `forja/changes/<feature-name>/review-findings.md`
-
-After all complete, the orchestrator reads the 3 files and consolidates into `report.md`.
-
-### GATE CHECK
-
-After all 3 agents complete, read the findings from each and evaluate:
+After all 3 agents complete, read the findings and evaluate:
 
 **Gate rules:**
 | Condition | Gate |
@@ -148,44 +123,64 @@ After all 3 agents complete, read the findings from each and evaluate:
 
 **If FAIL:**
 1. Present the critical/high findings to the user
-2. For each finding, create an issue:
-   - **With Linear:** Use `mcp__linear-server__save_issue` to create a detailed sub-issue (with Context, What to do, Acceptance Criteria, Notes)
-   - **Without Linear:** Record in `forja/changes/<feature-name>/tracking.md`
-3. Ask the user: "I found issues that need to be fixed. Would you like me to apply the fixes automatically?"
-4. If yes: launch an Agent to apply the fixes, then re-run ONLY the phases that failed (not the entire pipeline)
-5. If no: inform that the pipeline is paused and the user can fix manually and re-run `/forja:dev`
+2. Create tracking issues:
+   - **With Linear:** Create sub-issues linked to the current task via `mcp__linear-server__save_issue` with rich descriptions (Context, What to do, Acceptance Criteria)
+   - **Without Linear:** Record in `forja/changes/<feature>/tracking.md`
+3. Ask: "I found issues that need fixing. Would you like me to apply the fixes automatically?"
+4. If yes: launch an Agent to fix, then re-run ONLY the phases that failed
+5. If no: pause and let the user fix manually
 
 **If WARN:**
-1. Present the warnings to the user
-2. Ask: "There are warnings that deserve attention. Would you like to fix them now or proceed to acceptance?"
+1. Present warnings
+2. Ask: "There are warnings. Fix now or proceed to acceptance?"
 3. If fix: same flow as FAIL
-4. If proceed: continue to Phase 7
+4. If proceed: continue
 
 **If PASS:**
-Continue automatically to Phase 7.
+Continue automatically.
 
-### PHASE 7 — User Acceptance
+### 6. PHASE: User Acceptance
 
-Use the **Agent** tool to execute user acceptance. Instruct the agent to:
+Use the **Agent** tool to execute acceptance. Instruct the agent to:
 
 1. Read `.claude/commands/forja/homolog.md` for full instructions
-2. Read ALL feature artifacts
-3. Present the consolidated report to the user
-4. Wait for approval
+2. Consolidate findings into `forja/changes/<feature>/report-<task-id>.md`
+3. Present the report for this task
+4. Wait for user approval
 
-### Conclusion
+### 7. Task completion
 
-After user acceptance is approved:
-1. Clean up temporary findings files (`perf-findings.md`, `security-findings.md`, `review-findings.md`) if they exist
-2. Inform the user: "Pipeline complete! When you are ready, run `/forja:pr` to create the Pull Request."
+After acceptance:
+1. Clean up temporary findings files for this task
+2. Mark the task as completed:
+   - **Linear:** Update issue status to "Done" via `mcp__linear-server__save_issue`
+   - **Markdown:** Mark the task as `done` in `tasks.md`
+3. If working on multiple tasks: ask "Task '<name>' complete. Continue to the next task '<next-name>', or stop here?"
+4. If single task or user stops: inform "Task complete! Run `/forja:pr` when ready to create a Pull Request."
+
+---
+
+## Multi-task mode
+
+When working on multiple tasks (`--project`, `--milestone`, or multiple IDs):
+
+1. Sort tasks by milestone order, then by dependency order within each milestone
+2. Process one task at a time through the full pipeline
+3. After each task completion, ask the user before continuing
+4. Each task gets its own quality report (`report-<task-id>.md`)
+5. At the end, present a summary of all completed tasks
+
+**Never process multiple tasks in parallel** — each task modifies code, so they must be sequential to avoid conflicts.
 
 ---
 
 ## Orchestrator Rules
 
-- **Parallelism is mandatory**: Never run sequentially what can be parallel. Phases 4+5+6 ALWAYS run in parallel.
-- **Each agent is instructed to read the corresponding .md command**: This ensures each phase follows its own detailed instructions.
-- **State persists in files**: If the Claude Code session is interrupted, the state is in the MD files and can be resumed.
-- **Gates are non-negotiable for FAIL**: Critical/high findings MUST be resolved. Warnings can be accepted by the user.
-- **Linear is optional**: If not configured, all tracking goes to `tracking.md`. Never fail due to missing Linear.
-- **Do not create the PR automatically**: The pipeline ends at user acceptance. The PR is a separate command (`/forja:pr`).
+- **1 task at a time by default**: Only work on multiple tasks if the user explicitly requests it.
+- **Parallelism within phases is mandatory**: Phases 4+5+6 ALWAYS run in parallel. Tests use 3 parallel agents.
+- **Quality gates are non-negotiable for FAIL**: Critical/high findings MUST be resolved.
+- **Line count awareness**: Warn (don't block) if a task exceeds 400 lines.
+- **Linear is optional**: If not configured, all tracking goes to markdown. Never fail because of missing Linear.
+- **Do not create the PR automatically**: The pipeline ends at acceptance. The user runs `/forja:pr` separately.
+- **Each agent reads its command file**: This ensures each phase follows its own detailed instructions.
+- **State persists in files**: If the session breaks, state is in the forja/ artifacts and can be resumed.

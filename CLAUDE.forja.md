@@ -7,15 +7,15 @@ Forja is a set of Claude Code slash commands (`/forja:*`) that automates the com
 | Command | Purpose |
 |---------|---------|
 | `/forja:init` | Initialize Forja in a project (run once) |
-| `/forja:dev` | Full pipeline: intake → develop → test → quality → homologation |
-| `/forja:intake` | Phase 1 — Extract requirements from Linear issue or free prompt |
-| `/forja:develop` | Phase 2 — Implement code following project conventions |
-| `/forja:test` | Phase 3 — Generate and run tests (unit, integration, e2e) |
-| `/forja:perf` | Phase 4 — Performance analysis of the diff |
-| `/forja:security` | Phase 5 — OWASP security scan of the diff |
-| `/forja:review` | Phase 6 — Code review (SOLID, DRY, KISS) |
-| `/forja:homolog` | Phase 7 — Final report + user homologation |
-| `/forja:pr` | Separate — Create PR with aggregated quality report |
+| `/forja:spec` | Deep specification: requirements, design, granular tasks (<400 lines), Linear project/milestones/issues |
+| `/forja:dev` | Development pipeline for a task: develop → test → quality → homologation |
+| `/forja:develop` | Implement code following project conventions |
+| `/forja:test` | Generate and run tests (unit, integration, e2e) |
+| `/forja:perf` | Performance analysis of the diff |
+| `/forja:security` | OWASP security scan of the diff |
+| `/forja:review` | Code review (SOLID, DRY, KISS) |
+| `/forja:homolog` | Final report + user homologation |
+| `/forja:pr` | Create PR with atomic commits and aggregated quality report |
 
 ## Persistent Artifacts
 
@@ -28,7 +28,7 @@ forja/
     ├── <feature-name>/
     │   ├── proposal.md          # Requirements, acceptance criteria, scope
     │   ├── design.md            # Technical decisions, architecture
-    │   ├── tasks.md             # Implementation checklist
+    │   ├── tasks.md             # Granular tasks (<400 lines each) with milestones
     │   ├── report.md            # Quality report (perf + sec + review)
     │   └── tracking.md          # Issue tracking (fallback when no Linear)
     └── archive/                 # Completed features

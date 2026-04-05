@@ -27,14 +27,16 @@
 Forja is a framework of [Claude Code](https://claude.ai/code) slash commands that automates your **entire** development workflow:
 
 ```
-/forja:dev "add user authentication with JWT"
+/forja:spec "add user authentication with JWT"    # Specify & decompose
+/forja:dev ABC-123                                 # Implement one task
+/forja:pr                                          # Ship it
 ```
 
-That single command orchestrates:
+**`/forja:spec`** decomposes your feature into granular tasks (<400 lines each), organized in a Linear project with milestones, labels, and rich issue descriptions.
 
-> **Requirements Extraction** → **Implementation** → **Testing** → **Performance Analysis** → **Security Scan** → **Code Review** → **User Acceptance**
+**`/forja:dev`** takes a single task through the full pipeline: **Implementation → Testing → Performance → Security → Code Review → Acceptance** — with quality gates and maximum parallelism.
 
-Each phase has quality gates. Phases 4-6 run in **parallel**. Everything produces persistent markdown artifacts that serve as durable memory for the LLM.
+Everything produces persistent markdown artifacts that serve as durable memory for the LLM.
 
 ---
 
@@ -52,21 +54,31 @@ curl -sL https://raw.githubusercontent.com/mobitech-services/forja/main/install.
 /forja:init
 ```
 
-This auto-detects your stack, conventions, test framework, and creates `forja/config.md`.
+Auto-detects your stack, conventions, test framework, and creates `forja/config.md`.
 
-### 3. Develop
+### 3. Specify
 
 ```
-/forja:dev "add password reset via email"
+/forja:spec "add password reset via email"
 ```
 
 Or from a Linear issue:
 
 ```
-/forja:dev ABC-123
+/forja:spec ABC-123
 ```
 
-### 4. Ship
+Creates a Linear project with milestones and granular tasks (<400 lines each), plus `proposal.md` and `design.md` artifacts.
+
+### 4. Develop (one task at a time)
+
+```
+/forja:dev ABC-124    # Work on a specific task
+```
+
+Runs the full pipeline for that task: develop → test → perf → security → review → accept.
+
+### 5. Ship
 
 ```
 /forja:pr
@@ -112,59 +124,48 @@ Open Claude Code in your project and type `/forja:init`. If it detects your stac
 ## How it Works
 
 ```
-                         ┌──────────────┐
-                         │    INPUT     │
-                         │ Issue URL,   │
-                         │ ID, or text  │
-                         └──────┬───────┘
-                                │
-                         ┌──────▼───────┐
-                     ┌───│   INTAKE     │───┐
-                     │   │              │   │    2 parallel agents
-                 Linear  └──────────────┘  Codebase
-                  data                     exploration
-                     │                      │
-                     └──────────┬───────────┘
-                                │
-                         proposal.md + design.md + tasks.md
-                                │
-                         ┌──────▼───────┐
-                         │   APPROVE    │  ← You review the plan
-                         └──────┬───────┘
-                                │
-                         ┌──────▼───────┐
-                         │   DEVELOP    │───── Parallel agents
-                         │              │      per module
-                         └──────┬───────┘
-                                │
-                         ┌──────▼───────┐
-                     ┌───│    TEST      │───┐
-                     │   │              │   │
-                   Unit  └──────────────┘  E2E     3 parallel agents
-                     │    Integration    │
-                     └────────┼─────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              │               │               │
-       ┌──────▼──────┐ ┌─────▼──────┐ ┌──────▼──────┐
-       │ PERFORMANCE │ │  SECURITY  │ │   REVIEW    │  3 parallel
-       │             │ │            │ │             │  agents
-       └──────┬──────┘ └─────┬──────┘ └──────┬──────┘
-              │               │               │
-              └───────────────┼───────────────┘
-                              │
-                       ┌──────▼───────┐
-                       │  GATE CHECK  │  fail → fix → re-run
-                       │              │  warn → ask user
-                       └──────┬───────┘  pass → continue
-                              │
-                       ┌──────▼───────┐
-                       │   ACCEPT     │  ← You verify & approve
-                       └──────┬───────┘
-                              │
-                       ┌──────▼───────┐
-                       │  /forja:pr   │  Atomic commits + PR
-                       └──────────────┘
+           ┌─────────────────────────────────────────────────┐
+           │                /forja:spec                      │
+           │                                                 │
+           │   INPUT ──► 2 parallel agents ──► APPROVE       │
+           │   (issue      (Linear data +      (you review   │
+           │   or text)     codebase)            the plan)    │
+           │                    │                             │
+           │              proposal.md                        │
+           │              design.md                          │
+           │              Linear project                     │
+           │                ├── Milestone 1                  │
+           │                │   ├── Task A (~150 lines)      │
+           │                │   └── Task B (~200 lines)      │
+           │                └── Milestone 2                  │
+           │                    ├── Task C (~120 lines)      │
+           │                    └── Task D (~180 lines)      │
+           └─────────────────────────────────────────────────┘
+
+           ┌─────────────────────────────────────────────────┐
+           │          /forja:dev TASK-ID  (per task)          │
+           │                                                 │
+           │   DEVELOP ──► TEST ──────────────────────┐      │
+           │   (parallel    (3 parallel agents:       │      │
+           │    per module)  unit+integration+e2e)    │      │
+           │                                          │      │
+           │        ┌─────────────┼─────────────┐     │      │
+           │        │             │             │     │      │
+           │   PERFORMANCE   SECURITY      REVIEW    │      │
+           │        │             │             │     │      │
+           │        └─────────────┼─────────────┘     │      │
+           │                      │                   │      │
+           │               GATE CHECK                 │      │
+           │               fail → fix → re-run        │      │
+           │               warn → ask user            │      │
+           │               pass → continue            │      │
+           │                      │                   │      │
+           │                  ACCEPT ← you approve    │      │
+           └──────────────────────┼───────────────────┘      │
+                                  │
+                           ┌──────▼───────┐
+                           │  /forja:pr   │  Atomic commits + PR
+                           └──────────────┘
 ```
 
 ### Quality Gates
@@ -215,18 +216,18 @@ If [Linear](https://linear.app) is connected via MCP:
 
 ## Commands
 
-| Command | Phase | What it does |
-|---------|-------|-------------|
-| `/forja:init` | Setup | Auto-detect stack, conventions, create `forja/config.md` |
-| `/forja:dev` | Full Pipeline | Run all phases from intake to acceptance |
-| `/forja:intake` | 1 — Intake | Extract requirements from Linear or free text |
-| `/forja:develop` | 2 — Develop | Implement code following project conventions |
-| `/forja:test` | 3 — Test | Generate & run unit, integration, and e2e tests |
-| `/forja:perf` | 4 — Performance | Analyze diff for N+1 queries, missing indexes, bundle size |
-| `/forja:security` | 5 — Security | OWASP scan: injection, auth, data exposure |
-| `/forja:review` | 6 — Review | SOLID, DRY, KISS, Clean Code analysis |
-| `/forja:homolog` | 7 — Accept | Present quality report for user approval |
-| `/forja:pr` | Delivery | Atomic commits + PR with aggregated report |
+| Command | What it does |
+|---------|-------------|
+| `/forja:init` | Auto-detect stack, conventions, create `forja/config.md` |
+| `/forja:spec` | Deep specification: decompose into tasks (<400 lines), create Linear project with milestones and labels |
+| `/forja:dev` | Development pipeline for a task: develop → test → quality → accept |
+| `/forja:develop` | Implement code following project conventions |
+| `/forja:test` | Generate & run unit, integration, and e2e tests |
+| `/forja:perf` | Analyze diff for N+1 queries, missing indexes, bundle size |
+| `/forja:security` | OWASP scan: injection, auth, data exposure |
+| `/forja:review` | SOLID, DRY, KISS, Clean Code analysis |
+| `/forja:homolog` | Present quality report for user approval |
+| `/forja:pr` | Atomic commits + PR with aggregated report |
 
 **Every command works standalone** — run `/forja:security` on its own to scan your current diff, or `/forja:test` to generate tests for recent changes.
 
@@ -238,7 +239,7 @@ Forja maximizes Claude Code's Agent tool for parallel execution:
 
 | Phase | Agents | What runs in parallel |
 |-------|--------|----------------------|
-| Intake | 2 | Linear data fetch + codebase exploration |
+| Spec | 2 | Linear data fetch + codebase exploration |
 | Develop | N | One agent per independent module |
 | Test | 3 | Unit + integration + e2e tests |
 | Quality | 3 | Performance + security + review **(simultaneously)** |
@@ -278,13 +279,16 @@ For **monorepos**, Forja detects workspaces and launches parallel agents per aff
 
 ## Examples
 
-### Full pipeline from a Linear issue
+### Specify and develop a feature from Linear
 
 ```
-/forja:dev PROJ-42
+/forja:spec PROJ-42           # Decompose into tasks, create Linear project
+/forja:dev PROJ-43             # Work on the first task
+/forja:dev PROJ-44             # Work on the next task
+/forja:pr                      # Ship when ready
 ```
 
-Forja fetches the issue, extracts requirements, implements the feature, generates tests, runs quality checks, and presents a report for your approval.
+Forja fetches the issue, creates a full specification with granular tasks, and you develop each one through the quality pipeline.
 
 ### Quick security scan on current changes
 
