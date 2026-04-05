@@ -163,8 +163,8 @@ Use the **Agent** tool to execute acceptance. Instruct the agent to:
 After acceptance:
 
 **Linear mode:**
-1. Post the consolidated quality report as a **comment** on the task issue via `mcp__linear-server__save_comment`
-2. Update issue status to "Done" via `mcp__linear-server__save_issue`
+1. The `/forja:homolog` phase already posted the quality report comment and set the issue to **"Done"**
+2. Verify the issue status is "Done" via `mcp__linear-server__get_issue_status` — if not, call `mcp__linear-server__save_issue` to set it
 3. Clean up temporary findings files
 
 **Local mode:**
