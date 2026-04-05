@@ -195,8 +195,9 @@ Each agent must produce findings in the following format:
 **Local mode:** Write to `forja/audits/security-<YYYY-MM-DD>.md`
 
 **Linear mode:**
-1. Create a Linear Document in the project titled "Security Audit — <YYYY-MM-DD>" with the full report
-2. For each `critical` or `high` finding, create a Linear issue with:
+1. Create a **new** Linear project named "Security Audit — <YYYY-MM-DD>" (use `save_project`). **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
+2. Create a Linear Document in this new project titled "Security Audit — <YYYY-MM-DD>" with the full report
+3. For each `critical` or `high` finding, create a Linear issue linked to this new project with:
    - Title: "[SEC] <finding title>"
    - Description: finding details including PoC
    - Label: `security` or closest available
