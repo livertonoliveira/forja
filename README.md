@@ -105,8 +105,9 @@ curl -sL https://raw.githubusercontent.com/mobitech-services/forja/main/install.
 git clone https://github.com/mobitech-services/forja.git /tmp/forja
 
 # 2. Copy commands to your project
-mkdir -p .claude/commands/forja
+mkdir -p .claude/commands/forja/audit
 cp /tmp/forja/commands/forja/*.md .claude/commands/forja/
+cp /tmp/forja/commands/forja/audit/*.md .claude/commands/forja/audit/
 
 # 3. Add Forja config to your CLAUDE.md
 cat /tmp/forja/CLAUDE.forja.md >> CLAUDE.md
@@ -114,6 +115,16 @@ cat /tmp/forja/CLAUDE.forja.md >> CLAUDE.md
 # 4. Clean up
 rm -rf /tmp/forja
 ```
+
+### Updating
+
+Already have Forja installed? Run this from your project root:
+
+```bash
+curl -sL https://raw.githubusercontent.com/mobitech-services/forja/main/update.sh | bash
+```
+
+This overwrites all command files unconditionally and reports what changed. It also updates itself, so future `/forja:update` calls will always work correctly.
 
 ### Verify
 
