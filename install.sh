@@ -61,6 +61,7 @@ COMMANDS=(
   "review.md"
   "homolog.md"
   "pr.md"
+  "update.md"
 )
 
 AUDIT_COMMANDS=(
