@@ -277,11 +277,39 @@ Each agent must produce findings in the following format:
 **Local mode:** Write to `forja/audits/database-<YYYY-MM-DD>.md`
 
 **Linear mode:**
-1. Create a **new** Linear project named "Database Audit — <YYYY-MM-DD>" (use `save_project`). **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
+1. Create a **new** Linear project named "Database Audit — <YYYY-MM-DD>" (use `save_project`) with a description that includes:
+   - Project/app name (from `forja/config.md`)
+   - Database engine and version (MongoDB / PostgreSQL / MySQL)
+   - Gate result (PASS / WARN / FAIL) and findings count (e.g., "1 critical, 2 high, 0 medium")
+   - One-sentence summary of the most critical data access issue found
+   **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
 2. Create a Linear Document in this new project titled "Database Audit — <YYYY-MM-DD>" with the full report
 3. For each `critical` or `high` finding, create a Linear issue linked to this new project with:
    - Title: "[DB] <finding title>"
-   - Description: finding details
+   - Description (rich, structured):
+     ```markdown
+     ## Problem
+     <What the data access problem is, with concrete evidence. Cite file and line.>
+
+     ## Impact
+     <Estimated impact — query latency, CPU/memory usage, failure risk. Include projection at 10x data if relevant.>
+
+     ## Evidence
+     - **File:** <path>:<line>
+     - **Query/Schema:** <relevant snippet — query, schema definition, or index declaration>
+
+     ## Fix
+     <Specific fix: index to add, query to rewrite, schema change to make. Use the project's ORM or query patterns.>
+
+     ## Acceptance Criteria
+     - [ ] <Specific, verifiable criterion — e.g., "EXPLAIN shows index scan, not collection scan">
+     - [ ] <Another verifiable criterion>
+     - [ ] No regressions in related tests
+
+     ## Notes
+     - **Effort:** <Hours | Days | Weeks>
+     - **Maintenance window required:** <Yes | No>
+     ```
    - Label: `performance` or closest available
    - Priority: Urgent (critical) / High (high)
 

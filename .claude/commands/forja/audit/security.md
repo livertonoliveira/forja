@@ -195,11 +195,42 @@ Each agent must produce findings in the following format:
 **Local mode:** Write to `forja/audits/security-<YYYY-MM-DD>.md`
 
 **Linear mode:**
-1. Create a **new** Linear project named "Security Audit — <YYYY-MM-DD>" (use `save_project`). **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
+1. Create a **new** Linear project named "Security Audit — <YYYY-MM-DD>" (use `save_project`) with a description that includes:
+   - Project/app name (from `forja/config.md`)
+   - Stack (runtime, framework, database)
+   - Overall score (A–F) and findings count (e.g., "1 critical, 2 high, 3 medium")
+   - One-sentence summary of the highest-severity risk found
+   **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
 2. Create a Linear Document in this new project titled "Security Audit — <YYYY-MM-DD>" with the full report
 3. For each `critical` or `high` finding, create a Linear issue linked to this new project with:
    - Title: "[SEC] <finding title>"
-   - Description: finding details including PoC
+   - Description (rich, structured):
+     ```markdown
+     ## Vulnerability
+     <What the vulnerability is, with concrete evidence. Cite file and line. Include OWASP category and CWE.>
+
+     ## Attack Vector
+     <How this could be exploited — step-by-step. Who can trigger it (unauthenticated / authenticated).>
+
+     ## Impact
+     <What an attacker or a data breach would yield. Data exposed, accounts compromised, system access gained.>
+
+     ## Proof of Concept
+     <For critical/high: example malicious request, payload, or exploit flow that demonstrates the vulnerability.>
+
+     ## Fix
+     <Specific code change with example using the project's patterns.>
+
+     ## Acceptance Criteria
+     - [ ] <Specific, verifiable criterion — e.g., "input is validated server-side before being used in query">
+     - [ ] <Another verifiable criterion>
+     - [ ] Security-related tests pass
+     - [ ] No regressions in related tests
+
+     ## Notes
+     - **Effort:** <Hours | Days | Weeks>
+     - **Urgent deploy required:** <Yes | No>
+     ```
    - Label: `security` or closest available
    - Priority: Urgent (critical) / High (high)
 

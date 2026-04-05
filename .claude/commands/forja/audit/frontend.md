@@ -268,11 +268,39 @@ Each agent must produce findings in the following format:
 **Local mode:** Write to `forja/audits/frontend-<YYYY-MM-DD>.md`
 
 **Linear mode:**
-1. Create a **new** Linear project named "Frontend Performance Audit — <YYYY-MM-DD>" (use `save_project`). **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
+1. Create a **new** Linear project named "Frontend Performance Audit — <YYYY-MM-DD>" (use `save_project`) with a description that includes:
+   - Project/app name (from `forja/config.md`)
+   - Framework and methodology used (e.g., "Next.js App Router — 5-layer methodology")
+   - Gate result (PASS / WARN / FAIL) and findings count (e.g., "0 critical, 2 high, 4 medium")
+   - One-sentence summary of the most impactful performance issue found
+   **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
 2. Create a Linear Document in this new project titled "Frontend Performance Audit — <YYYY-MM-DD>" with the full report
 3. For each `critical` or `high` finding, create a Linear issue linked to this new project with:
    - Title: "[PERF] <finding title>"
-   - Description: finding details
+   - Description (rich, structured):
+     ```markdown
+     ## Problem
+     <What the performance problem is, with concrete evidence from the code. Cite file and line.>
+
+     ## Impact
+     <Estimated impact on user-perceived performance — which Web Vital is affected, estimated degradation.>
+
+     ## Evidence
+     - **File:** <path>:<line>
+     - **Code:** <relevant snippet showing the issue>
+
+     ## Fix
+     <Specific fix with a code example using the project's framework and patterns.>
+
+     ## Acceptance Criteria
+     - [ ] <Specific, verifiable criterion — e.g., "LCP under 2.5s measured via Lighthouse">
+     - [ ] <Another verifiable criterion>
+     - [ ] No regressions in related tests
+
+     ## Notes
+     - **Effort:** <Hours | Days | Weeks>
+     - **Affected Web Vital:** <LCP | CLS | INP | TTFB | FCP | TBT>
+     ```
    - Label: `performance` or closest available
    - Priority: Urgent (critical) / High (high)
 
