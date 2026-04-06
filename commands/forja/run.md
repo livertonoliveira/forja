@@ -62,7 +62,11 @@ For each task, execute the following phases:
 2. Use `mcp__linear-server__get_project` to get the project context
 3. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the Proposal and Design documents linked to the project
 4. Read `forja/config.md` for project stack and conventions
-5. Update issue status to "In Progress" via `mcp__linear-server__save_issue`
+
+> **MANDATORY — LINEAR MODE: Set issue to "In Progress" before doing anything else**
+>
+> Call `mcp__linear-server__save_issue` to update the task issue status to **"In Progress"** right now.
+> Do NOT continue to the development phase until this API call is confirmed.
 
 **Local mode:**
 1. Read the task section from `forja/changes/<feature>/tasks.md`
@@ -163,8 +167,17 @@ Use the **Agent** tool to execute acceptance. Instruct the agent to:
 After acceptance:
 
 **Linear mode:**
-1. The `/forja:homolog` phase already posted the quality report comment and set the issue to **"Done"**
-2. Verify the issue status is "Done" via `mcp__linear-server__get_issue_status` — if not, call `mcp__linear-server__save_issue` to set it
+
+> **MANDATORY — Verify the full Linear lifecycle was completed**
+>
+> The `/forja:homolog` phase should have already posted the quality report comment and set the issue to "Done".
+> You MUST verify both happened:
+>
+> 1. Call `mcp__linear-server__get_issue_status` — if status is NOT "Done", call `mcp__linear-server__save_issue` to set it to "Done" now.
+> 2. Call `mcp__linear-server__list_comments` — if the quality report comment is NOT present (i.e., no comment with a Summary table), call `mcp__linear-server__save_comment` to post it now.
+>
+> Both the "Done" status AND the quality report comment are required before the task is considered complete.
+
 3. Clean up temporary findings files
 
 **Local mode:**

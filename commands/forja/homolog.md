@@ -124,17 +124,33 @@ Ask the user:
 
 ### 6. Conclusion
 
-After approval:
-1. Post the consolidated quality report as a **comment** on the task issue via `mcp__linear-server__save_comment`, adding to the Homologation section:
-   ```
-   - [x] User has reviewed all changes
-   - [x] User has verified acceptance criteria
-   - [x] User approves for PR — Approved on YYYY-MM-DD
-   ```
-2. Update the task issue status to **"Done"** via `mcp__linear-server__save_issue`
-   - This must always happen after approval — whether running standalone or inside the pipeline
-3. Clean up temporary local findings files (perf-findings, security-findings, review-findings) — the data is now in the Linear comment
-4. Inform: "Acceptance approved! Run `/forja:pr` when you are ready to create the Pull Request."
+After approval, execute ALL of the following steps without skipping any:
+
+> **MANDATORY STEP A — Post quality report comment**
+>
+> Call `mcp__linear-server__save_comment` to post the full consolidated quality report as a comment on the task issue.
+> Update the Homologation section to:
+> ```
+> - [x] User has reviewed all changes
+> - [x] User has verified acceptance criteria
+> - [x] User approves for PR — Approved on YYYY-MM-DD
+> ```
+> The issue MUST have this detailed report comment. Do not skip this step.
+
+> **MANDATORY STEP B — Set issue status to Done**
+>
+> Call `mcp__linear-server__save_issue` to update the task issue status to **"Done"**.
+> This must always happen after approval — whether running standalone or inside the pipeline.
+> Do not skip this step under any circumstances.
+
+> **MANDATORY STEP C — Verify both steps completed**
+>
+> Call `mcp__linear-server__list_comments` to confirm the quality report comment was posted.
+> Call `mcp__linear-server__get_issue_status` to confirm the status is "Done".
+> If either check fails, retry the corresponding step before continuing.
+
+3. Clean up temporary local findings files (perf-findings, security-findings, review-findings) — the data is now in the Linear comment.
+4. Inform: "Acceptance approved! The issue is marked Done and the quality report is on the issue. Run `/forja:pr` when you are ready to create the Pull Request."
 
 ---
 

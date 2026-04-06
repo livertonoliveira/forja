@@ -45,9 +45,10 @@ Check if you are running inside the `/forja:run` pipeline:
 
 ### 2. Mark issue as In Progress
 
-**Linear mode only:**
-- Immediately call `mcp__linear-server__save_issue` to update the task issue status to **"In Progress"**
-- Do this before any code is written — the issue must reflect that work has started
+> **MANDATORY — LINEAR MODE ONLY — DO THIS BEFORE ANY CODE IS WRITTEN**
+>
+> Call `mcp__linear-server__save_issue` to set the task issue status to **"In Progress"**.
+> This step is non-negotiable. Do not proceed to implementation until this call has been made and confirmed.
 
 ### 3. Plan parallelism
 

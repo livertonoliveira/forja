@@ -180,9 +180,25 @@ EOF
 ### 7. Update artifacts
 
 **Linear mode:**
-1. Update the task issue status to "In Review" via `mcp__linear-server__save_issue`
-2. Attach the PR URL to the issue via `mcp__linear-server__create_attachment` with the PR URL
-3. Post a comment on the issue with the PR URL via `mcp__linear-server__save_comment`
+
+> **MANDATORY STEP A — Attach PR URL**
+>
+> Call `mcp__linear-server__create_attachment` with the PR URL to attach it to the issue.
+
+> **MANDATORY STEP B — Post PR link comment**
+>
+> Call `mcp__linear-server__save_comment` to post a comment on the issue with the PR URL.
+> The comment must include the PR URL and a brief summary (e.g., "PR created: <url>").
+
+> **MANDATORY STEP C — Verify both quality report AND PR link exist on issue**
+>
+> Call `mcp__linear-server__list_comments` and verify the issue has:
+> 1. A quality report comment (posted during homolog — contains the Summary table with Performance/Security/Code Review gates)
+> 2. A PR link comment (just posted above)
+>
+> Both MUST be present. If the quality report comment is missing, it means homolog did not complete properly — warn the user before continuing.
+>
+> Do NOT change the issue status — it was already set to "Done" during homolog approval.
 
 **Local mode:**
 1. Update `tasks.md`: mark item 4.2 (PR created) as completed
@@ -220,5 +236,5 @@ Inform the user:
 - **Never force push**: unless the user explicitly requests it
 - **Everything in English**: PR titles, commit messages, body
 - **Verify acceptance**: never create a PR without approved acceptance
-- **Linear mode**: update issue status to "In Review" and attach PR URL after creation
+- **Linear mode**: attach PR URL and post PR link comment — do NOT change issue status (already "Done" from homolog)
 - **Local mode**: archive the feature folder after PR creation
