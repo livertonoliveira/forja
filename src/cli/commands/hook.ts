@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { handlePostToolUse } from '../../hooks/index.js';
 
 export const hookCommand = new Command('hook')
   .description('Handle lifecycle hook events from the harness')
@@ -19,15 +20,24 @@ export const hookCommand = new Command('hook')
       }
     });
     process.stdin.on('end', () => {
+      let parsed: unknown = undefined;
       if (raw.trim()) {
         try {
-          JSON.parse(raw);
+          parsed = JSON.parse(raw);
         } catch {
           process.stderr.write('[forja] hook received invalid JSON on stdin\n');
           process.exit(1);
         }
       }
-      console.log(`[forja] hook ${eventType} — ainda não implementado`);
+
+      if (eventType === 'post-tool-use') {
+        handlePostToolUse(parsed ?? {})
+          .then(() => process.exit(0))
+          .catch((err: Error) => {
+            process.stderr.write(`[forja] post-tool-use error: ${err.message}\n`);
+            process.exit(1);
+          });
+      }
     });
     process.stdin.resume();
   });
