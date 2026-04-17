@@ -127,7 +127,7 @@ If typecheck fails:
 - **Do not add dependencies unnecessarily**: if the project already has a library that does X, use it instead of installing another
 - **Do not add comments, docstrings, or type annotations to code you did not modify**: touch only what is necessary
 - **Each file created/modified must be functional on its own**: do not leave TODOs or partial implementations
-- **Everything in English**: code, variables, comments (if necessary), file names
+- **Language**: Code, variables, file names, and commit messages are always in English. Any human-readable output or progress reports follow `Conventions → Artifacts language` from `forja/config.md`.
 - **Maximize parallelism**: if there are independent modules, ALWAYS use parallel agents
 - **Linear mode**: read task details and design from Linear, no local artifact updates
 - **Local mode**: read from and update local markdown files in `forja/changes/<feature>/`
