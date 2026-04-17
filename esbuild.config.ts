@@ -1,10 +1,9 @@
 import { build } from 'esbuild';
-import { readFileSync, readdirSync, chmodSync, existsSync } from 'fs';
+import { readdirSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const hooksDir = 'src/hooks';
 const externalDeps = ['pg', 'commander', 'zod', 'js-yaml', 'drizzle-orm'];
-const version = readFileSync('VERSION', 'utf-8').trim();
 
 await build({
   entryPoints: ['src/cli/index.ts'],
@@ -14,9 +13,6 @@ await build({
   external: externalDeps,
   format: 'esm',
   outfile: 'bin/forja',
-  define: {
-    __FORJA_VERSION__: JSON.stringify(version),
-  },
   banner: {
     js: '#!/usr/bin/env node',
   },
