@@ -1,0 +1,5 @@
+{
+  "exitCode": 2,
+  "gate": "fail",
+  "reason": "Critical finding detected: SQL Injection vulnerability in user query"
+}

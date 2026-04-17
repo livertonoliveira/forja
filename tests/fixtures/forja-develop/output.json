@@ -1,0 +1,11 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "development", "timestamp": "2026-04-17T10:00:00Z" },
+    { "type": "file_created", "path": "src/lib/auth.ts", "timestamp": "2026-04-17T10:00:03Z" },
+    { "type": "file_created", "path": "src/middleware/jwt.ts", "timestamp": "2026-04-17T10:00:06Z" },
+    { "type": "typecheck_passed", "timestamp": "2026-04-17T10:00:09Z" },
+    { "type": "phase_end", "phase": "development", "timestamp": "2026-04-17T10:00:10Z" }
+  ],
+  "filesCreated": ["src/lib/auth.ts", "src/middleware/jwt.ts"],
+  "linesChanged": 87
+}

@@ -1,26 +1,36 @@
 import { Command } from 'commander';
-import { readVersion } from '../lib/version.js';
+import { runCommand } from './commands/run.js';
+import { gateCommand } from './commands/gate.js';
+import { traceCommand } from './commands/trace.js';
+import { costCommand } from './commands/cost.js';
+import { resumeCommand } from './commands/resume.js';
+import { pruneCommand } from './commands/prune.js';
+import { uiCommand } from './commands/ui.js';
+import { infraCommand } from './commands/infra.js';
+import { configCommand } from './commands/config.js';
+import { hookCommand } from './commands/hook.js';
+import { scheduleCommand } from './commands/schedule.js';
+import { replayCommand } from './commands/replay.js';
 
-const version = readVersion();
+declare const __FORJA_VERSION__: string;
 
 const program = new Command();
 
 program
   .name('forja')
   .description('Forja Harness Engine CLI')
-  .version(version);
-
-program.command('run').description('Run a task through the pipeline');
-program.command('gate').description('Evaluate quality gates');
-program.command('trace').description('Inspect execution traces');
-program.command('cost').description('Show cost analysis');
-program.command('resume').description('Resume a paused pipeline');
-program.command('prune').description('Prune old state and artifacts');
-program.command('ui').description('Launch the web UI');
-program.command('infra').description('Manage infrastructure');
-program.command('config').description('Manage configuration');
-program.command('hook').description('Manage hooks');
-program.command('schedule').description('Manage scheduled tasks');
-program.command('replay').description('Replay a task execution');
+  .version(__FORJA_VERSION__)
+  .addCommand(runCommand)
+  .addCommand(gateCommand)
+  .addCommand(traceCommand)
+  .addCommand(costCommand)
+  .addCommand(resumeCommand)
+  .addCommand(pruneCommand)
+  .addCommand(uiCommand)
+  .addCommand(infraCommand)
+  .addCommand(configCommand)
+  .addCommand(hookCommand)
+  .addCommand(scheduleCommand)
+  .addCommand(replayCommand);
 
 program.parse();
