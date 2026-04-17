@@ -18,3 +18,8 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Build outputs
+dist/
+bin/
+state/

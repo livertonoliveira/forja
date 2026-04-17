@@ -1,0 +1,36 @@
+{
+  "name": "forja-harness-engine",
+  "version": "0.1.0",
+  "description": "Forja CLI and harness engine",
+  "type": "module",
+  "bin": {
+    "forja": "./bin/forja"
+  },
+  "scripts": {
+    "build": "tsx esbuild.config.ts",
+    "dev": "tsx src/cli/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "zod": "^3.22.4",
+    "js-yaml": "^4.1.0",
+    "drizzle-orm": "^0.30.10",
+    "pg": "^8.11.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "tsx": "^4.7.3",
+    "esbuild": "^0.20.2",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.0",
+    "@types/node": "^20.12.7",
+    "@types/pg": "^8.11.5",
+    "@types/js-yaml": "^4.0.9",
+    "vitest": "^1.5.0",
+    "drizzle-kit": "^0.21.2"
+  }
+}
