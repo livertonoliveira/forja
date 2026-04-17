@@ -70,9 +70,9 @@ describe('CLI Commands', () => {
       expect(runOpt?.mandatory).toBe(true);
     });
 
-    it('has --policy option', () => {
+    it('does not have --policy option (removed dead code)', () => {
       const flags = getOptionFlags(gateCommand);
-      expect(flags.some((f) => f.includes('--policy'))).toBe(true);
+      expect(flags.some((f) => f.includes('--policy'))).toBe(false);
     });
   });
 
