@@ -1,13 +1,14 @@
 import { Command } from 'commander';
+import { readVersion } from '../lib/version.js';
 
-declare const __FORJA_VERSION__: string;
+const version = readVersion();
 
 const program = new Command();
 
 program
   .name('forja')
   .description('Forja Harness Engine CLI')
-  .version(__FORJA_VERSION__);
+  .version(version);
 
 program.command('run').description('Run a task through the pipeline');
 program.command('gate').description('Evaluate quality gates');
