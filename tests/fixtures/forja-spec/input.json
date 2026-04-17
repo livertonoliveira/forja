@@ -1,0 +1,8 @@
+{
+  "prompt": "Criar sistema de autenticação de usuários com login, logout e recuperação de senha",
+  "codebaseContext": {
+    "language": "TypeScript",
+    "framework": "Node.js",
+    "existingModules": ["src/cli", "src/engine", "src/store"]
+  }
+}

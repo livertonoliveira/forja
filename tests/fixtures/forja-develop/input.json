@@ -1,0 +1,15 @@
+{
+  "task": {
+    "title": "Implementar módulo de autenticação JWT",
+    "description": "Criar middleware de autenticação JWT que valida tokens em cada requisição protegida",
+    "acceptanceCriteria": [
+      "Middleware valida token JWT na header Authorization",
+      "Retorna 401 para token inválido ou ausente",
+      "Injeta usuário decodificado no contexto da requisição"
+    ]
+  },
+  "codebaseContext": {
+    "language": "TypeScript",
+    "existingFiles": ["src/cli/index.ts", "src/engine/index.ts"]
+  }
+}

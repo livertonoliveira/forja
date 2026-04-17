@@ -1,0 +1,6 @@
+[
+  {
+    "severity": "critical",
+    "title": "SQL Injection vulnerability in user query"
+  }
+]
