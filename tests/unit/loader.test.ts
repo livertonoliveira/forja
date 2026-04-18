@@ -46,12 +46,14 @@ describe('loadConfig() — env var priority', () => {
     expect(result.source).toBe('env');
   });
 
-  it('does not read any file when env var is set', async () => {
+  it('uses env var for storeUrl and reads config files for retentionDays', async () => {
     process.env.FORJA_STORE_URL = 'postgresql://user:pass@env-host:5432/db';
 
-    await loadConfig();
+    const result = await loadConfig();
 
-    expect(mockedFs.readFile).not.toHaveBeenCalled();
+    expect(result.storeUrl).toBe('postgresql://user:pass@env-host:5432/db');
+    expect(result.source).toBe('env');
+    expect(result.retentionDays).toBe(90);
   });
 
   it('supports Neon/Supabase-style SSL connection strings', async () => {
