@@ -1,7 +1,10 @@
 import { randomUUID } from 'crypto';
 import { CostEventSchema, CostEvent } from '../schemas/index.js';
 import { TraceWriter } from '../trace/writer.js';
+import { DualWriter } from '../trace/dual-writer.js';
 import { CostAccumulator } from '../cost/accumulator.js';
+import { createStore } from '../store/index.js';
+import type { ForjaStore } from '../store/interface.js';
 
 const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   'claude-opus-4-7': { in: 15, out: 75 },
@@ -18,6 +21,19 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 function ensureUuid(value: string | undefined): string {
   return value && UUID_RE.test(value) ? value : randomUUID();
+}
+
+// Module-level singleton to avoid opening/closing a pool on every hook invocation.
+let _store: ForjaStore | null = null;
+let _storeDbUrl: string | null = null;
+
+function getStore(): ForjaStore | null {
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) return null;
+  if (_store && _storeDbUrl === dbUrl) return _store;
+  _store = createStore(dbUrl);
+  _storeDbUrl = dbUrl;
+  return _store;
 }
 
 export async function handlePostToolUse(payload: unknown): Promise<void> {
@@ -61,15 +77,20 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
   const writer = new TraceWriter(runId);
   const accumulator = new CostAccumulator();
 
-  await Promise.all([
-    writer.write({
-      runId,
-      eventType: 'cost',
-      phaseId,
-      agentId,
-      spanId,
-      payload: { costEventId: event.id, phase, model, tokensIn, tokensOut, costUsd },
-    }),
+  const store = getStore();
+  const dualWriter = store ? new DualWriter(writer, store, runId) : null;
+
+  await Promise.allSettled([
+    dualWriter
+      ? dualWriter.writeCostEvent(event)
+      : writer.write({
+          runId,
+          eventType: 'cost',
+          phaseId,
+          agentId,
+          spanId,
+          payload: { costEventId: event.id, phase, model, tokensIn, tokensOut, costUsd },
+        }),
     accumulator.record(event),
   ]);
 }
