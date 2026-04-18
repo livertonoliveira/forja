@@ -20,60 +20,67 @@ export class TraceWriter {
     await fs.appendFile(this.tracePath, JSON.stringify(full) + '\n', { encoding: 'utf8', flag: 'a' });
   }
 
-  async writePhaseStart(phase: string, agentId?: string): Promise<void> {
+  async writePhaseStart(phase: string, agentId?: string, spanId?: string): Promise<void> {
     await this.write({
       runId: this.runId,
       eventType: 'phase_start',
       agentId,
+      spanId,
       payload: { phase },
     });
   }
 
-  async writePhaseEnd(phase: string, status: 'success' | 'failed'): Promise<void> {
+  async writePhaseEnd(phase: string, status: 'success' | 'failed', spanId?: string): Promise<void> {
     await this.write({
       runId: this.runId,
       eventType: 'phase_end',
+      spanId,
       payload: { phase, status },
     });
   }
 
-  async writeToolCall(tool: string, agentId: string, durationMs: number): Promise<void> {
+  async writeToolCall(tool: string, agentId: string, durationMs: number, spanId?: string): Promise<void> {
     await this.write({
       runId: this.runId,
       eventType: 'tool_call',
       agentId,
+      spanId,
       payload: { tool, durationMs },
     });
   }
 
-  async writeFinding(finding: Finding): Promise<void> {
+  async writeFinding(finding: Finding, spanId?: string): Promise<void> {
     await this.write({
       runId: this.runId,
       eventType: 'finding',
+      spanId,
       payload: finding as unknown as Record<string, unknown>,
     });
   }
 
-  async writeGateDecision(decision: GateDecision): Promise<void> {
+  async writeGateDecision(decision: GateDecision, spanId?: string): Promise<void> {
     await this.write({
       runId: this.runId,
       eventType: 'gate',
+      spanId,
       payload: decision as unknown as Record<string, unknown>,
     });
   }
 
-  async writeCheckpoint(phase: string): Promise<void> {
+  async writeCheckpoint(phase: string, spanId?: string): Promise<void> {
     await this.write({
       runId: this.runId,
       eventType: 'checkpoint',
+      spanId,
       payload: { checkpoint: true, phase },
     });
   }
 
-  async writeError(error: Error, phase?: string): Promise<void> {
+  async writeError(error: Error, phase?: string, spanId?: string): Promise<void> {
     await this.write({
       runId: this.runId,
       eventType: 'error',
+      spanId,
       payload: {
         message: error.message,
         stack: error.stack,
