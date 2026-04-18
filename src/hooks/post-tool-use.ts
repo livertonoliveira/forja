@@ -3,6 +3,7 @@ import { CostEventSchema, CostEvent } from '../schemas/index.js';
 import { TraceWriter } from '../trace/writer.js';
 import { DualWriter } from '../trace/dual-writer.js';
 import { CostAccumulator } from '../cost/accumulator.js';
+import { loadConfig } from '../config/loader.js';
 import { createStore } from '../store/index.js';
 import type { ForjaStore } from '../store/interface.js';
 
@@ -27,8 +28,12 @@ function ensureUuid(value: string | undefined): string {
 let _store: ForjaStore | null = null;
 let _storeDbUrl: string | null = null;
 
-function getStore(): ForjaStore | null {
-  const dbUrl = process.env.DATABASE_URL;
+async function getStore(): Promise<ForjaStore | null> {
+  const config = await loadConfig();
+  // Only connect to the store when the URL was explicitly configured by the user,
+  // not when falling back to the compile-time default.
+  if (config.source === 'default') return null;
+  const dbUrl = config.storeUrl;
   if (!dbUrl) return null;
   if (_store && _storeDbUrl === dbUrl) return _store;
   _store = createStore(dbUrl);
@@ -77,7 +82,7 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
   const writer = new TraceWriter(runId);
   const accumulator = new CostAccumulator();
 
-  const store = getStore();
+  const store = await getStore();
   const dualWriter = store ? new DualWriter(writer, store, runId) : null;
 
   await Promise.allSettled([
