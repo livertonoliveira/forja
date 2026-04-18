@@ -6,11 +6,13 @@ export type ConfigSource = 'env' | 'project-file' | 'user-file' | 'default';
 
 export interface LoadedConfig {
   storeUrl: string;
+  retentionDays: number;
   source: ConfigSource;
 }
 
 interface StoredConfig {
   storeUrl: string;
+  retentionDays?: number;
 }
 
 const DEFAULT_STORE_URL = 'postgresql://forja:forja@localhost:5432/forja';
@@ -19,6 +21,7 @@ const USER_CONFIG_PATH = path.join(os.homedir(), '.forja', 'config.json');
 
 interface ConfigFile {
   storeUrl?: string;
+  retentionDays?: number;
 }
 
 async function readJsonFile(filePath: string): Promise<ConfigFile | null> {
@@ -47,19 +50,19 @@ export async function loadConfig(): Promise<LoadedConfig> {
 
   let result: LoadedConfig;
 
+  const projectConfig = await readJsonFile(PROJECT_CONFIG_PATH);
+  const userConfig = await readJsonFile(USER_CONFIG_PATH);
+  const retentionDays = projectConfig?.retentionDays ?? userConfig?.retentionDays ?? 90;
+
   if (process.env.FORJA_STORE_URL) {
-    result = { storeUrl: process.env.FORJA_STORE_URL, source: 'env' };
+    result = { storeUrl: process.env.FORJA_STORE_URL, retentionDays, source: 'env' };
   } else {
-    const projectConfig = await readJsonFile(PROJECT_CONFIG_PATH);
     if (projectConfig?.storeUrl) {
-      result = { storeUrl: projectConfig.storeUrl, source: 'project-file' };
+      result = { storeUrl: projectConfig.storeUrl, retentionDays, source: 'project-file' };
+    } else if (userConfig?.storeUrl) {
+      result = { storeUrl: userConfig.storeUrl, retentionDays, source: 'user-file' };
     } else {
-      const userConfig = await readJsonFile(USER_CONFIG_PATH);
-      if (userConfig?.storeUrl) {
-        result = { storeUrl: userConfig.storeUrl, source: 'user-file' };
-      } else {
-        result = { storeUrl: DEFAULT_STORE_URL, source: 'default' };
-      }
+      result = { storeUrl: DEFAULT_STORE_URL, retentionDays, source: 'default' };
     }
   }
 
@@ -71,7 +74,7 @@ export function clearConfigCache(): void {
   _configCache = undefined;
 }
 
-const WRITABLE_KEYS: Record<string, keyof StoredConfig> = {
+const WRITABLE_KEYS: Partial<Record<string, keyof StoredConfig>> = {
   store_url: 'storeUrl',
 };
 
@@ -89,7 +92,7 @@ export async function setConfigValue(key: string, value: string): Promise<void> 
 
   const mappedKey = WRITABLE_KEYS[key];
   if (mappedKey) {
-    existing[mappedKey] = value;
+    (existing as Record<string, unknown>)[mappedKey] = value;
   } else {
     throw new Error(`Unknown config key: ${key}`);
   }
