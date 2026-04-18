@@ -19,12 +19,54 @@ export async function formatTrace(events: TraceEvent[], format: 'pretty' | 'md' 
   }
 
   if (format === 'pretty') {
-    return events
-      .map((e) => {
+    // Group by root events (no spanId) and span events
+    const rootEvents = events.filter(e => !e.spanId);
+    const spanGroups = new Map<string, TraceEvent[]>();
+
+    for (const e of events) {
+      if (e.spanId) {
+        const group = spanGroups.get(e.spanId) ?? [];
+        group.push(e);
+        spanGroups.set(e.spanId, group);
+      }
+    }
+
+    const lines: string[] = [];
+
+    // Interleave root events and span groups in chronological order
+    const allRootTs = rootEvents.map(e => ({ ts: e.ts, type: 'root' as const, event: e }));
+    const spanStarts = [...spanGroups.entries()].map(([spanId, evts]) => ({
+      ts: evts[0].ts,
+      type: 'span' as const,
+      spanId,
+      events: evts,
+    }));
+
+    const sorted = [...allRootTs, ...spanStarts].sort((a, b) => a.ts.localeCompare(b.ts));
+
+    const seenSpans = new Set<string>();
+
+    for (const item of sorted) {
+      if (item.type === 'root') {
+        const e = item.event;
         const phase = typeof e.payload['phase'] === 'string' ? ` phase=${e.payload['phase']}` : '';
-        return `[${e.ts}] ${e.eventType} run=${e.runId}${phase}`;
-      })
-      .join('\n');
+        lines.push(`[${e.ts}] ${e.eventType} run=${e.runId}${phase}`);
+      } else {
+        const spanId = item.spanId;
+        if (seenSpans.has(spanId)) continue;
+        seenSpans.add(spanId);
+        const spanEvts = item.events;
+        for (let i = 0; i < spanEvts.length; i++) {
+          const e = spanEvts[i];
+          const prefix = i < spanEvts.length - 1 ? '  ├─' : '  └─';
+          const phase = typeof e.payload['phase'] === 'string' ? ` phase=${e.payload['phase']}` : '';
+          const safeSpan = spanId.replace(/[^\w-]/g, '?').slice(0, 6);
+          lines.push(`[${e.ts}] ${prefix} [span:${safeSpan}] ${e.eventType}${phase}`);
+        }
+      }
+    }
+
+    return lines.join('\n');
   }
 
   // md format
