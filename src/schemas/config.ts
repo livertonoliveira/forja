@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const ConfigSchema = z.object({
   storeUrl: z.string(),
-  retentionDays: z.number().int(),
+  retentionDays: z.number().int().default(90),
   phasesDir: z.string(),
   logLevel: z.enum(['debug', 'info', 'warn', 'error']),
   teamId: z.string(),

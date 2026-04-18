@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, lt, ne, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 import * as schema from './schema.js';
@@ -27,6 +27,18 @@ import type {
   GateDecision, NewGateDecision,
   IssueLink, NewIssueLink,
 } from '../types.js';
+
+// ---------------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------------
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers: convert Drizzle row shapes (Date timestamps) to plain domain types
@@ -247,6 +259,32 @@ export class DrizzlePostgresStore implements ForjaStore {
   async listIssueLinks(runId: string): Promise<IssueLink[]> {
     const rows = await this.db.select().from(issueLinks).where(eq(issueLinks.runId, runId));
     return rows.map(toIssueLink);
+  }
+
+  async deleteRunsBefore(beforeDate: Date, options?: { dryRun?: boolean }): Promise<{ runIds: string[] }> {
+    const candidateRuns = await this.db
+      .select({ id: runs.id })
+      .from(runs)
+      .where(and(lt(runs.startedAt, beforeDate), ne(runs.status, 'running' as any)));
+
+    const runIds = candidateRuns.map((r) => r.id);
+
+    if (runIds.length === 0 || options?.dryRun) return { runIds };
+
+    await this.db.transaction(async (tx) => {
+      for (const batch of chunk(runIds, 1000)) {
+        await tx.delete(toolCalls).where(inArray(toolCalls.runId, batch));
+        await tx.delete(costEvents).where(inArray(costEvents.runId, batch));
+        await tx.delete(findings).where(inArray(findings.runId, batch));
+        await tx.delete(gateDecisions).where(inArray(gateDecisions.runId, batch));
+        await tx.delete(issueLinks).where(inArray(issueLinks.runId, batch));
+        await tx.delete(agents).where(inArray(agents.runId, batch));
+        await tx.delete(phases).where(inArray(phases.runId, batch));
+        await tx.delete(runs).where(inArray(runs.id, batch));
+      }
+    });
+
+    return { runIds };
   }
 
   async ping(): Promise<void> {
