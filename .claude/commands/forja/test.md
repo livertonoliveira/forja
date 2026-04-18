@@ -112,3 +112,4 @@ After all 3 agents complete:
 - **Acceptance criteria guide the tests**: each criterion from proposal.md must have at least one corresponding test
 - **Language**: Test names, describes, expects, and code are always in English. Quality reports and findings follow `Conventions → Artifacts language` from `forja/config.md`.
 - **ALWAYS launch 3 agents in parallel**: even if one of them concludes there are no tests to generate for its type, it must report this
+- **ALWAYS use `--pool=threads`** when invoking vitest directly (e.g. `vitest run --pool=threads`). Never use the default `--pool=forks` — it spawns orphan OS processes that survive after the agent exits, consuming CPU and RAM indefinitely.

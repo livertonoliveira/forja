@@ -11,7 +11,7 @@
     "dev": "tsx src/cli/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run tests/",
+    "test": "vitest run --pool=threads --passWithNoTests tests/",
     "version:bump": "bash scripts/bump-version.sh"
   },
   "dependencies": {
