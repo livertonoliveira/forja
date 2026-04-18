@@ -1,11 +1,10 @@
 import { Command } from 'commander';
 import { checkDockerAvailable, composeDown, composeStatus, composeUp, waitForHealthy } from '../../infra/docker.js';
 import { runMigrations } from '../../store/drizzle/migrations.js';
+import { loadConfig, redactDsn } from '../../config/loader.js';
 
 const ALLOWED_ACTIONS = ['up', 'down', 'status'] as const;
 type Action = (typeof ALLOWED_ACTIONS)[number];
-
-const DEFAULT_CONNECTION_STRING = 'postgresql://forja:forja@localhost:5432/forja';
 
 export const infraCommand = new Command('infra')
   .description('Manage local infrastructure services (up, down, status)')
@@ -23,7 +22,7 @@ export const infraCommand = new Command('infra')
       process.exit(1);
     }
 
-    const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONNECTION_STRING;
+    const { storeUrl: connectionString } = await loadConfig();
 
     try {
       if (action === 'up') {
@@ -32,7 +31,7 @@ export const infraCommand = new Command('infra')
         await waitForHealthy('postgres');
         console.log('Executando migrations...');
         await runMigrations(connectionString);
-        console.log(`Postgres pronto em ${connectionString}`);
+        console.log(`Postgres pronto em ${redactDsn(connectionString)}`);
       } else if (action === 'down') {
         await composeDown();
         console.log('Postgres encerrado.');

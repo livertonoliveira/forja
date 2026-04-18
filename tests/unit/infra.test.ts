@@ -13,6 +13,11 @@ vi.mock('../../src/store/drizzle/migrations.js', () => ({
   runMigrations: vi.fn(),
 }));
 
+vi.mock('../../src/config/loader.js', () => ({
+  loadConfig: vi.fn().mockResolvedValue({ storeUrl: 'postgresql://forja:forja@localhost:5432/forja', source: 'default' }),
+  redactDsn: vi.fn().mockImplementation((url: string) => url),
+}));
+
 import {
   checkDockerAvailable,
   composeUp,
@@ -21,7 +26,11 @@ import {
   waitForHealthy,
 } from '../../src/infra/docker.js';
 import { runMigrations } from '../../src/store/drizzle/migrations.js';
+import { loadConfig, redactDsn } from '../../src/config/loader.js';
 import { infraCommand } from '../../src/cli/commands/infra.js';
+
+const mockLoadConfig = vi.mocked(loadConfig);
+const mockRedactDsn = vi.mocked(redactDsn);
 
 // Typed mocks
 const mockCheckDockerAvailable = checkDockerAvailable as ReturnType<typeof vi.fn>;
@@ -81,6 +90,10 @@ describe('infraCommand integration', () => {
     mockComposeStatus.mockResolvedValue('');
     mockWaitForHealthy.mockResolvedValue(undefined);
     mockRunMigrations.mockResolvedValue(undefined);
+    // Default loadConfig returns the default connection string
+    mockLoadConfig.mockResolvedValue({ storeUrl: 'postgresql://forja:forja@localhost:5432/forja', source: 'default' });
+    // redactDsn passes through the URL unchanged in tests
+    mockRedactDsn.mockImplementation((url: string) => url);
   });
 
   afterEach(() => {
@@ -104,10 +117,9 @@ describe('infraCommand integration', () => {
     });
 
     it('calls runMigrations with DATABASE_URL env var when set', async () => {
-      process.env.DATABASE_URL = 'postgresql://custom:pass@localhost:5432/customdb';
+      mockLoadConfig.mockResolvedValueOnce({ storeUrl: 'postgresql://custom:pass@localhost:5432/customdb', source: 'env' });
       await runAction('up');
       expect(mockRunMigrations).toHaveBeenCalledWith('postgresql://custom:pass@localhost:5432/customdb');
-      delete process.env.DATABASE_URL;
     });
 
     it('calls runMigrations with default connection string when DATABASE_URL not set', async () => {

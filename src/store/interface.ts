@@ -51,5 +51,6 @@ export interface ForjaStore {
   linkIssue(data: NewIssueLink): Promise<IssueLink>;
   listIssueLinks(runId: string): Promise<IssueLink[]>;
 
+  ping(): Promise<void>;
   close(): Promise<void>;
 }

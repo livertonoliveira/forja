@@ -20,6 +20,12 @@ vi.mock('../../src/store/index.js', () => {
   return { createStore };
 });
 
+vi.mock('../../src/config/loader.js', () => {
+  const loadConfig = vi.fn().mockResolvedValue({ storeUrl: '', source: 'default' });
+  const clearConfigCache = vi.fn();
+  return { loadConfig, clearConfigCache };
+});
+
 // ---------------------------------------------------------------------------
 // Lazy imports after mocks are in place
 // ---------------------------------------------------------------------------
@@ -27,6 +33,8 @@ vi.mock('../../src/store/index.js', () => {
 const { handlePostToolUse } = await import('../../src/hooks/post-tool-use.js');
 const { DualWriter } = await import('../../src/trace/dual-writer.js');
 const { createStore } = await import('../../src/store/index.js');
+const { loadConfig } = await import('../../src/config/loader.js');
+const mockLoadConfig = vi.mocked(loadConfig);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -73,6 +81,14 @@ function setEnv(vars: Record<string, string | undefined>): void {
     } else {
       process.env[k] = v;
     }
+  }
+  // Sync loadConfig mock with DATABASE_URL for backward-compat with these tests
+  const dbUrl = vars['DATABASE_URL'];
+  if (dbUrl !== undefined) {
+    mockLoadConfig.mockResolvedValue({
+      storeUrl: dbUrl ?? '',
+      source: dbUrl ? 'env' : 'default',
+    });
   }
 }
 

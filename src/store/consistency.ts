@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { Pool } from 'pg';
 import { z } from 'zod';
+import { loadConfig } from '../config/loader.js';
 
 const DUAL_WRITE_EVENTS = new Set(['finding', 'cost', 'gate', 'phase_start']);
 
@@ -24,7 +25,8 @@ export async function checkConsistency(
       }
     }).length;
 
-  const connectionString = process.env.DATABASE_URL;
+  const config = await loadConfig();
+  const connectionString = config.storeUrl;
   if (!connectionString) {
     return { jsonlCount, pgCount: 0, ok: false };
   }

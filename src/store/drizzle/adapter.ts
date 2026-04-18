@@ -249,6 +249,10 @@ export class DrizzlePostgresStore implements ForjaStore {
     return rows.map(toIssueLink);
   }
 
+  async ping(): Promise<void> {
+    await this.db.execute(sql`SELECT 1`);
+  }
+
   async close(): Promise<void> {
     await this.pool.end();
   }

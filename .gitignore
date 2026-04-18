@@ -23,3 +23,6 @@ Thumbs.db
 dist/
 bin/
 state/
+
+# Forja local config (may contain sensitive credentials)
+forja/.forja-config.json
