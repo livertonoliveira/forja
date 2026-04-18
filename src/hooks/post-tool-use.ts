@@ -50,6 +50,7 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
     runId,
     phaseId,
     agentId,
+    spanId,
     model,
     tokensIn,
     tokensOut,
