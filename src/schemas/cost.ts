@@ -5,6 +5,7 @@ export const CostEventSchema = z.object({
   runId: z.string().uuid(),
   phaseId: z.string().uuid(),
   agentId: z.string().uuid(),
+  spanId: z.string().optional(),
   model: z.string(),
   tokensIn: z.number().int(),
   tokensOut: z.number().int(),
