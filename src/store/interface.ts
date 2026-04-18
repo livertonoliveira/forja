@@ -1,44 +1,26 @@
+export type {
+  Run, NewRun,
+  Phase, NewPhase,
+  Agent, NewAgent,
+  Finding, NewFinding,
+  ToolCall, NewToolCall,
+  CostEvent, NewCostEvent,
+  GateDecision, NewGateDecision,
+  IssueLink, NewIssueLink,
+  CostSummary,
+} from './types.js';
+
 import type {
-  runs,
-  phases,
-  agents,
-  findings,
-  toolCalls,
-  costEvents,
-  gateDecisions,
-  issueLinks,
-} from './drizzle/schema.js';
-
-export type Run = typeof runs.$inferSelect;
-export type NewRun = typeof runs.$inferInsert;
-
-export type Phase = typeof phases.$inferSelect;
-export type NewPhase = typeof phases.$inferInsert;
-
-export type Agent = typeof agents.$inferSelect;
-export type NewAgent = typeof agents.$inferInsert;
-
-export type Finding = typeof findings.$inferSelect;
-export type NewFinding = typeof findings.$inferInsert;
-
-export type ToolCall = typeof toolCalls.$inferSelect;
-export type NewToolCall = typeof toolCalls.$inferInsert;
-
-export type CostEvent = typeof costEvents.$inferSelect;
-export type NewCostEvent = typeof costEvents.$inferInsert;
-
-export type GateDecision = typeof gateDecisions.$inferSelect;
-export type NewGateDecision = typeof gateDecisions.$inferInsert;
-
-export type IssueLink = typeof issueLinks.$inferSelect;
-export type NewIssueLink = typeof issueLinks.$inferInsert;
-
-export type CostSummary = {
-  phaseId: string;
-  totalCost: string;
-  totalTokensIn: number;
-  totalTokensOut: number;
-};
+  Run, NewRun,
+  Phase, NewPhase,
+  Agent, NewAgent,
+  Finding, NewFinding,
+  ToolCall, NewToolCall,
+  CostEvent, NewCostEvent,
+  CostSummary,
+  GateDecision, NewGateDecision,
+  IssueLink, NewIssueLink,
+} from './types.js';
 
 export interface ForjaStore {
   createRun(data: NewRun): Promise<Run>;
