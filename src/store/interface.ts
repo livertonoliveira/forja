@@ -51,6 +51,10 @@ export interface ForjaStore {
   linkIssue(data: NewIssueLink): Promise<IssueLink>;
   listIssueLinks(runId: string): Promise<IssueLink[]>;
 
+  deleteRunsBefore(beforeDate: Date, options?: { dryRun?: boolean }): Promise<{
+    runIds: string[];
+  }>;
+
   ping(): Promise<void>;
   close(): Promise<void>;
 }
