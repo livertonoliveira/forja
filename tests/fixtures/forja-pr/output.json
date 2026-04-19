@@ -1,0 +1,12 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "pr" },
+    { "type": "phase_end", "phase": "pr", "status": "success" }
+  ],
+  "prUrl": "https://github.com/example/repo/pull/1",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Bash", "blocked": false },
+    { "type": "PostToolUse", "tool": "Bash", "tokensIn": 200, "tokensOut": 80, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

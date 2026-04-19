@@ -1,0 +1,5 @@
+[
+  { "tool": "Read", "durationMs": 45 },
+  { "tool": "Write", "durationMs": 120 },
+  { "tool": "Bash", "durationMs": 310 }
+]
