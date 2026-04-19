@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import path from 'path';
 import { listRunIds, readRunEvents } from '@/lib/jsonl-reader';
 import type { Finding } from '@/lib/types';
 
@@ -43,6 +44,11 @@ export async function GET(req: NextRequest) {
         const phaseId = e.phaseId;
         const phase = phaseId ? (phaseNameById[phaseId] ?? phaseId) : null;
 
+        const rawFile = (p.filePath as string | undefined) ?? null;
+        const file = rawFile
+          ? (rawFile.match(/(?:src|apps|packages)\/.+/) ?? [null])[0] ?? path.basename(rawFile)
+          : null;
+
         const finding: Finding = {
           id: (p.id as string | undefined) ?? `${runId}-${index}`,
           severity,
@@ -51,7 +57,7 @@ export async function GET(req: NextRequest) {
             (p.title as string | undefined) ??
             (p.description as string | undefined) ??
             'No message',
-          file: (p.filePath as string | undefined) ?? null,
+          file,
           runId,
           phase,
         };
@@ -62,8 +68,7 @@ export async function GET(req: NextRequest) {
 
     const total = Object.values(grouped).reduce((sum, arr) => sum + arr.length, 0);
     return NextResponse.json({ ...grouped, total });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Internal server error';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
