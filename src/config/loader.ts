@@ -50,8 +50,10 @@ export async function loadConfig(): Promise<LoadedConfig> {
 
   let result: LoadedConfig;
 
-  const projectConfig = await readJsonFile(PROJECT_CONFIG_PATH);
-  const userConfig = await readJsonFile(USER_CONFIG_PATH);
+  const [projectConfig, userConfig] = await Promise.all([
+    readJsonFile(PROJECT_CONFIG_PATH),
+    readJsonFile(USER_CONFIG_PATH),
+  ]);
   const retentionDays = projectConfig?.retentionDays ?? userConfig?.retentionDays ?? 90;
 
   if (process.env.FORJA_STORE_URL) {
