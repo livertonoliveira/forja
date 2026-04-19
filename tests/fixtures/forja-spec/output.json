@@ -1,5 +1,19 @@
 {
   "proposal": "# Proposta: Sistema de Autenticação\n\n## Requisitos\n\n### REQ-001: Login de usuário\nO sistema deve permitir que usuários façam login com email e senha.\n\n### REQ-002: Logout de usuário\nO sistema deve permitir que usuários encerrem sua sessão.\n\n### REQ-003: Recuperação de senha\nO sistema deve enviar email de recuperação de senha quando solicitado.\n\n## Critérios de Aceite\n\n- REQ-001: dado email e senha válidos, retorna token JWT\n- REQ-002: dado token válido, invalida a sessão\n- REQ-003: dado email cadastrado, envia link de recuperação",
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Implementar middleware JWT de autenticação",
+      "estimatedLines": "< 400 linhas",
+      "acceptanceCriteria": ["Valida token JWT em cada requisição protegida"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "Implementar endpoints de login e logout",
+      "estimatedLines": "< 400 linhas",
+      "acceptanceCriteria": ["POST /auth/login retorna JWT", "POST /auth/logout invalida sessão"]
+    }
+  ],
   "traceEvents": [
     { "type": "phase_start", "phase": "spec", "timestamp": "2026-04-17T10:00:00Z" },
     { "type": "requirements_extracted", "count": 3, "timestamp": "2026-04-17T10:00:05Z" },

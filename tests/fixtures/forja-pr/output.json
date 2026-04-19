@@ -3,6 +3,7 @@
     { "type": "phase_start", "phase": "pr" },
     { "type": "phase_end", "phase": "pr", "status": "success" }
   ],
+  "branchName": "feat/mob-987-adicionar-autenticacao-jwt",
   "prUrl": "https://github.com/example/repo/pull/1",
   "hookEvents": [
     { "type": "PreToolUse", "tool": "Bash", "blocked": false },
