@@ -42,7 +42,7 @@ function validateRunId(runId: string): void {
   }
 }
 
-function validatePhase(phase: string): void {
+export function validatePhase(phase: string): void {
   if (!VALID_PHASES.has(phase)) {
     throw new Error(`invalid phase: ${phase}`);
   }
@@ -184,5 +184,14 @@ export class CheckpointManager {
   async hasCompleted(phase: PipelineState): Promise<boolean> {
     const checkpoints = await this.listCheckpoints();
     return checkpoints.some((c) => c.phase === phase);
+  }
+
+  async deleteCheckpoint(phase: PipelineState): Promise<void> {
+    validatePhase(phase);
+    try {
+      await fs.unlink(path.join(this.checkpointDir, `${phase}.json`));
+    } catch {
+      // file may not exist
+    }
   }
 }

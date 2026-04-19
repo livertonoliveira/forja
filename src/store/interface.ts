@@ -47,6 +47,7 @@ export interface ForjaStore {
 
   insertGateDecision(data: NewGateDecision): Promise<GateDecision>;
   getLatestGateDecision(runId: string, phaseId?: string): Promise<GateDecision | null>;
+  deletePhaseData(runId: string, phase: string): Promise<void>;
 
   linkIssue(data: NewIssueLink): Promise<IssueLink>;
   listIssueLinks(runId: string): Promise<IssueLink[]>;
