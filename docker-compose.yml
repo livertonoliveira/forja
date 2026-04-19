@@ -1,0 +1,23 @@
+name: forja
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-forja}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forja}
+      POSTGRES_DB: ${POSTGRES_DB:-forja}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forja -d forja"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

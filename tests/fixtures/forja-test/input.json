@@ -1,0 +1,10 @@
+{
+  "task": {
+    "title": "Implementar módulo de autenticação JWT",
+    "acceptanceCriteria": [
+      "Middleware valida token JWT na header Authorization",
+      "Retorna 401 para token inválido ou ausente"
+    ]
+  },
+  "testsToRun": ["unit", "integration"]
+}

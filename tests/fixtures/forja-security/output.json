@@ -1,0 +1,13 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "security" },
+    { "type": "phase_end", "phase": "security", "status": "success" }
+  ],
+  "findings": [],
+  "summary": "No security issues found.",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Grep", "blocked": false },
+    { "type": "PostToolUse", "tool": "Grep", "tokensIn": 700, "tokensOut": 300, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "update" },
+    { "type": "phase_end", "phase": "update", "status": "success" }
+  ],
+  "updatedCommands": [
+    "develop.md", "test.md", "perf.md", "security.md",
+    "review.md", "homolog.md", "pr.md", "spec.md",
+    "init.md", "run.md", "update.md",
+    "audit/backend.md", "audit/frontend.md", "audit/database.md",
+    "audit/security.md", "audit/run.md"
+  ],
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Write", "blocked": false },
+    { "type": "PostToolUse", "tool": "Write", "tokensIn": 400, "tokensOut": 150, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

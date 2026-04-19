@@ -1,0 +1,13 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "audit/frontend" },
+    { "type": "phase_end", "phase": "audit/frontend", "status": "success" }
+  ],
+  "findings": [],
+  "summary": "Frontend audit complete. No issues found.",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Glob", "blocked": false },
+    { "type": "PostToolUse", "tool": "Glob", "tokensIn": 600, "tokensOut": 200, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

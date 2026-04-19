@@ -1,0 +1,18 @@
+{
+  "findings": [
+    {
+      "severity": "critical",
+      "title": "SQL Injection vulnerability in user query",
+      "description": "User input is directly concatenated into SQL query without sanitization",
+      "file": "src/store/user.ts",
+      "line": 42
+    },
+    {
+      "severity": "low",
+      "title": "Missing semicolons",
+      "description": "Some statements are missing semicolons",
+      "file": "src/cli/index.ts",
+      "line": 10
+    }
+  ]
+}

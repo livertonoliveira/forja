@@ -1,0 +1,37 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "audit/run" },
+    { "type": "phase_end", "phase": "audit/run", "status": "success" }
+  ],
+  "auditsExecuted": ["backend", "frontend", "database", "security"],
+  "consolidated": {
+    "totalFindings": 3,
+    "critical": 0,
+    "high": 1,
+    "medium": 1,
+    "low": 1
+  },
+  "gateDecision": "warn",
+  "findings": [
+    {
+      "severity": "high",
+      "title": "Hardcoded secret in configuration file",
+      "category": "security"
+    },
+    {
+      "severity": "medium",
+      "title": "Missing database connection pooling configuration",
+      "category": "performance"
+    },
+    {
+      "severity": "low",
+      "title": "Missing index on foreign key column",
+      "category": "database"
+    }
+  ],
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Agent", "blocked": false },
+    { "type": "PostToolUse", "tool": "Agent", "tokensIn": 2000, "tokensOut": 800, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "homolog" },
+    { "type": "phase_end", "phase": "homolog", "status": "success" }
+  ],
+  "report": {
+    "accepted": true,
+    "summary": "All quality checks passed. Pipeline ready for PR."
+  },
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Read", "blocked": false },
+    { "type": "PostToolUse", "tool": "Read", "tokensIn": 300, "tokensOut": 100, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

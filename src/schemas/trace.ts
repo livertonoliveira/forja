@@ -13,11 +13,14 @@ export const TraceEventSchema = z.object({
     'phase_end',
     'agent_start',
     'agent_end',
+    'tool_call',
     'finding',
     'gate',
     'cost',
+    'checkpoint',
     'error',
   ]),
+  commandFingerprint: z.string().regex(/^[0-9a-f]{32}$/).optional(),
   payload: z.record(z.string(), z.unknown()),
 });
 

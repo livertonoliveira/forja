@@ -1,0 +1,22 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "audit/backend" },
+    { "type": "phase_end", "phase": "audit/backend", "status": "success" }
+  ],
+  "findings": [
+    {
+      "severity": "medium",
+      "title": "Missing database connection pooling configuration",
+      "description": "The database client is created without explicit pool size limits, which may cause connection exhaustion under load.",
+      "file": "src/store/db.ts",
+      "line": 12,
+      "category": "performance"
+    }
+  ],
+  "summary": "Backend audit complete. 1 medium issue found.",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Glob", "blocked": false },
+    { "type": "PostToolUse", "tool": "Glob", "tokensIn": 800, "tokensOut": 300, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

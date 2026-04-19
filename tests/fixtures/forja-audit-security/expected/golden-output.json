@@ -1,0 +1,23 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "audit/security" },
+    { "type": "phase_end", "phase": "audit/security", "status": "success" }
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "title": "Hardcoded secret in configuration file",
+      "description": "A hardcoded API key was found in the configuration. Secrets must be loaded from environment variables.",
+      "file": "src/config/defaults.ts",
+      "line": 8,
+      "category": "secrets"
+    }
+  ],
+  "summary": "Security audit complete. 1 high issue found.",
+  "grade": "C",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Grep", "blocked": false },
+    { "type": "PostToolUse", "tool": "Grep", "tokensIn": 900, "tokensOut": 350, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

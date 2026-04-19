@@ -1,0 +1,4 @@
+[
+  { "tool": "Grep", "durationMs": 60 },
+  { "tool": "Read", "durationMs": 35 }
+]

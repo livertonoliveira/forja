@@ -1,0 +1,13 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "review" },
+    { "type": "phase_end", "phase": "review", "status": "success" }
+  ],
+  "findings": [],
+  "summary": "Code quality is acceptable.",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Read", "blocked": false },
+    { "type": "PostToolUse", "tool": "Read", "tokensIn": 550, "tokensOut": 220, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

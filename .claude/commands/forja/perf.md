@@ -150,6 +150,22 @@ Each agent must produce findings in the following format:
 - **Suggestion:** <specific fix with code example if helpful>
 ```
 
+### Structured Findings Format
+
+For each finding, also write a JSON block that maps to FindingSchema:
+
+```json
+{
+  "severity": "critical|high|medium|low",
+  "category": "DB|ALGO|MEM|NET|BUNDLE|RENDER|ARCH",
+  "filePath": "src/path/to/file.ts",
+  "line": 42,
+  "title": "N+1 query in user listing",
+  "description": "...",
+  "suggestion": "..."
+}
+```
+
 **Severity:**
 - **critical**: Will cause visible performance degradation in production (e.g., N+1 on every request, full table scan on large table)
 - **high**: Likely to cause issues under load (e.g., missing pagination on growing dataset)

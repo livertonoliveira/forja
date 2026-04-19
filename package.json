@@ -3,6 +3,17 @@
   "version": "0.1.0",
   "description": "Forja CLI and harness engine",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "commands/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "bin": {
     "forja": "./bin/forja"
   },
@@ -11,26 +22,31 @@
     "dev": "tsx src/cli/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests tests/",
+    "test:update-golden": "UPDATE_GOLDEN=1 vitest run --passWithNoTests tests/golden.test.ts",
+    "version:bump": "bash scripts/bump-version.sh",
+    "check:schemas": "tsx scripts/check-schema-coverage.ts"
   },
   "dependencies": {
     "commander": "^12.0.0",
-    "zod": "^3.22.4",
-    "js-yaml": "^4.1.0",
+    "cron-parser": "^5.5.0",
     "drizzle-orm": "^0.30.10",
-    "pg": "^8.11.5"
+    "js-yaml": "^4.1.0",
+    "nanoid": "^5.1.9",
+    "pg": "^8.11.5",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "typescript": "^5.4.5",
-    "tsx": "^4.7.3",
-    "esbuild": "^0.20.2",
-    "eslint": "^8.57.0",
-    "@typescript-eslint/eslint-plugin": "^7.7.0",
-    "@typescript-eslint/parser": "^7.7.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.12.7",
     "@types/pg": "^8.11.5",
-    "@types/js-yaml": "^4.0.9",
-    "vitest": "^1.5.0",
-    "drizzle-kit": "^0.21.2"
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.0",
+    "drizzle-kit": "^0.21.2",
+    "esbuild": "^0.20.2",
+    "eslint": "^8.57.0",
+    "tsx": "^4.7.3",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
   }
 }

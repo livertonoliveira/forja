@@ -147,6 +147,22 @@ For each issue found, use the format:
 - **Suggestion:** <specific improvement with code example>
 ```
 
+### Structured Findings Format
+
+For each finding, also write a JSON block that maps to FindingSchema:
+
+```json
+{
+  "severity": "critical|high|medium|low",
+  "category": "SOLID-S|SOLID-O|SOLID-L|SOLID-I|SOLID-D|DRY|KISS|CLEAN|CONSISTENCY|TEST",
+  "filePath": "src/path/to/file.ts",
+  "line": 42,
+  "title": "...",
+  "description": "...",
+  "suggestion": "..."
+}
+```
+
 **Severity:**
 - **critical**: Architectural issue that will cause significant problems if not addressed (e.g., circular dependency, broken abstraction that leaks implementation details across the entire system)
 - **high**: Significant design issue that will make the code hard to maintain/extend (e.g., god class, tight coupling between modules)

@@ -1,0 +1,52 @@
+version: "1"
+timeouts:
+  dev: 600
+  test: 300
+  perf: 180
+  security: 180
+  review: 180
+  homolog: 60
+  pr: 120
+policies:
+  - name: gate-critical
+    when:
+      finding.severity: critical
+    then:
+      - action: fail_gate
+      - action: log
+        message: "Critical finding: {{finding.title}}"
+      - action: notify_slack
+        channel: "#eng-alerts"
+        message: "🚨 Critical finding in run {{runId}}: {{finding.title}} ({{finding.filePath}})"
+
+  - name: gate-high
+    when:
+      finding.severity: high
+    then:
+      - action: fail_gate
+
+  - name: gate-medium
+    when:
+      finding.severity: medium
+    then:
+      - action: warn_gate
+
+  - name: gate-low
+    when:
+      finding.severity: low
+    then:
+      - action: pass_gate
+
+# Example: PagerDuty webhook for critical findings
+# - name: pagerduty-critical
+#   when:
+#     finding.severity: critical
+#   then:
+#     - action: http_post
+#       url: "https://events.pagerduty.com/v2/enqueue"
+#       headers:
+#         Authorization: "Token token={{PAGERDUTY_KEY}}"
+#       payload:
+#         routing_key: "{{PAGERDUTY_KEY}}"
+#         event_action: trigger
+#         summary: "Critical finding: {{finding.title}}"

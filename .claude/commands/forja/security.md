@@ -143,6 +143,24 @@ Each agent must produce findings in the following format:
 - **Fix:** <specific code change with example>
 ```
 
+### Structured Findings Format
+
+For each finding, also write a JSON block that maps to FindingSchema:
+
+```json
+{
+  "severity": "critical|high|medium|low",
+  "category": "INJ|AUTH|AUTHZ|DATA|CFG|LOGIC",
+  "filePath": "src/path/to/file.ts",
+  "line": 42,
+  "title": "SQL injection in search endpoint",
+  "description": "...",
+  "suggestion": "...",
+  "owasp": "A03:2021 Injection",
+  "cwe": "CWE-89"
+}
+```
+
 **Severity:**
 - **critical**: Remote exploitation without authentication, unrestricted access to sensitive data. Requires immediate fix.
 - **high**: Exploitation possible with authentication or specific conditions. Significant impact risk.
