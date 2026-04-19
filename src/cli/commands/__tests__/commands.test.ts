@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { configCommand } from '../config.js';
 import { costCommand } from '../cost.js';
 import { gateCommand } from '../gate.js';
@@ -108,10 +108,10 @@ describe('CLI Commands', () => {
       try {
         // Trigger the action manually by parsing with a new hook command instance
         // We test by simulating the stdin events
-        let endCallback: (() => void) | null = null;
+        let _endCallback: (() => void) | null = null;
 
         mockStdin.on('end', (cb: () => void) => {
-          endCallback = cb;
+          _endCallback = cb;
         });
 
         // Emit end immediately (empty stdin scenario)

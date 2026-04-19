@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { eq, and, desc, sql, lt, ne, inArray } from 'drizzle-orm';
+import { eq, and, desc, sql, lt, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 import * as schema from './schema.js';
@@ -298,7 +298,7 @@ export class DrizzlePostgresStore implements ForjaStore {
     const candidateRuns = await this.db
       .select({ id: runs.id })
       .from(runs)
-      .where(and(lt(runs.startedAt, beforeDate), ne(runs.status, 'running' as any)));
+      .where(and(lt(runs.startedAt, beforeDate), sql`${runs.status} != 'running'`));
 
     const runIds = candidateRuns.map((r) => r.id);
 
