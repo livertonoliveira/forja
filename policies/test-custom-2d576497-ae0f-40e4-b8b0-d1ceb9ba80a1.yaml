@@ -1,0 +1,8 @@
+
+version: "1"
+policies:
+  - name: custom-medium-fail
+    when:
+      finding.severity: medium
+    then:
+      - action: fail_gate

@@ -139,6 +139,10 @@ export class DualWriter {
     );
   }
 
+  getPhaseId(phase: string): string | undefined {
+    return this.phaseIds.get(phase);
+  }
+
   async writeCheckpoint(phase: string, spanId?: string): Promise<void> {
     await this.settle(this.writer.writeCheckpoint(phase, spanId));
   }

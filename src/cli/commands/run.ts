@@ -1,9 +1,12 @@
 import { Command } from 'commander';
 import { createStoreFromConfig } from '../../store/factory.js';
 import { PipelineFSM, InvalidTransitionError, type PipelineState } from '../../engine/fsm.js';
+import { CheckpointManager } from '../../engine/checkpoint.js';
+import { DualWriter } from '../../trace/dual-writer.js';
+import { TraceWriter } from '../../trace/writer.js';
 
 // spec and quality phases (perf, security, review) are driven by external agents
-const PIPELINE_SEQUENCE: PipelineState[] = ['dev', 'test', 'homolog', 'pr', 'done'];
+export const PIPELINE_SEQUENCE: PipelineState[] = ['dev', 'test', 'homolog', 'pr', 'done'];
 
 export const runCommand = new Command('run')
   .description('Run a Linear issue through the full pipeline')
@@ -28,11 +31,25 @@ export const runCommand = new Command('run')
     console.log(`[forja] run ${run.id} started for issue ${issueId}`);
 
     const fsm = new PipelineFSM(store, run.id);
+    const traceWriter = new TraceWriter(run.id);
+    const dualWriter = new DualWriter(traceWriter, store, run.id);
+    const checkpointManager = new CheckpointManager(store, run.id);
 
     try {
       for (const phase of PIPELINE_SEQUENCE) {
+        await dualWriter.writePhaseStart(phase);
         await fsm.transition(phase);
         console.log(`[forja] → ${phase}`);
+
+        await dualWriter.writePhaseEnd(phase, 'success');
+        await dualWriter.writeCheckpoint(phase);
+
+        // Retrieve the phaseId from DualWriter's in-memory map (avoids a redundant listPhases call)
+        const phaseId = dualWriter.getPhaseId(phase);
+        if (phaseId) {
+          await checkpointManager.save(phase, phaseId);
+        }
+
         if (options.dryRun) break;
       }
     } catch (err) {
