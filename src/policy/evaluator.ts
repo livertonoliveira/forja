@@ -1,5 +1,6 @@
 import type { Finding } from '../schemas/finding.js';
 import type { PolicyFile, PolicyAction } from './parser.js';
+import { deepMapStrings } from './deep-map-strings.js';
 
 export interface EvaluationResult {
   decision: 'pass' | 'warn' | 'fail';
@@ -21,7 +22,7 @@ function interpolate(template: string, finding: Finding): string {
       const value = resolveDotPath(toFindingRecord(finding), parts.slice(1).join('.'));
       return value !== undefined ? String(value) : '';
     }
-    return '';
+    return `{{${path}}}`;
   });
 }
 
@@ -41,7 +42,17 @@ function matchesConditions(finding: Finding, when: Record<string, string>): bool
   });
 }
 
-const UNIMPLEMENTED_ACTIONS = new Set(['http_post']);
+function interpolateRecord(obj: Record<string, unknown>, finding: Finding): Record<string, unknown> {
+  return deepMapStrings(obj, v => interpolate(v, finding));
+}
+
+function resolveAction(action: PolicyAction, finding: Finding): PolicyAction {
+  const resolved: PolicyAction = { ...action };
+  if (resolved.message) resolved.message = interpolate(resolved.message, finding);
+  if (resolved.url) resolved.url = interpolate(resolved.url, finding);
+  if (resolved.payload) resolved.payload = interpolateRecord(resolved.payload, finding);
+  return resolved;
+}
 
 export function evaluatePolicy(findings: Finding[], policy: PolicyFile): EvaluationResult {
   const matchedRules: string[] = [];
@@ -52,12 +63,7 @@ export function evaluatePolicy(findings: Finding[], policy: PolicyFile): Evaluat
       if (matchesConditions(finding, rule.when)) {
         matchedRules.push(rule.name);
         for (const action of rule.then) {
-          if (UNIMPLEMENTED_ACTIONS.has(action.action)) {
-            console.warn(`[forja] policy: action "${action.action}" in rule "${rule.name}" is not yet implemented — skipped`);
-          }
-          const resolvedAction = action.message
-            ? { ...action, message: interpolate(action.message, finding) }
-            : action;
+          const resolvedAction = resolveAction(action, finding);
           actions.push(resolvedAction);
         }
       }
