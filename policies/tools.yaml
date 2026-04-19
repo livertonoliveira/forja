@@ -1,0 +1,19 @@
+version: "1"
+phases:
+  security:
+    deny: [Write, Edit, Bash, MultiEdit]
+    allow: [Read, Glob, Grep, WebSearch, WebFetch]
+  perf:
+    deny: [Write, Edit, Bash, MultiEdit]
+    allow: [Read, Glob, Grep]
+  review:
+    deny: [Write, Edit, Bash, MultiEdit]
+    allow: [Read, Glob, Grep]
+  audit_backend:
+    deny: [Write, Edit, Bash, MultiEdit]
+  audit_security:
+    deny: [Write, Edit, Bash, MultiEdit]
+  develop:
+    allow: "*"
+  test:
+    allow: "*"
