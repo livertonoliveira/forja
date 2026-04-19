@@ -21,6 +21,10 @@ export async function handlePreToolUse(payload: unknown): Promise<void> {
   const phaseId = validateUuid(process.env.FORJA_PHASE_ID);
   const agentId = validateUuid(process.env.FORJA_AGENT_ID);
   const spanId = process.env.FORJA_SPAN_ID;
+  const actualModel = process.env.FORJA_MODEL;
+  // FORJA_EXPECTED_MODEL is set by `forja run` alongside FORJA_MODEL before each phase starts.
+  // Comparing two env vars avoids a disk read on every tool invocation.
+  const expectedModel = process.env.FORJA_EXPECTED_MODEL;
 
   let allowed = true;
   try {
@@ -31,13 +35,35 @@ export async function handlePreToolUse(payload: unknown): Promise<void> {
   }
 
   const writer = new TraceWriter(runId);
+
+  if (expectedModel && actualModel !== expectedModel) {
+    // Write trace before exiting so the blocked event is preserved in the audit trail.
+    await writer.write({
+      runId,
+      eventType: 'tool_call',
+      phaseId,
+      agentId,
+      spanId,
+      payload: { tool: toolName, phase, allowed: false, model: actualModel, blockedReason: 'model_mismatch' },
+    });
+    process.stderr.write(
+      JSON.stringify({
+        decision: 'block',
+        reason: actualModel
+          ? `Phase '${phase}' requires model '${expectedModel}' but got '${actualModel}'. Set FORJA_MODEL=${expectedModel}.`
+          : `Phase '${phase}' requires model '${expectedModel}' but FORJA_MODEL is not set. Set FORJA_MODEL=${expectedModel}.`,
+      }) + '\n',
+    );
+    process.exit(2);
+  }
+
   await writer.write({
     runId,
     eventType: 'tool_call',
     phaseId,
     agentId,
     spanId,
-    payload: { tool: toolName, phase, allowed },
+    payload: { tool: toolName, phase, allowed, model: actualModel },
   });
 
   if (!allowed) {

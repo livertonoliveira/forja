@@ -1,0 +1,14 @@
+version: "1"
+phases:
+  spec:     claude-opus-4-7
+  develop:  claude-sonnet-4-6
+  test:     claude-sonnet-4-6
+  perf:     claude-sonnet-4-6
+  security: claude-sonnet-4-6
+  review:   claude-sonnet-4-6
+  homolog:  claude-haiku-4-5
+  pr:       claude-haiku-4-5
+  audit_backend:   claude-sonnet-4-6
+  audit_frontend:  claude-sonnet-4-6
+  audit_security:  claude-sonnet-4-6
+  audit_database:  claude-sonnet-4-6
