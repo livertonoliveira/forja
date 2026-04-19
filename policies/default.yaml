@@ -36,3 +36,17 @@ policies:
       finding.severity: low
     then:
       - action: pass_gate
+
+# Example: PagerDuty webhook for critical findings
+# - name: pagerduty-critical
+#   when:
+#     finding.severity: critical
+#   then:
+#     - action: http_post
+#       url: "https://events.pagerduty.com/v2/enqueue"
+#       headers:
+#         Authorization: "Token token={{PAGERDUTY_KEY}}"
+#       payload:
+#         routing_key: "{{PAGERDUTY_KEY}}"
+#         event_action: trigger
+#         summary: "Critical finding: {{finding.title}}"

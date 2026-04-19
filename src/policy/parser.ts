@@ -8,6 +8,8 @@ export const PolicyActionSchema = z.object({
   message: z.string().optional(),
   url: z.string().optional(),
   channel: z.string().optional(),
+  payload: z.record(z.unknown()).optional(),
+  headers: z.record(z.string()).optional(),
 });
 
 export const PolicyRuleSchema = z.object({
