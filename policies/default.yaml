@@ -1,4 +1,12 @@
 version: "1"
+timeouts:
+  dev: 600
+  test: 300
+  perf: 180
+  security: 180
+  review: 180
+  homolog: 60
+  pr: 120
 policies:
   - name: gate-critical
     when:
