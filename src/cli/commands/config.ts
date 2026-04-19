@@ -16,6 +16,9 @@ export const configCommand = new Command('config')
         const config = await loadConfig();
         console.log(`store_url = ${config.storeUrl}`);
         console.log(`source    = ${config.source}`);
+      } else if (key === 'slack_webhook_url') {
+        const config = await loadConfig();
+        console.log(`slack_webhook_url = ${config.slackWebhookUrl ?? '(not set)'}`);
       } else {
         console.error(`[forja] Unknown config key: ${key}`);
         process.exit(1);

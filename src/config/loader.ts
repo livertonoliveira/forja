@@ -7,12 +7,14 @@ export type ConfigSource = 'env' | 'project-file' | 'user-file' | 'default';
 export interface LoadedConfig {
   storeUrl: string;
   retentionDays: number;
+  slackWebhookUrl?: string;
   source: ConfigSource;
 }
 
 interface StoredConfig {
   storeUrl: string;
   retentionDays?: number;
+  slackWebhookUrl?: string;
 }
 
 const DEFAULT_STORE_URL = 'postgresql://forja:forja@localhost:5432/forja';
@@ -22,6 +24,7 @@ const USER_CONFIG_PATH = path.join(os.homedir(), '.forja', 'config.json');
 interface ConfigFile {
   storeUrl?: string;
   retentionDays?: number;
+  slackWebhookUrl?: string;
 }
 
 async function readJsonFile(filePath: string): Promise<ConfigFile | null> {
@@ -56,15 +59,19 @@ export async function loadConfig(): Promise<LoadedConfig> {
   ]);
   const retentionDays = projectConfig?.retentionDays ?? userConfig?.retentionDays ?? 90;
 
+  const slackWebhookUrl = process.env.FORJA_SLACK_WEBHOOK_URL
+    ?? projectConfig?.slackWebhookUrl
+    ?? userConfig?.slackWebhookUrl;
+
   if (process.env.FORJA_STORE_URL) {
-    result = { storeUrl: process.env.FORJA_STORE_URL, retentionDays, source: 'env' };
+    result = { storeUrl: process.env.FORJA_STORE_URL, retentionDays, slackWebhookUrl, source: 'env' };
   } else {
     if (projectConfig?.storeUrl) {
-      result = { storeUrl: projectConfig.storeUrl, retentionDays, source: 'project-file' };
+      result = { storeUrl: projectConfig.storeUrl, retentionDays, slackWebhookUrl, source: 'project-file' };
     } else if (userConfig?.storeUrl) {
-      result = { storeUrl: userConfig.storeUrl, retentionDays, source: 'user-file' };
+      result = { storeUrl: userConfig.storeUrl, retentionDays, slackWebhookUrl, source: 'user-file' };
     } else {
-      result = { storeUrl: DEFAULT_STORE_URL, retentionDays, source: 'default' };
+      result = { storeUrl: DEFAULT_STORE_URL, retentionDays, slackWebhookUrl, source: 'default' };
     }
   }
 
@@ -78,6 +85,7 @@ export function clearConfigCache(): void {
 
 const WRITABLE_KEYS: Partial<Record<string, keyof StoredConfig>> = {
   store_url: 'storeUrl',
+  slack_webhook_url: 'slackWebhookUrl',
 };
 
 export async function setConfigValue(key: string, value: string): Promise<void> {
