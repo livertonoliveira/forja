@@ -358,7 +358,7 @@ describe('DualWriter — writePhaseStart caches phaseId', () => {
 
     await dual.writePhaseStart('develop', agentId, spanId);
 
-    expect(writer.writePhaseStart).toHaveBeenCalledWith('develop', agentId, spanId);
+    expect(writer.writePhaseStart).toHaveBeenCalledWith('develop', agentId, spanId, undefined);
   });
 });
 
