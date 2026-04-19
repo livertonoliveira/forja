@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { FindingSchema, Finding } from '../schemas/index.js';
 import { TraceWriter } from './writer.js';
+import { redact } from '../hooks/redaction.js';
 
 export class FindingWriter {
   private findings: Finding[] = [];
@@ -18,8 +19,15 @@ export class FindingWriter {
   }
 
   write(finding: Omit<Finding, 'id' | 'runId' | 'phaseId' | 'createdAt'>): void {
-    const full: Finding = FindingSchema.parse({
+    const sanitized = {
       ...finding,
+      title: redact(finding.title),
+      description: redact(finding.description),
+      ...(finding.filePath !== undefined && { filePath: redact(finding.filePath) }),
+      ...(finding.suggestion !== undefined && { suggestion: redact(finding.suggestion) }),
+    };
+    const full: Finding = FindingSchema.parse({
+      ...sanitized,
       id: randomUUID(),
       runId: this.runId,
       phaseId: this.phaseId,
