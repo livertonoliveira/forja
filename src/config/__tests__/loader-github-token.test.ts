@@ -13,7 +13,7 @@
  * Groups 5-7 import the real module with a redirected homedir.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type MockInstance } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
@@ -487,7 +487,7 @@ describe('setConfigValue("github_token", ...) integration', () => {
 // ---------------------------------------------------------------------------
 
 describe('config get github_token — CLI output', () => {
-  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let consoleLogSpy: MockInstance<Parameters<typeof console.log>, void>;
 
   beforeEach(() => {
     vi.resetModules();

@@ -7,7 +7,7 @@
  *    details_url inclusion/omission
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Mock dependencies before importing the module under test
@@ -115,7 +115,7 @@ describe('parseGitRemote — edge cases', () => {
 // ---------------------------------------------------------------------------
 
 describe('createCheck — GITHUB_TOKEN from environment', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>;
+  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>;
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
@@ -227,7 +227,7 @@ describe('createCheck — GITHUB_TOKEN from environment', () => {
 });
 
 describe('createCheck — GITHUB_TOKEN from config', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>;
+  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>;
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
@@ -264,8 +264,8 @@ describe('createCheck — GITHUB_TOKEN from config', () => {
 });
 
 describe('createCheck — no token available', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>;
-  let warnSpy: ReturnType<typeof vi.spyOn>;
+  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>;
+  let warnSpy: MockInstance<Parameters<typeof console.warn>, void>;
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
