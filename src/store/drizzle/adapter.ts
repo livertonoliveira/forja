@@ -251,6 +251,25 @@ export class DrizzlePostgresStore implements ForjaStore {
     return row ? toGateDecision(row) : null;
   }
 
+  async deletePhaseData(runId: string, phase: string): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      const phaseRows = await tx
+        .select({ id: phases.id })
+        .from(phases)
+        .where(and(eq(phases.runId, runId), eq(phases.name, phase)));
+      const phaseIds = phaseRows.map((p) => p.id);
+      if (phaseIds.length > 0) {
+        await tx.delete(findings).where(inArray(findings.phaseId, phaseIds));
+        await tx.delete(costEvents).where(inArray(costEvents.phaseId, phaseIds));
+        await tx.delete(gateDecisions).where(inArray(gateDecisions.phaseId, phaseIds));
+        await tx
+          .update(phases)
+          .set({ status: 'running', finishedAt: null })
+          .where(inArray(phases.id, phaseIds));
+      }
+    });
+  }
+
   async linkIssue(data: NewIssueLink): Promise<IssueLink> {
     const [row] = await this.db.insert(issueLinks).values(data as unknown as DrizzleIssueLink).returning();
     return toIssueLink(row);
