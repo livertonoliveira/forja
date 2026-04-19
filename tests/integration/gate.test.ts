@@ -283,3 +283,93 @@ describe('forja gate — TraceEvent recording', () => {
     expect(() => new Date(gateEvent!['ts'] as string).toISOString()).not.toThrow();
   }, TIMEOUT);
 });
+
+// ---------------------------------------------------------------------------
+// Custom policy file
+// ---------------------------------------------------------------------------
+
+describe('forja gate — custom policy file', () => {
+  const createdPolicyFiles: string[] = [];
+
+  afterEach(async () => {
+    for (const file of createdPolicyFiles.splice(0)) {
+      try {
+        await fs.rm(file, { force: true });
+      } catch {
+        // ignore cleanup errors
+      }
+    }
+  });
+
+  async function writeCustomPolicy(content: string): Promise<string> {
+    const policyPath = path.join(PROJECT_ROOT, `policies/test-custom-${randomUUID()}.yaml`);
+    await fs.mkdir(path.dirname(policyPath), { recursive: true });
+    await fs.writeFile(policyPath, content, 'utf8');
+    createdPolicyFiles.push(policyPath);
+    return policyPath;
+  }
+
+  function runGateWithPolicy(runId: string, policyPath: string): ReturnType<typeof spawnSync> {
+    return spawnSync('node', [BINARY, 'gate', '--run', runId, '--policy', policyPath], {
+      timeout: TIMEOUT,
+      encoding: 'utf-8',
+      cwd: PROJECT_ROOT,
+    });
+  }
+
+  it('exits with code 2 when using custom policy that maps medium to fail_gate', async () => {
+    const policyPath = await writeCustomPolicy(`
+version: "1"
+policies:
+  - name: custom-medium-fail
+    when:
+      finding.severity: medium
+    then:
+      - action: fail_gate
+`);
+    const runId = makeRunId();
+    await writeFindings(runId, [makeFinding(runId, 'medium')]);
+
+    const result = runGateWithPolicy(runId, policyPath);
+    expect(result.status).toBe(2);
+  }, TIMEOUT);
+
+  it('exits with code 0 when using custom policy that ignores critical findings', async () => {
+    const policyPath = await writeCustomPolicy(`
+version: "1"
+policies:
+  - name: custom-all-pass
+    when:
+      finding.severity: critical
+    then:
+      - action: pass_gate
+`);
+    const runId = makeRunId();
+    await writeFindings(runId, [makeFinding(runId, 'critical')]);
+
+    const result = runGateWithPolicy(runId, policyPath);
+    expect(result.status).toBe(0);
+  }, TIMEOUT);
+
+  it('records the custom policy path in the gate TraceEvent payload', async () => {
+    const policyPath = await writeCustomPolicy(`
+version: "1"
+policies:
+  - name: custom-warn
+    when:
+      finding.severity: low
+    then:
+      - action: warn_gate
+`);
+    const runId = makeRunId();
+    await writeFindings(runId, [makeFinding(runId, 'low')]);
+
+    runGateWithPolicy(runId, policyPath);
+
+    const events = await readTraceEvents(runId);
+    const gateEvent = events.find((e) => e['eventType'] === 'gate');
+    expect(gateEvent).toBeDefined();
+    const payload = gateEvent!['payload'] as Record<string, unknown>;
+    expect(payload['policyApplied']).toBe(policyPath);
+  }, TIMEOUT);
+});
