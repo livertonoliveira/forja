@@ -1,7 +1,8 @@
 import { TraceWriter } from '../trace/writer.js';
 import { UUID_RE, validateUuid } from './utils.js';
-
-const ISO8601_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+import { isTimedOut } from '../engine/timeout.js';
+import { createStoreFromConfig } from '../store/factory.js';
+import { PipelineFSM } from '../engine/fsm.js';
 
 export async function handleStop(payload: unknown): Promise<void> {
   const raw = payload as Record<string, unknown>;
@@ -19,7 +20,22 @@ export async function handleStop(payload: unknown): Promise<void> {
   // agentId intentionally omitted: stop fires at session level, not per-agent
   const spanId = process.env.FORJA_SPAN_ID;
 
-  const timedOut = checkPhaseTimeout();
+  const timedOut = isTimedOut();
+
+  if (timedOut && phaseId) {
+    const store = await createStoreFromConfig();
+    try {
+      await store.updatePhase(phaseId, { status: 'timeout', finishedAt: new Date().toISOString() });
+      const fsm = new PipelineFSM(store, runId);
+      try {
+        await fsm.transition('failed');
+      } catch (err) {
+        process.stderr.write(`[forja] stop: could not transition FSM to failed: ${err instanceof Error ? err.message : String(err)}\n`);
+      }
+    } finally {
+      await store.close();
+    }
+  }
 
   const writer = new TraceWriter(runId);
   await writer.write({
@@ -34,13 +50,4 @@ export async function handleStop(payload: unknown): Promise<void> {
       ...(timedOut ? { timedOut: true } : {}),
     },
   });
-}
-
-function checkPhaseTimeout(): boolean {
-  const timeoutAt = process.env.FORJA_PHASE_TIMEOUT_AT;
-  if (!timeoutAt) return false;
-  if (!ISO8601_RE.test(timeoutAt)) return false;
-  const deadline = new Date(timeoutAt).getTime();
-  if (isNaN(deadline)) return false;
-  return Date.now() > deadline;
 }

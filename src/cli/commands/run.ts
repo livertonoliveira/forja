@@ -5,6 +5,8 @@ import { CheckpointManager } from '../../engine/checkpoint.js';
 import { PhaseIdempotencyGuard, cleanPhaseData } from '../../engine/idempotency.js';
 import { DualWriter } from '../../trace/dual-writer.js';
 import { TraceWriter } from '../../trace/writer.js';
+import { setPhaseTimeout } from '../../engine/timeout.js';
+import { PhaseTimeoutsSchema } from '../../schemas/config.js';
 
 // spec and quality phases (perf, security, review) are driven by external agents
 export const PIPELINE_SEQUENCE: PipelineState[] = ['dev', 'test', 'homolog', 'pr', 'done'];
@@ -16,7 +18,29 @@ export const runCommand = new Command('run')
   .option('--dry-run', 'Dry run mode')
   .option('--force', 'Re-run all phases regardless of existing checkpoints')
   .option('--force-phase <phase>', 'Re-run a specific phase, clearing its previous data')
-  .action(async (issueId: string, options: { model?: string; dryRun?: boolean; force?: boolean; forcePhase?: string }) => {
+  .option('--timeout-phase <phase:seconds>', 'Override timeout for a phase, e.g. dev:900')
+  .action(async (issueId: string, options: { model?: string; dryRun?: boolean; force?: boolean; forcePhase?: string; timeoutPhase?: string }) => {
+    // Parse timeout overrides: --timeout-phase phase:seconds
+    const timeoutOverrides: Partial<Record<string, number>> = {};
+    if (options.timeoutPhase) {
+      const colonIdx = options.timeoutPhase.indexOf(':');
+      if (colonIdx !== -1) {
+        const phaseKey = options.timeoutPhase.slice(0, colonIdx);
+        const seconds = parseInt(options.timeoutPhase.slice(colonIdx + 1), 10);
+        if (!isNaN(seconds) && seconds > 0) {
+          if (!PIPELINE_SEQUENCE.includes(phaseKey as PipelineState)) {
+            console.warn(`[forja] --timeout-phase: '${phaseKey}' is not a run-driven phase and will be ignored`);
+          } else {
+            timeoutOverrides[phaseKey] = seconds;
+          }
+        }
+      }
+    }
+
+    // Resolve effective timeouts (defaults from schema, overridden by CLI flag)
+    const defaultTimeouts = PhaseTimeoutsSchema.parse({});
+    const effectiveTimeouts: Record<string, number> = { ...defaultTimeouts, ...timeoutOverrides };
+
     const store = await createStoreFromConfig();
 
     const run = await store.createRun({
@@ -34,8 +58,7 @@ export const runCommand = new Command('run')
     console.log(`[forja] run ${run.id} started for issue ${issueId}`);
 
     const fsm = new PipelineFSM(store, run.id);
-    const traceWriter = new TraceWriter(run.id);
-    const dualWriter = new DualWriter(traceWriter, store, run.id);
+    const dualWriter = new DualWriter(new TraceWriter(run.id), store, run.id);
     const checkpointManager = new CheckpointManager(store, run.id);
     const guard = new PhaseIdempotencyGuard(checkpointManager);
 
@@ -49,6 +72,11 @@ export const runCommand = new Command('run')
         const forceThis = options.force || options.forcePhase === phase;
         if (!(await guard.shouldRun(phase, { force: forceThis }))) {
           continue;
+        }
+
+        const phaseTimeout = effectiveTimeouts[phase];
+        if (phaseTimeout !== undefined) {
+          setPhaseTimeout(phase, phaseTimeout);
         }
 
         await dualWriter.writePhaseStart(phase);
