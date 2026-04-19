@@ -261,6 +261,20 @@ export class DrizzlePostgresStore implements ForjaStore {
     return rows.map(toIssueLink);
   }
 
+  async transitionRunStatus(id: string, expectedFrom: Run['status'], to: Run['status']): Promise<Run> {
+    let result!: Run;
+    await this.db.transaction(async (tx) => {
+      const [row] = await tx.select().from(runs).where(eq(runs.id, id)).for('update');
+      if (!row) throw new Error(`Run not found: ${id}`);
+      if (row.status !== expectedFrom) {
+        throw new Error(`concurrent transition: expected '${expectedFrom}' but found '${row.status}' for run ${id}`);
+      }
+      const [updated] = await tx.update(runs).set({ status: to }).where(eq(runs.id, id)).returning();
+      result = toRun(updated);
+    });
+    return result;
+  }
+
   async deleteRunsBefore(beforeDate: Date, options?: { dryRun?: boolean }): Promise<{ runIds: string[] }> {
     const candidateRuns = await this.db
       .select({ id: runs.id })

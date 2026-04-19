@@ -51,6 +51,8 @@ export interface ForjaStore {
   linkIssue(data: NewIssueLink): Promise<IssueLink>;
   listIssueLinks(runId: string): Promise<IssueLink[]>;
 
+  transitionRunStatus(id: string, expectedFrom: Run['status'], to: Run['status']): Promise<Run>;
+
   deleteRunsBefore(beforeDate: Date, options?: { dryRun?: boolean }): Promise<{
     runIds: string[];
   }>;
