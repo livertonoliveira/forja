@@ -6,6 +6,7 @@ import { CostAccumulator } from '../cost/accumulator.js';
 import { loadConfig } from '../config/loader.js';
 import type { ForjaStore } from '../store/interface.js';
 import { UUID_RE } from './utils.js';
+import { redactObject } from './redaction.js';
 
 const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   'claude-opus-4-7': { in: 15, out: 75 },
@@ -42,7 +43,12 @@ async function getStore(): Promise<ForjaStore | null> {
 }
 
 export async function handlePostToolUse(payload: unknown): Promise<void> {
-  const raw = payload as Record<string, unknown>;
+  const redacted = redactObject(payload);
+  if (typeof redacted !== 'object' || redacted === null || Array.isArray(redacted)) {
+    process.stderr.write('[forja] post-tool-use: unexpected payload shape after redaction, skipping\n');
+    return;
+  }
+  const raw = redacted as Record<string, unknown>;
   const usage = raw?.usage as Record<string, unknown> | undefined;
 
   if (!usage || typeof usage.input_tokens !== 'number' || typeof usage.output_tokens !== 'number') {
