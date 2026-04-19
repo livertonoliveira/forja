@@ -10,6 +10,7 @@ export async function executeActions(actions: PolicyAction[], context: ActionCon
   const notifiedChannels = new Set<string>();
   await Promise.all(actions.map(async (action) => {
     if (action.action === 'log') {
+      // eslint-disable-next-line no-control-regex
       const message = (action.message ?? '').replace(/\x1b\[[0-9;]*[A-Za-z]|[\r\n]/g, '');
       console.log(`[forja] policy: ${message}`);
     } else if (action.action === 'notify_slack') {
@@ -19,7 +20,6 @@ export async function executeActions(actions: PolicyAction[], context: ActionCon
       await notifySlack({ channel, message: action.message ?? '', context });
     } else if (action.action === 'http_post') {
       if (!action.url) {
-        console.warn('[forja] http_post action missing required "url" field — skipped');
         return;
       }
       await httpPost({

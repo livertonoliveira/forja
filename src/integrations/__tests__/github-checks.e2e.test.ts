@@ -78,12 +78,12 @@ describe('createCheck — GITHUB_TOKEN absent', () => {
 
 describe('forja config — github_token CLI', () => {
   let tempHome: string;
-  let originalHome: string | undefined;
+  let _originalHome: string | undefined;
 
   // Use an isolated temp directory as HOME so we never touch the real ~/.forja
   function setupTempHome() {
     tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'forja-e2e-config-'));
-    originalHome = process.env.HOME;
+    _originalHome = process.env.HOME;
     // spawnSync does not inherit process.env by default; we pass env explicitly
   }
 

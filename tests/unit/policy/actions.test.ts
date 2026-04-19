@@ -77,10 +77,12 @@ describe('executeActions — log action', () => {
 describe('executeActions — http_post action', () => {
   it('resolves without calling console.warn (evaluator.ts handles the warning)', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
     const actions: PolicyAction[] = [{ action: 'http_post', url: 'https://example.com' }];
     await expect(executeActions(actions, makeContext())).resolves.toBeUndefined();
     expect(warnSpy).not.toHaveBeenCalled();
     warnSpy.mockRestore();
+    fetchSpy.mockRestore();
   });
 
   it('does not throw when http_post action has no url', async () => {
@@ -228,6 +230,7 @@ describe('executeActions — mixed action list', () => {
   it('processes each action: log fires, http_post and fail_gate are silent', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
 
     const actions: PolicyAction[] = [
       { action: 'log', message: 'Found a critical issue' },
@@ -243,6 +246,7 @@ describe('executeActions — mixed action list', () => {
 
     logSpy.mockRestore();
     warnSpy.mockRestore();
+    fetchSpy.mockRestore();
   });
 
   it('logs multiple messages; notify_slack warns when no URL, http_post is silent', async () => {

@@ -370,6 +370,6 @@ policies:
     const gateEvent = events.find((e) => e['eventType'] === 'gate');
     expect(gateEvent).toBeDefined();
     const payload = gateEvent!['payload'] as Record<string, unknown>;
-    expect(payload['policyApplied']).toBe(policyPath);
+    expect(payload['policyApplied']).toBe(path.relative(PROJECT_ROOT, policyPath));
   }, TIMEOUT);
 });

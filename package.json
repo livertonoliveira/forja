@@ -3,6 +3,17 @@
   "version": "0.1.0",
   "description": "Forja CLI and harness engine",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "commands/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "bin": {
     "forja": "./bin/forja"
   },
@@ -11,7 +22,7 @@
     "dev": "tsx src/cli/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run --pool=threads --passWithNoTests tests/",
+    "test": "vitest run --passWithNoTests tests/",
     "version:bump": "bash scripts/bump-version.sh",
     "check:schemas": "tsx scripts/check-schema-coverage.ts"
   },

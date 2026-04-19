@@ -27,9 +27,6 @@ export async function composeStatus(): Promise<string> {
 export async function waitForHealthy(serviceName: string, timeoutMs = 30000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
 
-  // skip the first 10s matching the compose healthcheck start_period
-  await new Promise<void>((resolve) => setTimeout(resolve, 10000));
-
   while (Date.now() < deadline) {
     const { stdout } = await execAsync('docker compose ps --format json', { cwd: process.cwd() });
 
