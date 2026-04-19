@@ -1,0 +1,11 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**']
+  pull_request:
+    branches: [main, harness]
+
+jobs:
+  quality:
+    uses: ./.github/workflows/quality.yml
