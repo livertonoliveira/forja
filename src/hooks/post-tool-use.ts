@@ -4,8 +4,8 @@ import { TraceWriter } from '../trace/writer.js';
 import { DualWriter } from '../trace/dual-writer.js';
 import { CostAccumulator } from '../cost/accumulator.js';
 import { loadConfig } from '../config/loader.js';
-import { createStore } from '../store/index.js';
 import type { ForjaStore } from '../store/interface.js';
+import { UUID_RE } from './utils.js';
 
 const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   'claude-opus-4-7': { in: 15, out: 75 },
@@ -17,8 +17,6 @@ function calcCostUsd(model: string, tokensIn: number, tokensOut: number): number
   const prices = PRICE_PER_MTOK[model] ?? PRICE_PER_MTOK['claude-sonnet-4-6'];
   return (tokensIn / 1_000_000) * prices.in + (tokensOut / 1_000_000) * prices.out;
 }
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function ensureUuid(value: string | undefined): string {
   return value && UUID_RE.test(value) ? value : randomUUID();
@@ -36,7 +34,9 @@ async function getStore(): Promise<ForjaStore | null> {
   const dbUrl = config.storeUrl;
   if (!dbUrl) return null;
   if (_store && _storeDbUrl === dbUrl) return _store;
-  _store = createStore(dbUrl);
+  // Dynamic import avoids loading pg/drizzle-orm on every hook spawn when DB is not configured.
+  const { createStore } = await import('../store/index.js');
+  _store = createStore(dbUrl, { max: 1, idleTimeoutMillis: 0 });
   _storeDbUrl = dbUrl;
   return _store;
 }

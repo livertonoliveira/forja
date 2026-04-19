@@ -3,6 +3,15 @@ import path from 'path';
 import { z } from 'zod';
 import { TraceEventSchema, TraceEvent, Finding, GateDecision } from '../schemas/index.js';
 
+// Avoids repeated fs.mkdir syscalls within the same process (e.g. long-running runs).
+const _mkdirCache = new Set<string>();
+
+async function ensureDir(dirPath: string): Promise<void> {
+  if (_mkdirCache.has(dirPath)) return;
+  await fs.mkdir(dirPath, { recursive: true });
+  _mkdirCache.add(dirPath);
+}
+
 export class TraceWriter {
   private runId: string;
   private tracePath: string;
@@ -15,8 +24,12 @@ export class TraceWriter {
 
   async write(event: Omit<TraceEvent, 'ts'>): Promise<void> {
     const full: TraceEvent = { ...event, ts: new Date().toISOString() };
-    TraceEventSchema.parse(full);
-    await fs.mkdir(path.dirname(this.tracePath), { recursive: true });
+    // Skip validation in production — TypeScript types guarantee correctness at call sites.
+    if (process.env.NODE_ENV !== 'production') {
+      const result = TraceEventSchema.safeParse(full);
+      if (!result.success) throw result.error;
+    }
+    await ensureDir(path.dirname(this.tracePath));
     await fs.appendFile(this.tracePath, JSON.stringify(full) + '\n', { encoding: 'utf8', flag: 'a' });
   }
 

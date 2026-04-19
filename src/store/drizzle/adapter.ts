@@ -120,8 +120,8 @@ export class DrizzlePostgresStore implements ForjaStore {
   private pool: Pool;
   private db: NodePgDatabase<typeof schema>;
 
-  constructor(connectionString: string) {
-    this.pool = new Pool({ connectionString, max: 10 });
+  constructor(connectionString: string, poolOptions?: { max?: number; idleTimeoutMillis?: number }) {
+    this.pool = new Pool({ connectionString, max: 10, ...poolOptions });
     this.db = drizzle(this.pool, { schema });
   }
 
