@@ -1,0 +1,4 @@
+{
+  "diff": "diff --git a/src/store/user.ts b/src/store/user.ts\n+++ b/src/store/user.ts\n@@ -1,5 +1,10 @@\n+export async function getUser(id: string) {\n+  return db.query(`SELECT * FROM users WHERE id = ${id}`)\n+}",
+  "phase": "perf"
+}

@@ -1,0 +1,13 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "perf" },
+    { "type": "phase_end", "phase": "perf", "status": "success" }
+  ],
+  "findings": [],
+  "summary": "No performance issues found.",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Read", "blocked": false },
+    { "type": "PostToolUse", "tool": "Read", "tokensIn": 600, "tokensOut": 250, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}
