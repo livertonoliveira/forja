@@ -50,7 +50,8 @@ export async function formatTrace(events: TraceEvent[], format: 'pretty' | 'md' 
       if (item.type === 'root') {
         const e = item.event;
         const phase = typeof e.payload['phase'] === 'string' ? ` phase=${e.payload['phase']}` : '';
-        lines.push(`[${e.ts}] ${e.eventType} run=${e.runId}${phase}`);
+        const fp = e.eventType === 'phase_start' && e.commandFingerprint ? ` [fp: ${e.commandFingerprint}]` : '';
+        lines.push(`[${e.ts}] ${e.eventType} run=${e.runId}${phase}${fp}`);
       } else {
         const spanId = item.spanId;
         if (seenSpans.has(spanId)) continue;
