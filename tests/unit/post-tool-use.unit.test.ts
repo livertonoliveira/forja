@@ -230,7 +230,7 @@ describe('handlePostToolUse — with DATABASE_URL (DualWriter)', () => {
 
     await handlePostToolUse(makePayload());
 
-    expect(createStore).toHaveBeenCalledWith('postgres://localhost/test');
+    expect(createStore).toHaveBeenCalledWith('postgres://localhost/test', { max: 1, idleTimeoutMillis: 0 });
     expect(DualWriter).toHaveBeenCalledOnce();
   });
 
