@@ -1,0 +1,9 @@
+{
+  "issueId": "MOB-987",
+  "phase": "homolog",
+  "qualityReport": {
+    "perf": { "findings": 0 },
+    "security": { "findings": 0 },
+    "review": { "findings": 0 }
+  }
+}

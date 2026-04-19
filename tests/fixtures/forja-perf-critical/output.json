@@ -1,0 +1,24 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "perf" },
+    { "type": "phase_end", "phase": "perf", "status": "success" }
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "security",
+      "title": "SQL Injection via string interpolation",
+      "description": "User-controlled input is directly interpolated into a SQL query without parameterization.",
+      "filePath": "src/store/user.ts",
+      "line": 3,
+      "suggestion": "Use parameterized queries: db.query('SELECT * FROM users WHERE id = $1', [id])",
+      "owasp": "A03:2021"
+    }
+  ],
+  "summary": "1 critical finding detected.",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Read", "blocked": false },
+    { "type": "PostToolUse", "tool": "Read", "tokensIn": 800, "tokensOut": 400, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}
