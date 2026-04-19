@@ -219,10 +219,14 @@ describe('CLI Commands', () => {
       expect(argNames).toContain('command');
     });
 
-    it('has required --cron option', () => {
+    it('has optional [id] argument', () => {
+      const argNames = getArgumentNames(scheduleCommand);
+      expect(argNames).toContain('id');
+    });
+
+    it('has --cron option', () => {
       const cronOpt = scheduleCommand.options.find((o) => o.flags.includes('--cron'));
       expect(cronOpt).toBeDefined();
-      expect(cronOpt?.mandatory).toBe(true);
     });
   });
 
