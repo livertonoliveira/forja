@@ -126,16 +126,20 @@ Launch **3 agents in parallel** using the Agent tool in a SINGLE call:
 
 ### 5. GATE CHECK
 
-After all 3 agents complete, read the findings and evaluate:
+After all 3 agents complete, run the deterministic gate CLI to evaluate the decision:
 
-**Gate rules:**
-| Condition | Gate |
-|-----------|------|
-| Any `critical` or `high` finding | **FAIL** |
-| Any `medium` finding | **WARN** |
-| Only `low` or no findings | **PASS** |
+```bash
+forja gate --run $FORJA_RUN_ID
+```
 
-**If FAIL:**
+Check the exit code:
+- **Exit 2** → gate **FAIL** (critical or high findings)
+- **Exit 1** → gate **WARN** (medium findings)
+- **Exit 0** → gate **PASS**
+
+The gate command persists the decision to both the JSONL trace and Postgres automatically. Do NOT evaluate gate rules manually — always delegate to the CLI.
+
+**If exit code 2 (FAIL):**
 1. Present the critical/high findings to the user
 2. Create tracking issues:
    - **Linear mode:** Create sub-issues linked to the current task via `mcp__linear-server__save_issue` with rich descriptions (Context, What to do, Acceptance Criteria)
@@ -144,13 +148,13 @@ After all 3 agents complete, read the findings and evaluate:
 4. If yes: launch an Agent to fix, then re-run ONLY the phases that failed
 5. If no: pause and let the user fix manually
 
-**If WARN:**
+**If exit code 1 (WARN):**
 1. Present warnings
 2. Ask: "There are warnings. Fix now or proceed to acceptance?"
 3. If fix: same flow as FAIL
 4. If proceed: continue
 
-**If PASS:**
+**If exit code 0 (PASS):**
 Continue automatically.
 
 ### 6. PHASE: User Acceptance
