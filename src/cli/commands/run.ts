@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'url';
+import { join, dirname } from 'path';
 import { Command } from 'commander';
 import { createStoreFromConfig } from '../../store/factory.js';
 import { PipelineFSM, InvalidTransitionError, type PipelineState } from '../../engine/fsm.js';
@@ -7,6 +9,14 @@ import { DualWriter } from '../../trace/dual-writer.js';
 import { TraceWriter } from '../../trace/writer.js';
 import { setPhaseTimeout } from '../../engine/timeout.js';
 import { PhaseTimeoutsSchema } from '../../schemas/config.js';
+import { loadModelsPolicy, getModelForPhase, type ModelsPolicy } from '../../policy/models-policy.js';
+
+const MODELS_POLICY_PATH = join(dirname(fileURLToPath(import.meta.url)), '../../../policies/models.yaml');
+
+// PIPELINE_SEQUENCE uses FSM state names ('dev'); policies/*.yaml uses canonical phase names ('develop').
+const PHASE_POLICY_NAMES: Partial<Record<PipelineState, string>> = {
+  dev: 'develop',
+};
 
 // spec and quality phases (perf, security, review) are driven by external agents
 export const PIPELINE_SEQUENCE: PipelineState[] = ['dev', 'test', 'homolog', 'pr', 'done'];
@@ -40,6 +50,13 @@ export const runCommand = new Command('run')
     // Resolve effective timeouts (defaults from schema, overridden by CLI flag)
     const defaultTimeouts = PhaseTimeoutsSchema.parse({});
     const effectiveTimeouts: Record<string, number> = { ...defaultTimeouts, ...timeoutOverrides };
+
+    let modelsPolicy: ModelsPolicy | null = null;
+    try {
+      modelsPolicy = await loadModelsPolicy(MODELS_POLICY_PATH);
+    } catch {
+      console.warn('[forja] could not load models policy — FORJA_MODEL will not be set per phase');
+    }
 
     const store = await createStoreFromConfig();
 
@@ -77,6 +94,19 @@ export const runCommand = new Command('run')
         const phaseTimeout = effectiveTimeouts[phase];
         if (phaseTimeout !== undefined) {
           setPhaseTimeout(phase, phaseTimeout);
+        }
+
+        // Clear model env vars first so a previous phase's model never leaks into this phase.
+        // These vars are inherited by hooks (same pattern as FORJA_PHASE_TIMEOUT_AT in setPhaseTimeout).
+        delete process.env.FORJA_MODEL;
+        delete process.env.FORJA_EXPECTED_MODEL;
+
+        const phasePolicyName = PHASE_POLICY_NAMES[phase] ?? phase;
+        const phaseModel =
+          options.model ?? (modelsPolicy ? getModelForPhase(phasePolicyName, modelsPolicy) : undefined);
+        if (phaseModel) {
+          process.env.FORJA_MODEL = phaseModel;
+          process.env.FORJA_EXPECTED_MODEL = phaseModel;
         }
 
         await dualWriter.writePhaseStart(phase);
