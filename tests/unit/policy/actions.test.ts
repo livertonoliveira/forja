@@ -90,17 +90,74 @@ describe('executeActions — http_post action', () => {
 });
 
 describe('executeActions — notify_slack action', () => {
-  it('resolves without calling console.warn (evaluator.ts handles the warning)', async () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const actions: PolicyAction[] = [{ action: 'notify_slack', message: 'alert!' }];
-    await expect(executeActions(actions, makeContext())).resolves.toBeUndefined();
-    expect(warnSpy).not.toHaveBeenCalled();
-    warnSpy.mockRestore();
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    delete process.env.FORJA_SLACK_WEBHOOK_URL;
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
-  it('does not throw when notify_slack action has no message', async () => {
+  afterEach(() => {
+    warnSpy.mockRestore();
+    delete process.env.FORJA_SLACK_WEBHOOK_URL;
+  });
+
+  it('warns and skips when FORJA_SLACK_WEBHOOK_URL is not set', async () => {
+    const actions: PolicyAction[] = [{ action: 'notify_slack', message: 'alert!' }];
+    await expect(executeActions(actions, makeContext())).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith('[forja] FORJA_SLACK_WEBHOOK_URL not set — Slack notification skipped');
+  });
+
+  it('does not throw when notify_slack action has no message and no URL set', async () => {
     const actions: PolicyAction[] = [{ action: 'notify_slack' }];
     await expect(executeActions(actions, makeContext())).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith('[forja] FORJA_SLACK_WEBHOOK_URL not set — Slack notification skipped');
+  });
+
+  it('calls fetch with interpolated message when FORJA_SLACK_WEBHOOK_URL is set', async () => {
+    process.env.FORJA_SLACK_WEBHOOK_URL = 'https://hooks.slack.com/test';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
+    const ctx = makeContext('aaaaaaaa-0000-0000-0000-000000000001');
+    const actions: PolicyAction[] = [{ action: 'notify_slack', channel: '#alerts', message: 'run {{runId}}' }];
+    await executeActions(actions, ctx);
+    expect(warnSpy).not.toHaveBeenCalled();
+    expect(fetchSpy).toHaveBeenCalledOnce();
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://hooks.slack.com/test');
+    expect(JSON.parse(init.body as string)).toMatchObject({
+      channel: '#alerts',
+      text: 'run aaaaaaaa-0000-0000-0000-000000000001',
+    });
+    fetchSpy.mockRestore();
+  });
+
+  it('warns and skips when webhook URL is not https://', async () => {
+    process.env.FORJA_SLACK_WEBHOOK_URL = 'http://hooks.slack.com/test';
+    const actions: PolicyAction[] = [{ action: 'notify_slack', message: 'alert' }];
+    await expect(executeActions(actions, makeContext())).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith('[forja] FORJA_SLACK_WEBHOOK_URL must be an https:// URL — Slack notification skipped');
+  });
+
+  it('warns but does not throw when fetch rejects', async () => {
+    process.env.FORJA_SLACK_WEBHOOK_URL = 'https://hooks.slack.com/test';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network error'));
+    const actions: PolicyAction[] = [{ action: 'notify_slack', message: 'alert' }];
+    await expect(executeActions(actions, makeContext())).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith('[forja] Slack notification failed: network error');
+    fetchSpy.mockRestore();
+  });
+
+  it('sends only one notification per channel even with multiple critical findings', async () => {
+    process.env.FORJA_SLACK_WEBHOOK_URL = 'https://hooks.slack.com/test';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
+    const actions: PolicyAction[] = [
+      { action: 'notify_slack', channel: '#eng-alerts', message: 'finding 1' },
+      { action: 'notify_slack', channel: '#eng-alerts', message: 'finding 2' },
+      { action: 'notify_slack', channel: '#eng-alerts', message: 'finding 3' },
+    ];
+    await executeActions(actions, makeContext());
+    expect(fetchSpy).toHaveBeenCalledOnce();
+    fetchSpy.mockRestore();
   });
 });
 
@@ -188,7 +245,8 @@ describe('executeActions — mixed action list', () => {
     warnSpy.mockRestore();
   });
 
-  it('logs multiple messages; http_post and notify_slack are silent no-ops', async () => {
+  it('logs multiple messages; notify_slack warns when no URL, http_post is silent', async () => {
+    delete process.env.FORJA_SLACK_WEBHOOK_URL;
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -203,7 +261,8 @@ describe('executeActions — mixed action list', () => {
     await executeActions(actions, makeContext());
 
     expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(warnSpy).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledOnce();
+    expect(warnSpy).toHaveBeenCalledWith('[forja] FORJA_SLACK_WEBHOOK_URL not set — Slack notification skipped');
 
     logSpy.mockRestore();
     warnSpy.mockRestore();

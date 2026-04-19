@@ -15,6 +15,9 @@ policies:
       - action: fail_gate
       - action: log
         message: "Critical finding: {{finding.title}}"
+      - action: notify_slack
+        channel: "#eng-alerts"
+        message: "🚨 Critical finding in run {{runId}}: {{finding.title}} ({{finding.filePath}})"
 
   - name: gate-high
     when:

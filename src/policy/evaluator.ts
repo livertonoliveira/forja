@@ -41,7 +41,7 @@ function matchesConditions(finding: Finding, when: Record<string, string>): bool
   });
 }
 
-const UNIMPLEMENTED_ACTIONS = new Set(['http_post', 'notify_slack']);
+const UNIMPLEMENTED_ACTIONS = new Set(['http_post']);
 
 export function evaluatePolicy(findings: Finding[], policy: PolicyFile): EvaluationResult {
   const matchedRules: string[] = [];
