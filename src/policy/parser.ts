@@ -7,6 +7,7 @@ export const PolicyActionSchema = z.object({
   action: z.enum(['fail_gate', 'warn_gate', 'pass_gate', 'log', 'http_post', 'notify_slack']),
   message: z.string().optional(),
   url: z.string().optional(),
+  channel: z.string().optional(),
 });
 
 export const PolicyRuleSchema = z.object({
