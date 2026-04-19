@@ -32,20 +32,44 @@ function getStateDir(): string {
   );
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function listRunIds(): Promise<string[]> {
   const runsDir = path.join(getStateDir(), 'runs');
   try {
     const entries = await fs.readdir(runsDir, { withFileTypes: true });
     return entries
-      .filter((e) => e.isDirectory())
+      .filter((e) => e.isDirectory() && UUID_RE.test(e.name))
       .map((e) => e.name);
   } catch {
     return [];
   }
 }
 
+async function pLimit<T>(tasks: (() => Promise<T>)[], limit: number): Promise<T[]> {
+  const results: T[] = [];
+  let i = 0;
+  async function worker() {
+    while (i < tasks.length) {
+      const idx = i++;
+      results[idx] = await tasks[idx]();
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
+  return results;
+}
+
+export async function readRunEventsAll(runIds: string[]): Promise<TraceEventRaw[][]> {
+  return pLimit(runIds.map((runId) => () => readRunEvents(runId)), 10);
+}
+
 export async function readRunEvents(runId: string): Promise<TraceEventRaw[]> {
-  const tracePath = path.join(getStateDir(), 'runs', runId, 'trace.jsonl');
+  if (!UUID_RE.test(runId)) return [];
+  const stateDir = getStateDir();
+  const runsDir = path.join(stateDir, 'runs');
+  const tracePath = path.join(runsDir, runId, 'trace.jsonl');
+  const resolved = path.resolve(tracePath);
+  if (!resolved.startsWith(path.resolve(runsDir))) return [];
   try {
     const content = await fs.readFile(tracePath, 'utf-8');
     const events: TraceEventRaw[] = [];
