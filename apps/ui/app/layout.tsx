@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/runs', label: 'Runs' },
   { href: '/issues', label: 'Issues' },
   { href: '/cost', label: 'Cost' },
+  { href: '/heatmap', label: 'Heatmap' },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
