@@ -33,12 +33,13 @@ export class TraceWriter {
     await fs.appendFile(this.tracePath, JSON.stringify(full) + '\n', { encoding: 'utf8', flag: 'a' });
   }
 
-  async writePhaseStart(phase: string, agentId?: string, spanId?: string): Promise<void> {
+  async writePhaseStart(phase: string, agentId?: string, spanId?: string, commandFingerprint?: string): Promise<void> {
     await this.write({
       runId: this.runId,
       eventType: 'phase_start',
       agentId,
       spanId,
+      commandFingerprint,
       payload: { phase },
     });
   }
@@ -96,7 +97,9 @@ export class TraceWriter {
       spanId,
       payload: {
         message: error.message,
-        stack: error.stack,
+        stack: process.env.NODE_ENV !== 'production'
+          ? error.stack
+          : error.stack?.split('\n').map(l => l.replace(/\(\/[^)]+\)/g, '(<redacted>)')).join('\n'),
         ...(phase !== undefined ? { phase } : {}),
       },
     });

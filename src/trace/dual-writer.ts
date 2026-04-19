@@ -35,13 +35,13 @@ export class DualWriter {
     }
   }
 
-  async writePhaseStart(phase: string, agentId?: string, spanId?: string): Promise<void> {
+  async writePhaseStart(phase: string, agentId?: string, spanId?: string, commandFingerprint?: string): Promise<void> {
     if (this.phaseIds.has(phase)) {
-      await this.settle(this.writer.writePhaseStart(phase, agentId, spanId));
+      await this.settle(this.writer.writePhaseStart(phase, agentId, spanId, commandFingerprint));
       return;
     }
     await this.settle(
-      this.writer.writePhaseStart(phase, agentId, spanId),
+      this.writer.writePhaseStart(phase, agentId, spanId, commandFingerprint),
       this.store
         .createPhase({
           runId: this.runId,
