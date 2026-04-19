@@ -1,11 +1,13 @@
+import { fileURLToPath } from 'url';
+import { join, dirname } from 'path';
 import { TraceWriter } from '../trace/writer.js';
 import { UUID_RE, validateUuid } from './utils.js';
+import { loadToolsPolicy, isToolAllowed } from '../policy/tools-policy.js';
+
+// Anchored relative to this file so the hook works regardless of process.cwd().
+const TOOLS_POLICY_PATH = join(dirname(fileURLToPath(import.meta.url)), '../../policies/tools.yaml');
 
 export async function handlePreToolUse(payload: unknown): Promise<void> {
-  // Allowlist enforcement is a stub until M2.4 (policies/tools.yaml).
-  // Log explicitly so deployments are not silently misconfigured.
-  process.stderr.write('[forja] WARNING: tool allowlist not enforced (stub — M2.4)\n');
-
   const raw = payload as Record<string, unknown>;
   const toolName = typeof raw?.tool_name === 'string' ? raw.tool_name : 'unknown';
 
@@ -20,7 +22,13 @@ export async function handlePreToolUse(payload: unknown): Promise<void> {
   const agentId = validateUuid(process.env.FORJA_AGENT_ID);
   const spanId = process.env.FORJA_SPAN_ID;
 
-  const allowed = checkAllowlist(toolName);
+  let allowed = true;
+  try {
+    const toolsPolicy = await loadToolsPolicy(TOOLS_POLICY_PATH);
+    allowed = isToolAllowed(toolName, phase, toolsPolicy);
+  } catch {
+    process.stderr.write(`[forja] pre-tool-use: could not load tools policy, failing open\n`);
+  }
 
   const writer = new TraceWriter(runId);
   await writer.write({
@@ -34,13 +42,8 @@ export async function handlePreToolUse(payload: unknown): Promise<void> {
 
   if (!allowed) {
     process.stdout.write(
-      JSON.stringify({ decision: 'block', reason: `tool "${toolName}" is not in the allowlist` }) + '\n',
+      JSON.stringify({ decision: 'block', reason: `Tool '${toolName}' is not allowed in phase '${phase}'` }) + '\n',
     );
     process.exit(2);
   }
-}
-
-function checkAllowlist(_toolName: string): boolean {
-  // Always allow until policies/tools.yaml enforcement is implemented in M2.4
-  return true;
 }
