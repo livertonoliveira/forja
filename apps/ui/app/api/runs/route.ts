@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server';
-import { listRunIds, readRunEvents, buildRunFromEvents } from '@/lib/jsonl-reader';
+import { listRunIds, readRunEventsAll, buildRunFromEvents } from '@/lib/jsonl-reader';
 import type { Run } from '@/lib/types';
 
 export async function GET(): Promise<NextResponse> {
   try {
     const runIds = await listRunIds();
 
-    const runs: Run[] = await Promise.all(
-      runIds.map(async (runId) => {
-        const events = await readRunEvents(runId);
-        return buildRunFromEvents(runId, events);
-      }),
-    );
+    const allEvents = await readRunEventsAll(runIds);
+    const runs: Run[] = runIds.map((runId, i) => buildRunFromEvents(runId, allEvents[i]));
 
     runs.sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
 

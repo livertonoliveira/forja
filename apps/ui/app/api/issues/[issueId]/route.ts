@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { listRunIds, readRunEvents, buildRunFromEvents } from '@/lib/jsonl-reader';
+import { listRunIds, readRunEventsAll, buildRunFromEvents } from '@/lib/jsonl-reader';
 import type { Run } from '@/lib/types';
 
 export async function GET(
@@ -10,12 +10,8 @@ export async function GET(
     const { issueId } = params;
     const runIds = await listRunIds();
 
-    const runs: Run[] = await Promise.all(
-      runIds.map(async (runId) => {
-        const events = await readRunEvents(runId);
-        return buildRunFromEvents(runId, events);
-      }),
-    );
+    const allEvents = await readRunEventsAll(runIds);
+    const runs: Run[] = runIds.map((runId, i) => buildRunFromEvents(runId, allEvents[i]));
 
     const filtered = runs
       .filter((run) => run.issueId === issueId)

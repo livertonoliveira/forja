@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { listRunIds, readRunEvents } from '@/lib/jsonl-reader';
+import { listRunIds, readRunEventsAll } from '@/lib/jsonl-reader';
 import type { CostSummary } from '@/lib/types';
 
 export async function GET(): Promise<NextResponse> {
@@ -21,31 +21,34 @@ export async function GET(): Promise<NextResponse> {
     const byModelRaw: Record<string, number> = {};
     const byPhaseRaw: Record<string, number> = {};
 
-    await Promise.all(
-      runIds.map(async (runId) => {
-        const events = await readRunEvents(runId);
-        byRunRaw[runId] = 0;
+    const allEvents = await readRunEventsAll(runIds);
 
-        for (const event of events) {
-          if (event.eventType !== 'cost') continue;
+    for (let i = 0; i < runIds.length; i++) {
+      const runId = runIds[i];
+      const events = allEvents[i];
+      let runTotal = 0;
 
-          const costUsd = Number(event.payload?.costUsd ?? 0);
-          const cost = isNaN(costUsd) ? 0 : costUsd;
+      for (const event of events) {
+        if (event.eventType !== 'cost') continue;
 
-          totalRaw += cost;
-          byRunRaw[runId] = (byRunRaw[runId] ?? 0) + cost;
+        const costUsd = Number(event.payload?.costUsd ?? 0);
+        const cost = isNaN(costUsd) ? 0 : costUsd;
 
-          const model = (event.payload?.model as string | undefined) ?? 'unknown';
-          byModelRaw[model] = (byModelRaw[model] ?? 0) + cost;
+        runTotal += cost;
 
-          const phase =
-            (event.payload?.phase as string | undefined) ??
-            event.phaseId ??
-            'unknown';
-          byPhaseRaw[phase] = (byPhaseRaw[phase] ?? 0) + cost;
-        }
-      }),
-    );
+        const model = (event.payload?.model as string | undefined) ?? 'unknown';
+        byModelRaw[model] = (byModelRaw[model] ?? 0) + cost;
+
+        const phase =
+          (event.payload?.phase as string | undefined) ??
+          event.phaseId ??
+          'unknown';
+        byPhaseRaw[phase] = (byPhaseRaw[phase] ?? 0) + cost;
+      }
+
+      byRunRaw[runId] = runTotal;
+      totalRaw += runTotal;
+    }
 
     const toStr = (n: number) => n.toFixed(6);
 
