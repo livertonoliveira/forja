@@ -1,6 +1,8 @@
+import { join } from 'path';
 import type { ForjaStore } from '../store/interface.js';
 import type { Run } from '../store/types.js';
 import { TraceWriter } from '../trace/writer.js';
+import { fingerprintCommand } from './fingerprint.js';
 
 export type PipelineState = Run['status'];
 
@@ -32,12 +34,15 @@ export class InvalidTransitionError extends Error {
 
 export class PipelineFSM {
   private trace: TraceWriter;
+  private commandsDir: string;
 
   constructor(
     private store: ForjaStore,
     private runId: string,
+    commandsDir?: string,
   ) {
     this.trace = new TraceWriter(runId);
+    this.commandsDir = commandsDir ?? join(process.cwd(), '.claude', 'commands', 'forja');
   }
 
   async getState(): Promise<PipelineState> {
@@ -54,6 +59,12 @@ export class PipelineFSM {
   async transition(to: PipelineState): Promise<void> {
     const from = await this.getState();
 
+    // Runtime allowlist check before building path
+    const VALID_PHASE_NAMES = new Set(Object.keys(VALID_TRANSITIONS));
+    if (!VALID_PHASE_NAMES.has(to)) {
+      throw new InvalidTransitionError(from, to);
+    }
+
     if (!VALID_TRANSITIONS[from].includes(to)) {
       throw new InvalidTransitionError(from, to);
     }
@@ -69,6 +80,17 @@ export class PipelineFSM {
       throw err;
     }
 
-    await this.trace.writePhaseStart(to);
+    const commandPath = join(this.commandsDir, `${to}.md`);
+    let commandFingerprint: string | undefined;
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 200);
+    try {
+      commandFingerprint = await fingerprintCommand(commandPath, ac.signal);
+    } catch {
+      // timeout or missing file — skip
+    } finally {
+      clearTimeout(timer);
+    }
+    await this.trace.writePhaseStart(to, /* agentId */ undefined, /* spanId */ undefined, commandFingerprint);
   }
 }
