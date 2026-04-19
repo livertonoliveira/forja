@@ -204,7 +204,41 @@ EOF
 1. Update `tasks.md`: mark item 4.2 (PR created) as completed
 2. Update `tasks.md`: mark item 4.3 as completed (if applicable)
 
-### 8. Archive feature (Local mode only)
+### 8. Create GitHub Check
+
+After the PR is created (step 6), post the Forja gate result as a GitHub Check Run so reviewers can see it directly in the PR.
+
+**Steps:**
+
+1. Retrieve the gate decision for the current run:
+   ```bash
+   forja gate --run $FORJA_RUN_ID
+   ```
+   Capture the exit code: `0` = pass, `1` = warn, `2` = fail.
+   Also capture the counts printed: `critical=N, high=N, medium=N, low=N`.
+
+2. Get the current commit SHA:
+   ```bash
+   git rev-parse HEAD
+   ```
+
+3. Determine owner/repo by calling `getGitRemoteInfo()` from `src/integrations/github-checks.ts`.
+
+4. Call `createCheck()` from `src/integrations/github-checks.ts` with:
+   - `owner` / `repo` — from `getGitRemoteInfo()`
+   - `sha` — from `git rev-parse HEAD`
+   - `name` — `'Forja Quality Gate'`
+   - `status` — `'completed'`
+   - `conclusion` — `'success'` if exit code 0, `'failure'` if exit code 1 or 2
+   - `title` — `Gate: PASS — 0 critical, 0 high` (use actual counts; replace PASS with WARN or FAIL accordingly)
+   - `summary` — `See full report at http://localhost:3737/runs/<runId>`
+   - `detailsUrl` — `http://localhost:3737/runs/<runId>`
+
+   Where `<runId>` = `$FORJA_RUN_ID`.
+
+> **Note:** If `GITHUB_TOKEN` is not set (in env or config), `createCheck` logs a warning and skips silently — this step never blocks the pipeline.
+
+### 9. Archive feature (Local mode only)
 
 **Local mode:**
 Move the feature folder to the archive:
@@ -215,7 +249,7 @@ mv forja/changes/<feature-name> forja/changes/archive/$(date +%Y-%m-%d)-<feature
 **Linear mode:**
 No local files to archive. Linear artifacts remain in Linear.
 
-### 9. Finalize
+### 10. Finalize
 
 Inform the user:
 - URL of the created PR
