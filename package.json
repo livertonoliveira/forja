@@ -3,6 +3,17 @@
   "version": "0.1.0",
   "description": "Forja CLI and harness engine",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "commands/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "bin": {
     "forja": "./bin/forja"
   },
