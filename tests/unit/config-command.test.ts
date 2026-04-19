@@ -16,6 +16,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 vi.mock('../../src/config/loader.js', () => ({
   loadConfig: vi.fn(),
   setConfigValue: vi.fn(),
+  redactDsn: vi.fn((url: string) => url),
 }));
 
 import { loadConfig, setConfigValue } from '../../src/config/loader.js';

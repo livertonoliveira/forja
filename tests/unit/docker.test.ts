@@ -87,7 +87,8 @@ describe('checkDockerAvailable()', () => {
     mockExecSuccess();
     await checkDockerAvailable();
     expect(vi.mocked(exec)).toHaveBeenCalledWith(
-      'docker info',
+      'docker version --format json',
+      { maxBuffer: 10 * 1024 * 1024 },
       expect.any(Function),
     );
   });
