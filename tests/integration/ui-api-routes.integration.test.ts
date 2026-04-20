@@ -319,6 +319,20 @@ describe('GET /api/issues/:issueId', () => {
     expect(response.status).toBe(200);
     expect(body).toEqual([]);
   });
+
+  it('returns 500 when listRunIds throws', async () => {
+    vi.mocked(jsonlReader.listRunIds).mockRejectedValue(new Error('disk error'));
+
+    const { GET } = await import('../../apps/ui/app/api/issues/[issueId]/route.ts');
+    const response = await GET(
+      {} as Request,
+      { params: { issueId: 'MOB-1023' } },
+    ) as unknown as MockNextResponse;
+    const body = await response.json() as { error: string };
+
+    expect(response.status).toBe(500);
+    expect(body).toHaveProperty('error');
+  });
 });
 
 // ---------------------------------------------------------------------------

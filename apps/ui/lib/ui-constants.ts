@@ -12,6 +12,12 @@ export const statusColors: Record<string, string> = {
   init: 'bg-gray-700 text-gray-300',
 };
 
+export const gateBadgeColors: Record<string, string> = {
+  pass: 'bg-green-900 text-green-300',
+  warn: 'bg-yellow-900 text-yellow-300',
+  fail: 'bg-red-900 text-red-300',
+};
+
 export const gateTextColors: Record<string, string> = {
   pass: 'text-green-400',
   warn: 'text-yellow-400',
