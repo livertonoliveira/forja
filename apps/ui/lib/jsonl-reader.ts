@@ -63,6 +63,47 @@ export async function readRunEventsAll(runIds: string[]): Promise<TraceEventRaw[
   return pLimit(runIds.map((runId) => () => readRunEvents(runId)), 10);
 }
 
+const SUMMARY_EVENT_TYPES = new Set(['run_start', 'run_end', 'cost', 'gate']);
+
+export async function readRunSummaryEvents(runId: string): Promise<TraceEventRaw[]> {
+  if (!UUID_RE.test(runId)) return [];
+  const stateDir = getStateDir();
+  const runsDir = path.join(stateDir, 'runs');
+  const tracePath = path.join(runsDir, runId, 'trace.jsonl');
+  const resolved = path.resolve(tracePath);
+  if (!resolved.startsWith(path.resolve(runsDir))) return [];
+  try {
+    const content = await fs.readFile(tracePath, 'utf-8');
+    const events: TraceEventRaw[] = [];
+    let seenRunEnd = false;
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const event = JSON.parse(trimmed) as TraceEventRaw;
+        if (SUMMARY_EVENT_TYPES.has(event.eventType)) {
+          events.push(event);
+        }
+        if (event.eventType === 'run_end') {
+          seenRunEnd = true;
+          break;
+        }
+      } catch {
+        // skip malformed lines
+      }
+    }
+    // If run_end not yet seen the run is still in progress — keep partial events
+    void seenRunEnd;
+    return events;
+  } catch {
+    return [];
+  }
+}
+
+export async function readRunSummaryEventsAll(runIds: string[]): Promise<TraceEventRaw[][]> {
+  return pLimit(runIds.map((runId) => () => readRunSummaryEvents(runId)), 10);
+}
+
 export async function readRunEvents(runId: string): Promise<TraceEventRaw[]> {
   if (!UUID_RE.test(runId)) return [];
   const stateDir = getStateDir();

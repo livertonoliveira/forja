@@ -23,3 +23,15 @@ export const gateTextColors: Record<string, string> = {
   warn: 'text-yellow-400',
   fail: 'text-red-400',
 };
+
+export const gateBgColors: Record<string, string> = {
+  pass: '#22c55e',
+  warn: '#f59e0b',
+  fail: '#ef4444',
+};
+
+export const gateDisplay: Record<string, { label: string; cls: string }> = {
+  pass: { label: '✓ pass', cls: 'text-green-400' },
+  warn: { label: '⚠ warn', cls: 'text-yellow-400' },
+  fail: { label: '✕ fail', cls: 'text-red-400' },
+};
