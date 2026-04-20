@@ -13,7 +13,7 @@ await build({
   target: 'node20',
   external: externalDeps,
   format: 'esm',
-  outfile: 'bin/forja',
+  outfile: 'bin/forja.js',
   define: {
     __FORJA_VERSION__: JSON.stringify(version),
   },
@@ -22,7 +22,7 @@ await build({
   },
 });
 
-chmodSync('bin/forja', '755');
+chmodSync('bin/forja.js', '755');
 
 if (existsSync(hooksDir)) {
   const hookFiles = readdirSync(hooksDir).filter(

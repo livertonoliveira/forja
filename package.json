@@ -1,8 +1,9 @@
 {
-  "name": "forja-harness-engine",
+  "name": "@forja-hq/cli",
   "version": "0.1.0",
-  "description": "Forja CLI and harness engine",
+  "description": "Automated development pipeline for Claude Code — from issue to PR with quality gates, parallel agents, and persistent artifacts.",
   "type": "module",
+  "license": "BUSL-1.1",
   "engines": {
     "node": ">=20"
   },
@@ -10,12 +11,15 @@
     "bin/",
     "src/",
     "commands/",
+    "policies/",
+    "docker-compose.yml",
+    "CLAUDE.forja.md",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "bin": {
-    "forja": "./bin/forja"
+    "forja": "./bin/forja.js"
   },
   "scripts": {
     "build": "tsx esbuild.config.ts",
