@@ -88,6 +88,8 @@ export interface CostEvent {
   model: string;
   tokensIn: number;
   tokensOut: number;
+  cacheCreationTokens: number;
+  cacheReadTokens: number;
   costUsd: string;
   createdAt: string;
 }
@@ -125,4 +127,6 @@ export interface CostSummary {
   totalCost: string;
   totalTokensIn: number;
   totalTokensOut: number;
+  totalCacheCreationTokens: number;
+  totalCacheReadTokens: number;
 }

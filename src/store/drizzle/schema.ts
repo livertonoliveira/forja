@@ -107,6 +107,8 @@ export const costEvents = pgTable('cost_events', {
   model: text('model').notNull(),
   tokensIn: integer('tokens_in').notNull(),
   tokensOut: integer('tokens_out').notNull(),
+  cacheCreationTokens: integer('cache_creation_tokens').notNull().default(0),
+  cacheReadTokens: integer('cache_read_tokens').notNull().default(0),
   costUsd: numeric('cost_usd', { precision: 10, scale: 6 }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
 }, (t) => ({

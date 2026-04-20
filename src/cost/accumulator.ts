@@ -6,6 +6,8 @@ interface CostLine {
   phase: string;
   tokensIn: number;
   tokensOut: number;
+  cacheCreationTokens: number;
+  cacheReadTokens: number;
   costUsd: number;
 }
 
@@ -20,6 +22,8 @@ export class CostAccumulator {
       phase,
       tokensIn: event.tokensIn,
       tokensOut: event.tokensOut,
+      cacheCreationTokens: event.cacheCreationTokens,
+      cacheReadTokens: event.cacheReadTokens,
       costUsd: event.costUsd,
     };
     const filePath = this.costPath(event.runId);
@@ -27,7 +31,10 @@ export class CostAccumulator {
     await fs.appendFile(filePath, JSON.stringify(line) + '\n', 'utf8');
   }
 
-  async getTotal(runId: string): Promise<{ totalUsd: number; byPhase: Record<string, { usd: number; tokens: number }> }> {
+  async getTotal(runId: string): Promise<{
+    totalUsd: number;
+    byPhase: Record<string, { usd: number; tokens: number; cacheCreationTokens: number; cacheReadTokens: number }>;
+  }> {
     let raw: string;
     try {
       raw = await fs.readFile(this.costPath(runId), 'utf8');
@@ -36,17 +43,19 @@ export class CostAccumulator {
     }
 
     let totalUsd = 0;
-    const byPhase: Record<string, { usd: number; tokens: number }> = {};
+    const byPhase: Record<string, { usd: number; tokens: number; cacheCreationTokens: number; cacheReadTokens: number }> = {};
 
     for (const line of raw.split('\n')) {
       if (!line.trim()) continue;
       try {
         const entry = JSON.parse(line) as CostLine;
         totalUsd += entry.costUsd;
-        const prev = byPhase[entry.phase] ?? { usd: 0, tokens: 0 };
+        const prev = byPhase[entry.phase] ?? { usd: 0, tokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
         byPhase[entry.phase] = {
           usd: prev.usd + entry.costUsd,
           tokens: prev.tokens + entry.tokensIn + entry.tokensOut,
+          cacheCreationTokens: prev.cacheCreationTokens + (entry.cacheCreationTokens ?? 0),
+          cacheReadTokens: prev.cacheReadTokens + (entry.cacheReadTokens ?? 0),
         };
       } catch {
         // skip malformed lines

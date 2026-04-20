@@ -8,9 +8,12 @@ export class CostReporter {
     const shortId = runId.slice(0, 8);
     const lines: string[] = [`Run ${shortId} — Total: $${totalUsd.toFixed(4)}`];
 
-    for (const [phase, { usd, tokens }] of Object.entries(byPhase)) {
+    for (const [phase, { usd, tokens, cacheCreationTokens, cacheReadTokens }] of Object.entries(byPhase)) {
       const tokensFormatted = tokens.toLocaleString('pt-BR');
-      lines.push(`  ${phase.padEnd(10)} $${usd.toFixed(4)}  (${tokensFormatted} tokens)`);
+      const cacheInfo = (cacheCreationTokens > 0 || cacheReadTokens > 0)
+        ? `  cache: ${cacheCreationTokens.toLocaleString('pt-BR')} write / ${cacheReadTokens.toLocaleString('pt-BR')} read`
+        : '';
+      lines.push(`  ${phase.padEnd(10)} $${usd.toFixed(4)}  (${tokensFormatted} tokens${cacheInfo})`);
     }
 
     return lines.join('\n');

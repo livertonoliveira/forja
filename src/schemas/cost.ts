@@ -9,6 +9,8 @@ export const CostEventSchema = z.object({
   model: z.string(),
   tokensIn: z.number().int(),
   tokensOut: z.number().int(),
+  cacheCreationTokens: z.number().int().default(0),
+  cacheReadTokens: z.number().int().default(0),
   costUsd: z.number(),
   createdAt: z.string().datetime(),
 });
