@@ -15,6 +15,13 @@
       "when": 1776478837395,
       "tag": "0001_deep_tombstone",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1776704624497,
+      "tag": "0002_cache_tokens",
+      "breakpoints": true
     }
   ]
 }
