@@ -1,6 +1,6 @@
 {
   "name": "@forja-hq/cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Automated development pipeline for Claude Code — from issue to PR with quality gates, parallel agents, and persistent artifacts.",
   "type": "module",
   "license": "BUSL-1.1",
@@ -12,6 +12,9 @@
     "src/",
     "commands/",
     "policies/",
+    "apps/ui/.next/standalone/",
+    "apps/ui/.next/static/",
+    "apps/ui/public/",
     "docker-compose.yml",
     "CLAUDE.forja.md",
     "README.md",
@@ -22,7 +25,8 @@
     "forja": "bin/forja.js"
   },
   "scripts": {
-    "build": "tsx esbuild.config.ts",
+    "build": "tsx esbuild.config.ts && npm run build:ui",
+    "build:ui": "cd apps/ui && npm install --legacy-peer-deps && npm run build && cp -r .next/static .next/standalone/.next/static",
     "dev": "tsx src/cli/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
