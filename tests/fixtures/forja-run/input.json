@@ -1,0 +1,4 @@
+{
+  "issueId": "MOB-987",
+  "phases": ["develop", "test", "perf", "security", "review", "homolog"]
+}

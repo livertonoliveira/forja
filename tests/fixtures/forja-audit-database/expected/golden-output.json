@@ -1,0 +1,22 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "audit/database" },
+    { "type": "phase_end", "phase": "audit/database", "status": "success" }
+  ],
+  "findings": [
+    {
+      "severity": "low",
+      "title": "Missing index on foreign key column",
+      "description": "The runs table foreign key on phase_id lacks a supporting index, causing sequential scans on JOIN queries.",
+      "file": "src/db/schema.ts",
+      "line": 34,
+      "category": "performance"
+    }
+  ],
+  "summary": "Database audit complete. 1 low issue found.",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Read", "blocked": false },
+    { "type": "PostToolUse", "tool": "Read", "tokensIn": 700, "tokensOut": 280, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

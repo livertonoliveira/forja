@@ -1,0 +1,13 @@
+{
+  "traceEvents": [
+    { "type": "phase_start", "phase": "init" },
+    { "type": "config_created", "path": "forja/config.md" },
+    { "type": "phase_end", "phase": "init", "status": "success" }
+  ],
+  "configPath": "forja/config.md",
+  "hookEvents": [
+    { "type": "PreToolUse", "tool": "Write", "blocked": false },
+    { "type": "PostToolUse", "tool": "Write", "tokensIn": 300, "tokensOut": 120, "model": "claude-opus-4-7" },
+    { "type": "Stop", "reason": "end_turn" }
+  ]
+}

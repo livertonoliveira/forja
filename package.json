@@ -27,6 +27,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "vitest run --passWithNoTests tests/",
+    "test:update-golden": "UPDATE_GOLDEN=1 vitest run --passWithNoTests tests/golden.test.ts",
     "version:bump": "bash scripts/bump-version.sh",
     "check:schemas": "tsx scripts/check-schema-coverage.ts"
   },
