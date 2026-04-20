@@ -221,6 +221,8 @@ export class DrizzlePostgresStore implements ForjaStore {
         totalCost: sql<string>`sum(${costEvents.costUsd})`,
         totalTokensIn: sql<string>`sum(${costEvents.tokensIn})`,
         totalTokensOut: sql<string>`sum(${costEvents.tokensOut})`,
+        totalCacheCreationTokens: sql<string>`sum(${costEvents.cacheCreationTokens})`,
+        totalCacheReadTokens: sql<string>`sum(${costEvents.cacheReadTokens})`,
       })
       .from(costEvents)
       .where(eq(costEvents.runId, runId))
@@ -231,6 +233,8 @@ export class DrizzlePostgresStore implements ForjaStore {
       totalCost: r.totalCost,
       totalTokensIn: Number(r.totalTokensIn),
       totalTokensOut: Number(r.totalTokensOut),
+      totalCacheCreationTokens: Number(r.totalCacheCreationTokens),
+      totalCacheReadTokens: Number(r.totalCacheReadTokens),
     }));
   }
 

@@ -8,15 +8,24 @@ import type { ForjaStore } from '../store/interface.js';
 import { UUID_RE } from './utils.js';
 import { redactObject } from './redaction.js';
 
-const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
-  'claude-opus-4-7': { in: 15, out: 75 },
-  'claude-sonnet-4-6': { in: 3, out: 15 },
-  'claude-haiku-4-5': { in: 0.8, out: 4 },
+const PRICE_PER_MTOK: Record<string, { in: number; cacheWrite: number; cacheRead: number; out: number }> = {
+  'claude-opus-4-7':   { in: 15,  cacheWrite: 18.75, cacheRead: 1.50, out: 75 },
+  'claude-sonnet-4-6': { in: 3,   cacheWrite: 3.75,  cacheRead: 0.30, out: 15 },
+  'claude-haiku-4-5':  { in: 0.8, cacheWrite: 1.00,  cacheRead: 0.08, out: 4  },
 };
 
-function calcCostUsd(model: string, tokensIn: number, tokensOut: number): number {
-  const prices = PRICE_PER_MTOK[model] ?? PRICE_PER_MTOK['claude-sonnet-4-6'];
-  return (tokensIn / 1_000_000) * prices.in + (tokensOut / 1_000_000) * prices.out;
+function calcCostUsd(
+  model: string,
+  tokensIn: number,
+  tokensOut: number,
+  cacheCreationTokens: number,
+  cacheReadTokens: number,
+): number {
+  const p = PRICE_PER_MTOK[model] ?? PRICE_PER_MTOK['claude-sonnet-4-6'];
+  return (tokensIn / 1_000_000) * p.in
+    + (cacheCreationTokens / 1_000_000) * p.cacheWrite
+    + (cacheReadTokens / 1_000_000) * p.cacheRead
+    + (tokensOut / 1_000_000) * p.out;
 }
 
 function ensureUuid(value: string | undefined): string {
@@ -70,7 +79,13 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
 
   const tokensIn = usage.input_tokens as number;
   const tokensOut = usage.output_tokens as number;
-  const costUsd = calcCostUsd(model, tokensIn, tokensOut);
+  const cacheCreationTokens = typeof usage.cache_creation_input_tokens === 'number'
+    ? usage.cache_creation_input_tokens
+    : 0;
+  const cacheReadTokens = typeof usage.cache_read_input_tokens === 'number'
+    ? usage.cache_read_input_tokens
+    : 0;
+  const costUsd = calcCostUsd(model, tokensIn, tokensOut, cacheCreationTokens, cacheReadTokens);
 
   const event: CostEvent = CostEventSchema.parse({
     id: randomUUID(),
@@ -81,6 +96,8 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
     model,
     tokensIn,
     tokensOut,
+    cacheCreationTokens,
+    cacheReadTokens,
     costUsd,
     createdAt: new Date().toISOString(),
   });

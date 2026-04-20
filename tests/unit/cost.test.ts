@@ -430,6 +430,81 @@ describe('handlePostToolUse — happy path', () => {
 });
 
 // ---------------------------------------------------------------------------
+// handlePostToolUse — cache token pricing
+// ---------------------------------------------------------------------------
+
+describe('handlePostToolUse — cache token pricing', () => {
+  it('extracts cache_creation_input_tokens and prices them at 1.25× input rate (sonnet)', async () => {
+    const runId = makeRunId();
+    process.env.FORJA_RUN_ID = runId;
+    process.env.FORJA_PHASE = 'develop';
+    process.env.FORJA_MODEL = 'claude-sonnet-4-6';
+
+    // 1M cache-write tokens at $3.75/MTok = $3.75
+    await handlePostToolUse({
+      usage: { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 1_000_000 },
+    });
+
+    const acc = new CostAccumulator();
+    const { totalUsd } = await acc.getTotal(runId);
+    expect(totalUsd).toBeCloseTo(3.75, 4);
+  });
+
+  it('extracts cache_read_input_tokens and prices them at 0.10× input rate (sonnet)', async () => {
+    const runId = makeRunId();
+    process.env.FORJA_RUN_ID = runId;
+    process.env.FORJA_PHASE = 'develop';
+    process.env.FORJA_MODEL = 'claude-sonnet-4-6';
+
+    // 1M cache-read tokens at $0.30/MTok = $0.30
+    await handlePostToolUse({
+      usage: { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 1_000_000 },
+    });
+
+    const acc = new CostAccumulator();
+    const { totalUsd } = await acc.getTotal(runId);
+    expect(totalUsd).toBeCloseTo(0.30, 4);
+  });
+
+  it('defaults cache token counts to 0 when fields are absent', async () => {
+    const runId = makeRunId();
+    process.env.FORJA_RUN_ID = runId;
+    process.env.FORJA_PHASE = 'develop';
+    process.env.FORJA_MODEL = 'claude-sonnet-4-6';
+
+    // 1M input tokens at $3/MTok = $3.00 — no cache fields
+    await handlePostToolUse({
+      usage: { input_tokens: 1_000_000, output_tokens: 0 },
+    });
+
+    const acc = new CostAccumulator();
+    const { totalUsd, byPhase } = await acc.getTotal(runId);
+    expect(totalUsd).toBeCloseTo(3.0, 4);
+    expect(byPhase['develop'].cacheCreationTokens).toBe(0);
+    expect(byPhase['develop'].cacheReadTokens).toBe(0);
+  });
+
+  it('accumulates cache tokens in CostAccumulator.getTotal', async () => {
+    const runId = makeRunId();
+    process.env.FORJA_RUN_ID = runId;
+    process.env.FORJA_PHASE = 'develop';
+    process.env.FORJA_MODEL = 'claude-sonnet-4-6';
+
+    await handlePostToolUse({
+      usage: { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 500_000 },
+    });
+    await handlePostToolUse({
+      usage: { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 200_000 },
+    });
+
+    const acc = new CostAccumulator();
+    const { byPhase } = await acc.getTotal(runId);
+    expect(byPhase['develop'].cacheCreationTokens).toBe(500_000);
+    expect(byPhase['develop'].cacheReadTokens).toBe(200_000);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // handlePostToolUse — invalid payload (missing usage)
 // ---------------------------------------------------------------------------
 
