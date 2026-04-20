@@ -1,6 +1,8 @@
 import HeatmapGrid from '@/components/HeatmapGrid';
 import { listAllFindings } from '@/lib/forja-store';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HeatmapPage() {
   const findings = await listAllFindings();
 

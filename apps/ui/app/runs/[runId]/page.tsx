@@ -5,7 +5,7 @@ import { statusColors, gateTextColors } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
 import RunGantt from '@/components/RunGantt';
 
-export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: { runId: string };

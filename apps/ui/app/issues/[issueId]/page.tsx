@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Run } from '@/lib/types';
+
+export const dynamic = 'force-dynamic';
 import RegressionBadge from '@/components/RegressionBadge';
 import { statusColors, gateTextColors } from '@/lib/ui-constants';
 

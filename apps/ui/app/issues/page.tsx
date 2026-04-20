@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { gateBadgeColors } from '@/lib/ui-constants';
 
+export const dynamic = 'force-dynamic';
+
 interface IssueSummary {
   issueId: string;
   runCount: number;

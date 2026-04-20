@@ -4,7 +4,7 @@ import { statusColors, gateDisplay } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
 import type { Run } from '@/lib/types';
 
-export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
 export default async function RunsPage() {
   const runIds = await listRunIds();

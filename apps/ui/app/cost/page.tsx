@@ -1,6 +1,6 @@
 import { listRunIds, readRunEventsAll } from '@/lib/jsonl-reader';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 interface RunRow {
   id: string;

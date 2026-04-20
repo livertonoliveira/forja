@@ -1,4 +1,6 @@
 import { listRecentRuns } from '@/lib/forja-store';
+
+export const dynamic = 'force-dynamic';
 import { statusColors, gateTextColors } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
 
