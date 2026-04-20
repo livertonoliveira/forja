@@ -19,7 +19,7 @@
     "CHANGELOG.md"
   ],
   "bin": {
-    "forja": "./bin/forja.js"
+    "forja": "bin/forja.js"
   },
   "scripts": {
     "build": "tsx esbuild.config.ts",
