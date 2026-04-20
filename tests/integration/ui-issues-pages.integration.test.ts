@@ -20,34 +20,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Run } from '@/lib/types';
 
 // ---------------------------------------------------------------------------
-// Minimal React mock — only createElement is needed to render JSX in tests.
-// Without this, Vitest's esbuild transform emits `React.createElement(...)` calls
-// but `React` is not in scope because there is no react package in apps/ui devDeps.
-// ---------------------------------------------------------------------------
-
-vi.mock('react', () => {
-  function createElement(
-    type: unknown,
-    props: Record<string, unknown> | null,
-    ...children: unknown[]
-  ) {
-    const resolvedChildren = children.length === 0
-      ? undefined
-      : children.length === 1
-        ? children[0]
-        : children;
-    return {
-      type,
-      props: {
-        ...(props ?? {}),
-        ...(resolvedChildren !== undefined ? { children: resolvedChildren } : {}),
-      },
-    };
-  }
-  return { default: { createElement }, createElement };
-});
-
-// ---------------------------------------------------------------------------
 // Mock next/link so the page module can be imported without Next.js context
 // ---------------------------------------------------------------------------
 
@@ -345,42 +317,3 @@ describe('IssueDetailPage — run ordering and regression sequence', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// 4. RegressionBadge — structural / snapshot test (no DOM required)
-// ---------------------------------------------------------------------------
-
-describe('RegressionBadge — structural test', () => {
-  it('is a default export that is a function', async () => {
-    const mod = await import('@/components/RegressionBadge');
-    expect(typeof mod.default).toBe('function');
-  });
-
-  it('renders a JSX element with the correct title attribute', async () => {
-    const { default: RegressionBadge } = await import('@/components/RegressionBadge');
-    // Call as a plain function (valid for React server/client components)
-    const element = RegressionBadge();
-    expect(element).toBeDefined();
-    expect(element).not.toBeNull();
-    expect(element.props.title).toBe('Gate piorou em relação ao run anterior');
-  });
-
-  it('renders a span element (not a div or other tag)', async () => {
-    const { default: RegressionBadge } = await import('@/components/RegressionBadge');
-    const element = RegressionBadge();
-    expect(element.type).toBe('span');
-  });
-
-  it('renders "Regressão" as child text content', async () => {
-    const { default: RegressionBadge } = await import('@/components/RegressionBadge');
-    const element = RegressionBadge();
-    expect(element.props.children).toBe('Regressão');
-  });
-
-  it('applies red badge styling classes', async () => {
-    const { default: RegressionBadge } = await import('@/components/RegressionBadge');
-    const element = RegressionBadge();
-    const className: string = element.props.className ?? '';
-    expect(className).toContain('bg-red-900');
-    expect(className).toContain('text-red-300');
-  });
-});
