@@ -1,5 +1,15 @@
+import { listRunIds, readRunEventsAll } from './jsonl-reader';
+import { parseFindings } from './findings-parser';
+import type { Finding } from './types';
+
 type RunStatus = 'init' | 'spec' | 'dev' | 'test' | 'perf' | 'security' | 'review' | 'homolog' | 'pr' | 'done' | 'failed';
 type GateDecision = 'pass' | 'warn' | 'fail';
+
+export async function listAllFindings(): Promise<Finding[]> {
+  const runIds = await listRunIds();
+  const allEvents = await readRunEventsAll(runIds);
+  return runIds.flatMap((runId, i) => parseFindings(runId, allEvents[i]));
+}
 
 export interface RunSummary {
   id: string;
