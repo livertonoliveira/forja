@@ -16,9 +16,9 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-ALTER TABLE "findings" ALTER COLUMN "severity" SET DATA TYPE severity;--> statement-breakpoint
-ALTER TABLE "gate_decisions" ALTER COLUMN "decision" SET DATA TYPE gate_decision;--> statement-breakpoint
-ALTER TABLE "runs" ALTER COLUMN "status" SET DATA TYPE run_status;--> statement-breakpoint
+ALTER TABLE "findings" ALTER COLUMN "severity" SET DATA TYPE severity USING severity::severity;--> statement-breakpoint
+ALTER TABLE "gate_decisions" ALTER COLUMN "decision" SET DATA TYPE gate_decision USING decision::gate_decision;--> statement-breakpoint
+ALTER TABLE "runs" ALTER COLUMN "status" SET DATA TYPE run_status USING status::run_status;--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agents_run_id_idx" ON "agents" ("run_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agents_phase_id_idx" ON "agents" ("phase_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "cost_events_run_id_idx" ON "cost_events" ("run_id");--> statement-breakpoint
