@@ -14,8 +14,10 @@
 </p>
 
 <p align="center">
+  <a href="#what-is-forja">What is Forja?</a> ·
   <a href="#installation">Installation</a> ·
   <a href="#quick-start">Quick Start</a> ·
+  <a href="#harness-engine">Harness Engine</a> ·
   <a href="#commands">Commands</a> ·
   <a href="#how-it-works">How it Works</a> ·
   <a href="#stack-support">Stack Support</a>
@@ -37,7 +39,12 @@ Forja is a framework of [Claude Code](https://claude.ai/code) slash commands tha
 
 **`/forja:run`** takes a single task through the full pipeline: **Implementation → Testing → Performance → Security → Code Review → Acceptance** — with quality gates and maximum parallelism.
 
-Everything produces persistent markdown artifacts that serve as durable memory for the LLM.
+Everything produces persistent artifacts — in Linear or local markdown files — that serve as durable memory for the LLM.
+
+Forja has two layers:
+
+- **Slash commands** — Claude Code markdown commands that drive the AI pipeline (works anywhere, no extra setup)
+- **Harness Engine** — A TypeScript runtime that adds persistent state, cost tracking, resumable runs, and real-time observability via Claude Code hooks
 
 ---
 
@@ -46,7 +53,8 @@ Everything produces persistent markdown artifacts that serve as durable memory f
 ### 1. Install
 
 ```bash
-curl -sL https://raw.githubusercontent.com/livertonoliveira/forja/main/install.sh | bash
+npm install -g @forja-hq/cli
+forja setup
 ```
 
 ### 2. Initialize
@@ -91,45 +99,159 @@ Creates atomic commits (Conventional Commits), pushes the branch, and opens a PR
 
 ## Installation
 
-### One-line install (recommended)
+### Slash commands only (lightweight)
 
 ```bash
-curl -sL https://raw.githubusercontent.com/livertonoliveira/forja/main/install.sh | bash
+npm install -g @forja-hq/cli
+forja setup
 ```
 
-> **Note:** The repository must be public for this to work. For private repos, use the manual install method below.
+That's it. `forja setup` copies the slash commands to `.claude/commands/forja/`, configures the Claude Code hooks in `.claude/settings.json`, and appends Forja configuration to your `CLAUDE.md`. The pipeline works immediately via the LLM, with state stored in Linear or local markdown files.
 
-### Manual install
+### With Harness Engine (persistent state + cost tracking)
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/livertonoliveira/forja.git /tmp/forja
-
-# 2. Copy commands to your project
-mkdir -p .claude/commands/forja/audit
-cp /tmp/forja/commands/forja/*.md .claude/commands/forja/
-cp /tmp/forja/commands/forja/audit/*.md .claude/commands/forja/audit/
-
-# 3. Add Forja config to your CLAUDE.md
-cat /tmp/forja/CLAUDE.forja.md >> CLAUDE.md
-
-# 4. Clean up
-rm -rf /tmp/forja
+npm install -g @forja-hq/cli
+forja setup --with-harness
 ```
+
+`--with-harness` additionally copies `docker-compose.forja.yml` to your project, starts PostgreSQL, and runs the database migrations. Requires Docker.
+
+### Optional configuration
+
+```bash
+# Override the default PostgreSQL connection
+forja config set store_url postgresql://user:password@host:5432/dbname
+
+# Or via environment variable
+export FORJA_STORE_URL=postgresql://user:password@host:5432/dbname
+
+# GitHub Checks API integration
+export GITHUB_TOKEN=ghp_...
+
+# Slack notifications
+export FORJA_SLACK_WEBHOOK_URL=https://hooks.slack.com/...
+```
+
+Configuration is resolved in this priority order:
+1. `FORJA_STORE_URL` environment variable
+2. `forja/.forja-config.json` (project-level)
+3. `~/.forja/config.json` (user-level)
+4. Default: `postgresql://forja:forja@localhost:5432/forja`
 
 ### Updating
 
-Already have Forja installed? Run this from your project root:
-
 ```bash
-curl -sL https://raw.githubusercontent.com/livertonoliveira/forja/main/update.sh | bash
+npm update -g @forja-hq/cli
+forja setup          # re-copies updated slash commands
 ```
-
-This overwrites all command files unconditionally and reports what changed. It also updates itself, so future `/forja:update` calls will always work correctly.
 
 ### Verify
 
-Open Claude Code in your project and type `/forja:init`. If it detects your stack, you're good to go.
+Open Claude Code in your project and run `/forja:init`. If it detects your stack, you're good to go.
+
+---
+
+## Harness Engine
+
+The Harness Engine is the infrastructure layer that turns Forja from ephemeral slash commands into a persistent, observable pipeline runtime.
+
+### Why it exists
+
+Without the Harness, Forja's state lives only in Linear issues or local markdown files. If a Claude Code session breaks mid-pipeline, you lose track of what ran. Quality gate decisions are made by the LLM and not independently verifiable. There's no way to know how much a run cost.
+
+The Harness solves all of this.
+
+### How it works
+
+The `forja` binary registers itself as a [Claude Code hook](https://docs.anthropic.com/en/docs/claude-code/hooks) that intercepts every tool call:
+
+```
+Claude Code executes a tool
+  → forja hook pre-tool-use     (receives tool name + input via stdin)
+      → logs event to PostgreSQL, applies policies, can block the tool
+  → Claude executes the tool
+  → forja hook post-tool-use    (receives tool output)
+      → accumulates cost in USD, records duration, detects findings
+  → Claude stops
+  → forja hook stop
+      → finalizes run, consolidates quality report
+```
+
+This means **every tool call** is stored in PostgreSQL with cost, duration, and result — creating a complete, immutable audit trail.
+
+### CLI reference
+
+```bash
+# Start a tracked pipeline run
+forja run <issue-id> [--model claude-opus-4-7] [--dry-run] [--force]
+
+# Resume an interrupted run from the last checkpoint
+forja resume <run-id>
+
+# Evaluate quality gates for a run (exit: 0=pass 1=warn 2=fail)
+forja gate --run <run-id> [--policy path/to/policy.yml]
+
+# View full execution trace
+forja trace --run <run-id> [--format md|json|pretty] [--output report.md]
+
+# Cost breakdown per phase in USD
+forja cost --run <run-id>
+
+# Launch local observability dashboard
+forja ui
+
+# Config management
+forja config get store_url
+forja config set store_url postgresql://...
+forja config list
+
+# Database management
+forja infra migrate           # Run pending migrations
+forja infra status            # Show connection and migration status
+
+# Maintenance
+forja prune                   # Delete runs older than retention period
+
+# Cron scheduling
+forja schedule list
+forja schedule delete <id>
+
+# Replay a previous run with the same inputs
+forja replay <run-id>
+```
+
+### What the Harness adds vs. slash commands alone
+
+| Capability | Slash commands only | With Harness |
+|---|---|---|
+| Pipeline state persistence | Linear or markdown files | PostgreSQL with FSM |
+| Session interruption | Restart from scratch | `forja resume <run-id>` |
+| Cost tracking | Not available | USD per phase via `forja cost` |
+| Quality gate auditability | LLM decision | Policy-based evaluator (YAML) |
+| Tool call history | Not available | Full trace in PostgreSQL |
+| Real-time tool interception | Not available | Pre/post hooks |
+| Observability dashboard | Not available | `forja ui` |
+| Scheduled pipelines | Not available | `forja schedule` |
+| GitHub Checks integration | Not available | Automatic on run completion |
+
+### Quality gate policies
+
+Gates are evaluated by the policy engine in `policies/`. You can override the default policy per project:
+
+```yaml
+# forja/.forja-policy.yml
+gate:
+  fail_on: [critical, high]
+  warn_on: [medium]
+  pass_on: [low]
+actions:
+  on_fail:
+    - create_linear_issue
+    - post_slack_notification
+  on_warn:
+    - create_linear_issue
+```
 
 ---
 
@@ -300,6 +422,9 @@ For **monorepos**, Forja detects workspaces and launches parallel agents per aff
 | Git repository | **Yes** | Forja uses git diff for analysis |
 | [GitHub CLI](https://cli.github.com/) (`gh`) | Recommended | For `/forja:pr` to create PRs |
 | [Linear](https://linear.app) MCP | Optional | For issue tracking integration |
+| PostgreSQL 16+ | Optional | Required for Harness Engine (persistent state, cost tracking) |
+| Node.js 20+ | Optional | Required for Harness Engine binary |
+| Docker / Docker Compose | Optional | Easiest way to run PostgreSQL for the Harness |
 
 ---
 
@@ -315,6 +440,29 @@ For **monorepos**, Forja detects workspaces and launches parallel agents per aff
 ```
 
 Forja fetches the issue, creates a full specification with granular tasks, and you develop each one through the quality pipeline.
+
+### Resume an interrupted pipeline (requires Harness)
+
+```bash
+# If Claude Code crashed or timed out mid-pipeline:
+forja resume <run-id>
+
+# Find the run-id from recent runs:
+forja trace --format pretty | head -20
+```
+
+### Check what a pipeline run cost
+
+```bash
+forja cost --run <run-id>
+# Output: phase-by-phase USD breakdown with token counts
+```
+
+### View the full trace of a run
+
+```bash
+forja trace --run <run-id> --format md --output report.md
+```
 
 ### Quick security scan on current changes
 
@@ -352,12 +500,22 @@ Reads `forja/config.md`, determines your project type, and launches all applicab
 
 ## Contributing
 
-Contributions are welcome! Forja is built entirely as markdown command files — no build step, no dependencies.
+Contributions are welcome! The slash commands are plain markdown files — no build step required to work on them.
 
 1. Fork the repo
 2. Edit or add command files in `commands/forja/`
-3. Test in a real project by copying to `.claude/commands/forja/`
+3. Test in a real project: `npm run build && forja setup` from the repo root
 4. Open a PR
+
+For Harness Engine contributions (TypeScript):
+
+```bash
+npm install
+npm run dev        # tsx watch mode
+npm run typecheck  # type check
+npm test           # run tests
+npm run build      # compile to bin/forja
+```
 
 ---
 
