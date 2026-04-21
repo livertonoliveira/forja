@@ -330,6 +330,10 @@ export interface AuditFinding {
   category: string;
   /** Detailed description of the finding, including remediation guidance. */
   description: string;
+  /** CWE identifier for this finding, e.g. "CWE-89" */
+  cwe?: string;
+  /** Minimal exploit vector string used by the PoC generator (critical/high only). */
+  exploitVector?: string;
 }
 
 /**
