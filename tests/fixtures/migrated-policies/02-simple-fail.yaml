@@ -1,0 +1,6 @@
+version: '2'
+gates:
+  - name: block-all-criticals
+    when: findings.countBySeverity("critical") > 0
+    then:
+      - fail

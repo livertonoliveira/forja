@@ -1,0 +1,13 @@
+version: "1"
+policies:
+  - name: gate-critical
+    when:
+      finding.severity: critical
+    then:
+      - action: fail_gate
+      - action: http_post
+        url: "https://hooks.slack.com/services/T123/B456/xyzxyz"
+        headers:
+          Content-Type: "application/json"
+        payload:
+          text: "Critical finding in {{runId}}"

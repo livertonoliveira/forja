@@ -1,0 +1,7 @@
+version: "1"
+policies:
+  - name: block-all-criticals
+    when:
+      finding.severity: critical
+    then:
+      - action: fail_gate

@@ -1,0 +1,19 @@
+version: "1"
+policies:
+  - name: notify-on-critical
+    when:
+      finding.severity: critical
+    then:
+      - action: fail_gate
+      - action: notify_slack
+        channel: "#security-alerts"
+        message: "Security critical in {{runId}}: {{finding.title}}"
+
+  - name: notify-on-high
+    when:
+      finding.severity: high
+    then:
+      - action: warn_gate
+      - action: notify_slack
+        channel: "#dev-alerts"
+        message: "High severity finding: {{finding.title}}"

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import yaml from 'js-yaml';
 import { readFile } from 'fs/promises';
 import fs, { type FSWatcher } from 'fs';
+import { warnDeprecated } from '../deprecation.js';
 
 export const PolicyActionSchema = z.object({
   action: z.enum(['fail_gate', 'warn_gate', 'pass_gate', 'log', 'http_post', 'notify_slack']),
@@ -30,7 +31,15 @@ export type PolicyFile = z.infer<typeof PolicyFileSchema>;
 export async function loadPolicy(path: string): Promise<PolicyFile> {
   const content = await readFile(path, 'utf-8');
   const raw = yaml.load(content);
-  return PolicyFileSchema.parse(raw);  // throws ZodError if invalid
+  const policy = PolicyFileSchema.parse(raw);  // throws ZodError if invalid
+  // REQ-16: single-per-session deprecation warning when legacy format is loaded at runtime
+  warnDeprecated({
+    name: 'legacy-policy-format',
+    since: '2.0.0',
+    removeIn: '3.0.0',
+    replacement: 'DSL gate format (version: "2")',
+  });
+  return policy;
 }
 
 export function watchPolicy(path: string, onChange: (policy: PolicyFile) => void): FSWatcher {

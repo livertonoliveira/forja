@@ -1,0 +1,13 @@
+version: '2'
+gates:
+  - name: gate-critical
+    when: findings.countBySeverity("critical") > 0
+    then:
+      - fail
+      - 'log("Critical: {{finding.title}} at {{finding.filePath}}")'
+      - 'notify_slack("#ops", "Ops alert: {{finding.title}}")'
+  - name: gate-medium
+    when: findings.countBySeverity("medium") > 0
+    then:
+      - warn
+      - 'log("Medium severity: {{finding.title}}")'
