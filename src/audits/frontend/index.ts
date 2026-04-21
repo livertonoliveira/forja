@@ -1,6 +1,7 @@
 import type { AuditModule, AuditFinding, AuditReport, StackInfo, AuditContext } from '../../plugin/types.js';
 import { AuditReportSchema } from '../types.js';
 import { runNextjsAudit } from './nextjs/index.js';
+import { runGenericFrontendAudit } from './generic/index.js';
 import { countBySeverity } from './utils.js';
 
 const SUPPORTED_FRAMEWORKS = [
@@ -9,6 +10,7 @@ const SUPPORTED_FRAMEWORKS = [
   'react', 'vue', 'angular', 'svelte',
 ];
 
+// Known design limitation: not safe for concurrent audit runs (matches backend pattern).
 let _lastStack: StackInfo = { language: 'typescript', runtime: 'node' };
 
 function isNextJs(framework: string): boolean {
@@ -76,8 +78,7 @@ export const frontendAuditModule: AuditModule = {
     if (isNextJs(fw)) {
       return runNextjsAudit(ctx);
     }
-    // Generic 11-category methodology — implemented in Part 2
-    return [];
+    return runGenericFrontendAudit(ctx);
   },
 
   report(findings: AuditFinding[]): AuditReport {

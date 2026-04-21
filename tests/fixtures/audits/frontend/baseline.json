@@ -15,10 +15,10 @@
     "note": "Each heuristic has a positive fixture that must produce ≥1 finding"
   },
   "vite": {
-    "fixtureDir": "tests/fixtures/audits/frontend/vite",
+    "fixtureDir": "tests/fixtures/audits/frontend/generic",
     "methodology": "generic-11-category",
-    "status": "pending-part-2",
-    "expectedFindings": 0,
-    "note": "Generic 11-category methodology not yet implemented. Part 2 will add coverage and update this baseline."
+    "status": "implemented-part-2",
+    "expectedMinFindings": 1,
+    "note": "Generic 11-category methodology implemented in Part 2. Positive fixtures should produce ≥1 finding each."
   }
 }

@@ -54,6 +54,34 @@ export function collectAppRouterFiles(ctx: AuditContext): string[] {
   }
 }
 
+export function collectCssFiles(dir: string, signal: AbortSignal): string[] {
+  const results: string[] = [];
+  try {
+    if (signal.aborted) return results;
+    const entries = readdirSync(dir);
+    for (const name of entries) {
+      if (signal.aborted) return results;
+      if (SKIP_DIRS.has(name)) continue;
+      const full = join(dir, name);
+      let stat;
+      try {
+        stat = lstatSync(full);
+      } catch {
+        continue;
+      }
+      if (stat.isSymbolicLink()) continue;
+      if (stat.isDirectory()) {
+        results.push(...collectCssFiles(full, signal));
+      } else if (stat.isFile() && name.endsWith('.css')) {
+        results.push(full);
+      }
+    }
+  } catch {
+    return [];
+  }
+  return results;
+}
+
 export function countBySeverity(findings: AuditFinding[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const f of findings) {
