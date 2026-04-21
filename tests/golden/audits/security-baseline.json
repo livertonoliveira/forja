@@ -1,0 +1,9 @@
+[
+  { "category": "security:owasp:a03", "severity": "critical", "filePathContains": "injection-positive" },
+  { "category": "security:owasp:a02", "severity": "high", "filePathContains": "crypto-positive" },
+  { "category": "security:owasp:a07", "severity": "critical", "filePathContains": "auth-positive" },
+  { "category": "security:owasp:a01", "severity": "high", "filePathContains": "access-control-positive" },
+  { "category": "security:owasp:a05", "severity": "high", "filePathContains": "misconfiguration-positive" },
+  { "category": "security:owasp:a09", "severity": "high", "filePathContains": "logging-positive" },
+  { "category": "security:owasp:a10", "severity": "high", "filePathContains": "ssrf-positive" }
+]
