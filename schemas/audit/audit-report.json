@@ -1,0 +1,164 @@
+{
+  "$ref": "#/definitions/AuditReport",
+  "definitions": {
+    "AuditFinding": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[\\w:\\-]+$"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "filePath": {
+          "type": "string"
+        },
+        "line": {
+          "type": "number"
+        },
+        "endLine": {
+          "type": "number"
+        },
+        "snippet": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "cwe": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "remediation": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "severity",
+        "title",
+        "category",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "AuditReport": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0"
+        },
+        "auditId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "stackInfo": {
+          "type": "object",
+          "properties": {
+            "language": {
+              "type": "string"
+            },
+            "runtime": {
+              "type": "string"
+            },
+            "framework": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "language",
+            "runtime"
+          ],
+          "additionalProperties": false
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "finishedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AuditFinding"
+          }
+        },
+        "markdown": {
+          "type": "string",
+          "maxLength": 65536
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "type": "number"
+            },
+            "bySeverity": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          },
+          "required": [
+            "total",
+            "bySeverity"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "auditId",
+        "stackInfo",
+        "startedAt",
+        "finishedAt",
+        "findings",
+        "markdown",
+        "summary"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

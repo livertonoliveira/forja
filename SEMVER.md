@@ -66,8 +66,11 @@ All schemas re-exported from [`src/schemas/index.ts`](src/schemas/index.ts). Typ
 | [`CostEventSchema`](src/schemas/cost.ts#L3) | `src/schemas/cost.ts` | `id`, `runId`, `phaseId`, `agentId`, `spanId`?, `model`, `tokensIn`, `tokensOut`, `cacheCreationTokens`, `cacheReadTokens`, `costUsd`, `createdAt` | 0.1.0 |
 | [`RunStateEnum`](src/schemas/run.ts#L3) | `src/schemas/run.ts` | `init\|spec\|dev\|test\|perf\|security\|review\|homolog\|pr\|done\|failed` | 0.1.0 |
 | [`TraceEventSchema`](src/schemas/trace.ts#L3) | `src/schemas/trace.ts` | `ts`, `runId`, `phaseId`?, `agentId`?, `spanId`?, `eventType`, `commandFingerprint`?, `payload` | 0.1.0 |
+| [`AuditFindingSchema`](src/audits/types.ts) | `src/audits/types.ts` | `schemaVersion`, `id`, `severity`, `title`, `category`, `description`, `filePath`?, `line`?, `endLine`?, `snippet`?, `cwe`?, `remediation`?, `confidence`? | 0.1.3 |
+| [`AuditReportSchema`](src/audits/types.ts) | `src/audits/types.ts` | `schemaVersion`, `auditId`, `stackInfo`, `startedAt`, `finishedAt`, `findings`, `markdown`, `summary` | 0.1.3 |
+| [`StackInfoSchema`](src/audits/types.ts) | `src/audits/types.ts` | `language`, `runtime`, `framework`? | 0.1.3 |
 
-Exported TypeScript types: `Config`, `PhaseTimeouts`, `Finding`, `GateDecision`, `CostEvent`, `RunState`, `TraceEvent`.
+Exported TypeScript types: `Config`, `PhaseTimeouts`, `Finding`, `GateDecision`, `CostEvent`, `RunState`, `TraceEvent`, `AuditFindingRecord`, `AuditReportRecord`, `StackInfoRecord`.
 
 ### Policy YAML Format
 
@@ -149,7 +152,14 @@ All types are self-contained and carry no dependency on internal Forja classes. 
 
 ### Audit JSON Schema
 
-> **Placeholder** — The canonical JSON schema for audit output will be defined in REQ-09. Until then, [`FindingSchema`](src/schemas/finding.ts#L3) is the runtime contract for individual findings.
+The canonical JSON Schemas for audit output are generated from Zod schemas and stored in [`schemas/audit/`](schemas/audit/).
+
+| File | Source Schema | Description |
+|------|--------------|-------------|
+| [`schemas/audit/audit-finding.json`](schemas/audit/audit-finding.json) | `AuditFindingSchema` | Single finding produced by an `AuditModule` |
+| [`schemas/audit/audit-report.json`](schemas/audit/audit-report.json) | `AuditReportSchema` | Full report returned by `AuditModule.report` |
+
+Regenerate with `npm run schemas:gen`. Both files follow JSON Schema Draft 7.
 
 ### `forja/config.md` Format
 
@@ -194,6 +204,8 @@ Each public artifact type will expose a `schemaVersion` field once REQ-20 is imp
 | Gate Policy YAML | `version: "1"` | Stable since 0.1.0 |
 | Models Policy YAML | `version: "1"` | Stable since 0.1.0 |
 | Tools Policy YAML | `version: "1"` | Stable since 0.1.0 |
+| `AuditFindingSchema` | `1.0` | Stable since 0.1.3 |
+| `AuditReportSchema` | `1.0` | Stable since 0.1.3 |
 
 ---
 
