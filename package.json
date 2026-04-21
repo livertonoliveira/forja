@@ -10,6 +10,7 @@
   "files": [
     "bin/",
     "src/",
+    "schemas/",
     "commands/",
     "policies/",
     "apps/ui/.next/standalone/",
@@ -51,7 +52,8 @@
     "changelog": "tsx scripts/generate-changelog.ts",
     "check:breaking": "tsx scripts/check-breaking-changes.ts",
     "plugin-api:gen": "tsx scripts/generate-plugin-api-doc.ts",
-    "plugin-api:check": "tsx scripts/generate-plugin-api-doc.ts --check"
+    "plugin-api:check": "tsx scripts/generate-plugin-api-doc.ts --check",
+    "schemas:gen": "tsx schemas/index.ts"
   },
   "dependencies": {
     "commander": "^12.0.0",
