@@ -292,6 +292,8 @@ export interface StackInfo {
   runtime: string;
   /** Optional framework detected (e.g. `'nextjs'`, `'express'`). */
   framework?: string;
+  /** Optional database technology detected (e.g. `'mongodb'`, `'postgresql'`, `'mysql'`). */
+  database?: string;
 }
 
 /**
@@ -389,15 +391,16 @@ export interface AuditReport {
  *   empty array and log via `ctx` instead.
  * - `detect` is synchronous and must be fast — it is called before any I/O.
  *   Return `{ applicable: false }` for stacks your module does not support.
- * - `report` receives ALL findings from `run` and is responsible for both the
- *   human-readable markdown and the machine-readable JSON representation.
+ * - `report` receives ALL findings from `run` plus the AuditContext, and is
+ *   responsible for both the human-readable markdown and the machine-readable
+ *   JSON representation. Passing ctx eliminates the need for module-level state.
  */
 export interface AuditModule {
   /** Unique module identifier. Use a namespaced prefix to avoid collisions. */
   id: string;
   detect(stack: StackInfo): { applicable: boolean; reason?: string };
   run(ctx: AuditContext): Promise<AuditFinding[]>;
-  report(findings: AuditFinding[]): AuditReport;
+  report(findings: AuditFinding[], ctx: AuditContext): AuditReport;
 }
 
 /**
