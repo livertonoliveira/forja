@@ -1,0 +1,20 @@
+version: '2'
+gates:
+  - name: gate-critical
+    when: findings.countBySeverity("critical") > 0
+    then:
+      - fail
+      - 'log("Critical finding: {{finding.title}}")'
+      - notify_slack("#eng-alerts", "Critical finding in run {{runId}}")
+  - name: gate-high
+    when: findings.countBySeverity("high") > 0
+    then:
+      - fail
+  - name: gate-medium
+    when: findings.countBySeverity("medium") > 0
+    then:
+      - warn
+  - name: gate-low
+    when: findings.countBySeverity("low") > 0
+    then:
+      - pass

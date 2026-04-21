@@ -1,0 +1,12 @@
+version: '2'
+gates:
+  - name: notify-on-critical
+    when: findings.countBySeverity("critical") > 0
+    then:
+      - fail
+      - 'notify_slack("#security-alerts", "Security critical in {{runId}}: {{finding.title}}")'
+  - name: notify-on-high
+    when: findings.countBySeverity("high") > 0
+    then:
+      - warn
+      - 'notify_slack("#dev-alerts", "High severity finding: {{finding.title}}")'

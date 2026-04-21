@@ -1,0 +1,7 @@
+version: '2'
+gates:
+  - name: gate-critical
+    when: findings.countBySeverity("critical") > 0
+    then:
+      - fail
+      - http_post("https://hooks.slack.com/services/T123/B456/xyzxyz")

@@ -1,0 +1,30 @@
+version: "1"
+policies:
+  - name: gate-critical
+    when:
+      finding.severity: critical
+    then:
+      - action: fail_gate
+      - action: log
+        message: "Critical finding: {{finding.title}}"
+      - action: notify_slack
+        channel: "#eng-alerts"
+        message: "Critical finding in run {{runId}}"
+
+  - name: gate-high
+    when:
+      finding.severity: high
+    then:
+      - action: fail_gate
+
+  - name: gate-medium
+    when:
+      finding.severity: medium
+    then:
+      - action: warn_gate
+
+  - name: gate-low
+    when:
+      finding.severity: low
+    then:
+      - action: pass_gate
