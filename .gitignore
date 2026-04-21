@@ -31,3 +31,4 @@ forja/.forja-config.json
 
 # Forja pipeline quality findings (generated artifacts, not source)
 forja/changes/**/*-findings.md
+forja/*-findings-*.md
