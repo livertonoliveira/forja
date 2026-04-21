@@ -10,9 +10,6 @@ const SUPPORTED_FRAMEWORKS = [
   'react', 'vue', 'angular', 'svelte',
 ];
 
-// Known design limitation: not safe for concurrent audit runs (matches backend pattern).
-let _lastStack: StackInfo = { language: 'typescript', runtime: 'node' };
-
 function isNextJs(framework: string): boolean {
   const fw = framework.toLowerCase();
   return fw === 'nextjs' || fw === 'next.js' || fw === 'next';
@@ -73,7 +70,6 @@ export const frontendAuditModule: AuditModule = {
   },
 
   async run(ctx: AuditContext): Promise<AuditFinding[]> {
-    _lastStack = ctx.stack;
     const fw = ctx.stack.framework?.toLowerCase() ?? '';
     if (isNextJs(fw)) {
       return runNextjsAudit(ctx);
@@ -81,15 +77,15 @@ export const frontendAuditModule: AuditModule = {
     return runGenericFrontendAudit(ctx);
   },
 
-  report(findings: AuditFinding[]): AuditReport {
-    const framework = _lastStack.framework ?? 'unknown';
+  report(findings: AuditFinding[], ctx: AuditContext): AuditReport {
+    const framework = ctx.stack.framework ?? 'unknown';
     const markdown = buildMarkdown(findings, framework);
     const now = new Date().toISOString();
 
     const json = AuditReportSchema.parse({
       schemaVersion: '1.0',
       auditId: 'audit:frontend',
-      stackInfo: _lastStack,
+      stackInfo: ctx.stack,
       startedAt: now,
       finishedAt: now,
       findings: findings.map((f, i) => ({

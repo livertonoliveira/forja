@@ -13,9 +13,6 @@ import { detectDataIntegrityFailures } from './owasp/a08-data-integrity-failures
 import { detectLoggingMonitoring } from './owasp/a09-logging-monitoring.js';
 import { detectSSRF } from './owasp/a10-ssrf.js';
 
-let _lastStack: StackInfo = { language: 'typescript', runtime: 'node' };
-let _generatePocs = false;
-
 export const securityAuditModule: AuditModule = {
   id: 'audit:security',
 
@@ -24,8 +21,6 @@ export const securityAuditModule: AuditModule = {
   },
 
   async run(ctx: AuditContext): Promise<AuditFinding[]> {
-    _lastStack = ctx.stack;
-    _generatePocs = ctx.config['generatePocs'] === true;
     const results = await Promise.all([
       detectBrokenAccessControl(ctx),
       detectCryptographicFailures(ctx),
@@ -41,9 +36,9 @@ export const securityAuditModule: AuditModule = {
     return results.flat();
   },
 
-  report(findings: AuditFinding[]): AuditReport {
+  report(findings: AuditFinding[], ctx: AuditContext): AuditReport {
     let markdown = buildMarkdown('Security Audit Report — OWASP Top 10', findings);
-    if (_generatePocs) {
+    if (ctx.config['generatePocs'] === true) {
       const pocReport = generatePocReport(findings);
       if (pocReport) markdown += `\n\n---\n\n${pocReport}`;
     }
@@ -51,7 +46,7 @@ export const securityAuditModule: AuditModule = {
     const json = AuditReportSchema.parse({
       schemaVersion: '1.0',
       auditId: 'audit:security',
-      stackInfo: _lastStack,
+      stackInfo: ctx.stack,
       startedAt: now,
       finishedAt: now,
       findings: findings.map((f, i) => ({

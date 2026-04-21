@@ -35,7 +35,7 @@ describe('frontend audit golden test', () => {
   it('produces stable markdown report structure', async () => {
     const ctx = makeCtx(GENERIC_FIXTURES_DIR, 'vite');
     const findings = await frontendAuditModule.run(ctx);
-    const report = frontendAuditModule.report(findings);
+    const report = frontendAuditModule.report(findings, ctx);
     expect(report.markdown).toContain('# Frontend Audit Report');
     expect(report.markdown).toContain('## Summary');
     expect(report.markdown).toContain('## Findings');
@@ -46,7 +46,7 @@ describe('frontend audit golden test', () => {
   it('summary counts match findings array length', async () => {
     const ctx = makeCtx(GENERIC_FIXTURES_DIR, 'vite');
     const findings = await frontendAuditModule.run(ctx);
-    const report = frontendAuditModule.report(findings);
+    const report = frontendAuditModule.report(findings, ctx);
     expect(report.json.summary.total).toBe(findings.length);
   });
 });

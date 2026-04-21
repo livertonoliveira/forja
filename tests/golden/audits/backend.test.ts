@@ -46,7 +46,7 @@ describe('backend audit golden test', () => {
   it('produces stable markdown snapshot', async () => {
     const ctx = makeCtx(FIXTURES_DIR);
     const findings = await backendAuditModule.run(ctx);
-    const report = backendAuditModule.report(findings);
+    const report = backendAuditModule.report(findings, ctx);
 
     // Snapshot: check structural stability (sections present)
     expect(report.markdown).toContain('# Backend Audit Report');
@@ -59,7 +59,7 @@ describe('backend audit golden test', () => {
   it('summary counts match findings array length', async () => {
     const ctx = makeCtx(FIXTURES_DIR);
     const findings = await backendAuditModule.run(ctx);
-    const report = backendAuditModule.report(findings);
+    const report = backendAuditModule.report(findings, ctx);
     expect(report.json.summary.total).toBe(findings.length);
   });
 });
