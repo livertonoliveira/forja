@@ -32,7 +32,7 @@
     "lint": "eslint src --ext .ts",
     "test": "vitest run --passWithNoTests tests/",
     "test:update-golden": "UPDATE_GOLDEN=1 vitest run --passWithNoTests tests/golden.test.ts",
-    "version:bump": "bash scripts/bump-version.sh",
+    "release": "tsx scripts/release.ts",
     "check:schemas": "tsx scripts/check-schema-coverage.ts",
     "changelog": "tsx scripts/generate-changelog.ts",
     "check:breaking": "tsx scripts/check-breaking-changes.ts"
