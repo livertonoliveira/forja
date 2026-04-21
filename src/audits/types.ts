@@ -19,6 +19,7 @@ export const AuditFindingSchema = z.object({
   snippet: z.string().max(2048).optional(),
   cwe: z.string().max(32).optional(),
   remediation: z.string().max(4096).optional(),
+  exploitVector: z.string().max(2048).optional(),
   confidence: z.enum(['low', 'medium', 'high']).optional(),
 });
 
