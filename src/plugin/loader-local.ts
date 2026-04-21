@@ -1,12 +1,8 @@
 import { access } from 'node:fs/promises';
 import { readdir } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
-import { z } from 'zod';
 import type { RegisteredPlugin } from './registry.js';
-
-const PluginEntrySchema = z.object({ id: z.string().min(1) }).passthrough();
-
-const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+import { resolvePluginId } from './plugin-entry-parser.js';
 
 interface LoadOptions {
   cwd: string;
@@ -56,18 +52,11 @@ export async function loadLocalPlugins(opts: LoadOptions): Promise<RegisteredPlu
       continue;
     }
 
-    const safeValues = Object.entries(result.value)
-      .filter(([key]) => !BLOCKED_KEYS.has(key))
-      .map(([, value]) => value);
+    const { id, hasValidExports } = resolvePluginId(result.value, file.replace(/\.(ts|js)$/, ''));
 
-    const validEntries = safeValues.filter(value => PluginEntrySchema.safeParse(value).success);
-
-    if (validEntries.length === 0) {
+    if (!hasValidExports) {
       warn(relPath, 'No valid plugin exports found (expected at least one object with a string `id`)');
     }
-
-    const firstEntry = validEntries[0] as { id: string } | undefined;
-    const id = firstEntry?.id ?? file.replace(/\.(ts|js)$/, '');
 
     plugins.push({
       id,
