@@ -1,0 +1,66 @@
+{
+  "$ref": "#/definitions/CostEventSchema",
+  "definitions": {
+    "CostEventSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "runId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "phaseId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "agentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "spanId": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "tokensIn": {
+          "type": "integer"
+        },
+        "tokensOut": {
+          "type": "integer"
+        },
+        "cacheCreationTokens": {
+          "type": "integer",
+          "default": 0
+        },
+        "cacheReadTokens": {
+          "type": "integer",
+          "default": 0
+        },
+        "costUsd": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "runId",
+        "phaseId",
+        "agentId",
+        "model",
+        "tokensIn",
+        "tokensOut",
+        "costUsd",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

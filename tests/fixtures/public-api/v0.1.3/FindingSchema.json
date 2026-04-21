@@ -1,0 +1,75 @@
+{
+  "$ref": "#/definitions/FindingSchema",
+  "definitions": {
+    "FindingSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "runId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "phaseId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "agentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "category": {
+          "type": "string"
+        },
+        "filePath": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "suggestion": {
+          "type": "string"
+        },
+        "owasp": {
+          "type": "string"
+        },
+        "cwe": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "runId",
+        "phaseId",
+        "severity",
+        "category",
+        "title",
+        "description",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
