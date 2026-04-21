@@ -501,6 +501,8 @@ export interface AuditFinding {
     line?: number;
     category: string;
     description: string;
+    cwe?: string;
+    exploitVector?: string;
 }
 ```
 
