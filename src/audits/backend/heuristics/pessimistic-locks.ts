@@ -1,22 +1,7 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import type { AuditContext, AuditFinding } from '../../../plugin/types.js';
-
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '__tests__']);
-
-function collectFiles(dir: string): string[] {
-  const results: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isDirectory()) {
-      if (!SKIP_DIRS.has(entry.name)) {
-        results.push(...collectFiles(join(dir, entry.name)));
-      }
-    } else if (entry.isFile() && /\.[jt]s$/.test(entry.name)) {
-      results.push(join(dir, entry.name));
-    }
-  }
-  return results;
-}
+import { collectFiles, validateCwd } from '../utils.js';
 
 const FOR_UPDATE_RE = /FOR\s+UPDATE/i;
 const NOWAIT_RE = /NOWAIT/i;
@@ -25,10 +10,11 @@ const LOCK_TIMEOUT_RE = /lock_timeout/i;
 const TX_BEGIN_RE = /\bBEGIN\b|START\s+TRANSACTION|\.transaction\(|withTransaction\(|transactional/i;
 
 export async function detectPessimisticLocks(ctx: AuditContext): Promise<AuditFinding[]> {
+  validateCwd(ctx.cwd);
   const srcDir = join(ctx.cwd, 'src');
   let files: string[];
   try {
-    files = collectFiles(srcDir);
+    files = collectFiles(srcDir, ctx.abortSignal);
   } catch {
     return [];
   }
@@ -36,6 +22,7 @@ export async function detectPessimisticLocks(ctx: AuditContext): Promise<AuditFi
   const findings: AuditFinding[] = [];
 
   for (const filePath of files) {
+    if (ctx.abortSignal.aborted) break;
     const relativePath = relative(ctx.cwd, filePath);
     let lines: string[];
     try {

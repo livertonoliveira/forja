@@ -1,31 +1,18 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import type { AuditContext, AuditFinding } from '../../../plugin/types.js';
+import { collectFiles, validateCwd } from '../utils.js';
 
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '__tests__']);
 const QUERY_METHODS =
   /await\s+\w[\w.]*\s*\.\s*(?:find|findOne|findMany|findAndCount|query|execute|select|insert|update|delete|count|save|remove|getMany|getOne)\s*\(/;
 const LOOP_PATTERN = /(?:forEach|map)\(\s*async/;
 
-function collectFiles(dir: string): string[] {
-  const results: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (SKIP_DIRS.has(entry.name)) continue;
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      results.push(...collectFiles(full));
-    } else if (entry.isFile() && /\.[jt]s$/.test(entry.name)) {
-      results.push(full);
-    }
-  }
-  return results;
-}
-
 export async function detectNPlusOne(ctx: AuditContext): Promise<AuditFinding[]> {
+  validateCwd(ctx.cwd);
   const srcDir = join(ctx.cwd, 'src');
   let files: string[];
   try {
-    files = collectFiles(srcDir);
+    files = collectFiles(srcDir, ctx.abortSignal);
   } catch {
     return [];
   }

@@ -1,35 +1,32 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import type { AuditContext, AuditFinding } from '../../../plugin/types.js';
+import { collectFiles, validateCwd } from '../utils.js';
 
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '__tests__']);
 const NESTJS_GET = /@Get\(/;
 const EXPRESS_GET = /(?:router|app|fastify)\s*\.\s*get\s*\(/;
 
-function collectFiles(dir: string, files: string[] = []): string[] {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isDirectory()) {
-      if (!SKIP_DIRS.has(entry.name)) collectFiles(join(dir, entry.name), files);
-    } else if (/\.[tj]s$/.test(entry.name)) {
-      files.push(join(dir, entry.name));
-    }
-  }
-  return files;
-}
-
 export async function detectMissingCache(ctx: AuditContext): Promise<AuditFinding[]> {
+  validateCwd(ctx.cwd);
   const srcDir = join(ctx.cwd, 'src');
   const findings: AuditFinding[] = [];
 
   let files: string[];
   try {
-    files = collectFiles(srcDir);
+    files = collectFiles(srcDir, ctx.abortSignal);
   } catch {
     return findings;
   }
 
   for (const filePath of files) {
-    const content = readFileSync(filePath, 'utf8');
+    if (ctx.abortSignal.aborted) break;
+
+    let content: string;
+    try {
+      content = readFileSync(filePath, 'utf8');
+    } catch {
+      continue;
+    }
     const lines = content.split('\n');
     const relativePath = relative(ctx.cwd, filePath);
 
