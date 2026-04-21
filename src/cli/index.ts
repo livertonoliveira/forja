@@ -12,6 +12,7 @@ import { hookCommand } from './commands/hook.js';
 import { scheduleCommand } from './commands/schedule.js';
 import { replayCommand } from './commands/replay.js';
 import { setupCommand } from './commands/setup.js';
+import { pluginsCommand } from './commands/plugins.js';
 
 declare const __FORJA_VERSION__: string;
 
@@ -33,6 +34,7 @@ program
   .addCommand(hookCommand)
   .addCommand(scheduleCommand)
   .addCommand(replayCommand)
-  .addCommand(setupCommand);
+  .addCommand(setupCommand)
+  .addCommand(pluginsCommand);
 
 program.parse();
