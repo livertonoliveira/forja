@@ -24,11 +24,25 @@
   "bin": {
     "forja": "bin/forja.js"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./plugin": {
+      "types": "./dist/plugin/index.d.ts",
+      "default": "./dist/plugin/index.js"
+    }
+  },
+  "tsd": {
+    "directory": "tests/types"
+  },
   "scripts": {
-    "build": "tsx esbuild.config.ts && npm run build:ui",
+    "build": "tsx esbuild.config.ts && tsc --emitDeclarationOnly && npm run build:ui",
     "build:ui": "cd apps/ui && npm install --legacy-peer-deps && npm run build && cp -r .next/static .next/standalone/.next/static",
     "dev": "tsx src/cli/index.ts",
     "typecheck": "tsc --noEmit",
+    "test:types": "tsd --typings src/plugin/index.ts",
     "lint": "eslint src --ext .ts",
     "test": "vitest run --passWithNoTests tests/",
     "test:update-golden": "UPDATE_GOLDEN=1 vitest run --passWithNoTests tests/golden.test.ts",
@@ -55,6 +69,7 @@
     "drizzle-kit": "^0.21.2",
     "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
+    "tsd": "^0.33.0",
     "tsx": "^4.7.3",
     "typescript": "^5.4.5",
     "vitest": "^1.5.0",

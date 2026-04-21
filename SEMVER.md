@@ -115,7 +115,20 @@ Canonical definition: [`policies/tools.yaml`](policies/tools.yaml).
 
 ### Plugin API
 
-> **Placeholder** — The Plugin API and its subpath export (`@forja-hq/cli/plugin`) will be defined in REQ-01. No stable plugin interface exists before v1.0.0; do not rely on internal exports.
+The Plugin API is exported from the `@forja-hq/cli/plugin` subpath. It provides the stable interfaces for building Forja plugins.
+
+**Subpath:** `@forja-hq/cli/plugin` → `dist/plugin/index.js` / `dist/plugin/index.d.ts`
+
+| Type | Kind | Description | Since |
+|------|------|-------------|-------|
+| `Command` | interface | Defines a custom command with `id`, `description`, optional `labels`, and a `run` method | 0.1.3 |
+| `CommandContext` | interface | Context passed to `Command.run` — provides `cwd`, `config`, `store`, and `logger` | 0.1.3 |
+| `CommandResult` | interface | Return value of `Command.run` — `exitCode` and optional `summary` | 0.1.3 |
+| `Phase` | interface | Defines a pipeline phase with `id`, optional `insertAfter` and `timeoutMs`, and a `run` method | 0.1.3 |
+| `PhaseContext` | interface | Context passed to `Phase.run` — provides `runId`, `previousPhases`, `store`, and `abortSignal` | 0.1.3 |
+| `PhaseResult` | interface | Return value of `Phase.run` — `status` (`pass` \| `warn` \| `fail`) and optional `outputs` | 0.1.3 |
+
+All types are self-contained and carry no dependency on internal Forja classes. The `store` field in both `CommandContext` and `PhaseContext` uses a minimal structural type — any object with matching `get`/`set` signatures is compatible.
 
 ### Audit JSON Schema
 
