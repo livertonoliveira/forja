@@ -17,3 +17,6 @@ export type {
   AuditReport,
   StackInfo,
 } from './types.js';
+
+export { PluginRegistry } from './registry.js';
+export type { RegisteredPlugin, PluginType } from './registry.js';

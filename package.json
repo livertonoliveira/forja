@@ -44,7 +44,7 @@
     "typecheck": "tsc --noEmit",
     "test:types": "tsd --typings src/plugin/index.ts",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run --passWithNoTests tests/ scripts/__tests__/",
+    "test": "vitest run --passWithNoTests tests/ src/ scripts/__tests__/",
     "test:update-golden": "UPDATE_GOLDEN=1 vitest run --passWithNoTests tests/golden.test.ts",
     "release": "tsx scripts/release.ts",
     "check:schemas": "tsx scripts/check-schema-coverage.ts",
