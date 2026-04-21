@@ -94,6 +94,67 @@ const VERSIONING = `## Stability & Versioning
 
 This API follows [Semantic Versioning](https://semver.org/). See [SEMVER.md](SEMVER.md) for detailed stability guarantees, deprecation policy, and breaking change process.`;
 
+const CLI_REFERENCE = `## CLI Reference
+
+### \`forja plugins list\`
+
+Lists all registered plugins discovered from \`forja/plugins/\` (local) and \`node_modules/forja-plugin-*\` (npm).
+
+**Usage**
+
+\`\`\`bash
+forja plugins list [options]
+\`\`\`
+
+**Options**
+
+| Flag | Description |
+|------|-------------|
+| \`--json\` | Output the plugin list as JSON (excludes the internal \`module\` field) |
+| \`--invalid\` | Show plugins that failed validation during bootstrap |
+
+**Columns**
+
+| Column | Description |
+|--------|-------------|
+| \`ID\` | The plugin identifier declared in the module |
+| \`Type\` | Detected interface type(s): \`Command\`, \`Phase\`, \`FindingCategory\`, \`PolicyAction\`, \`AuditModule\`, or \`unknown\` |
+| \`Version\` | Resolved version string (from \`package.json\` or \`0.0.0\` for local plugins without one) |
+| \`Source\` | Discovery source: \`local\` or \`npm\` |
+| \`Path\` | Absolute path to the loaded plugin file |
+
+**Example output — table**
+
+\`\`\`
+ID                   Type     Version  Source  Path
+--------------------  -------  -------  ------  ----------------------------------------
+my-plugin:greet       Command  1.2.0    npm     /project/node_modules/forja-plugin-greet/dist/index.js
+my-plugin:license     Phase    0.1.0    local   /project/forja/plugins/license-check.js
+\`\`\`
+
+**Example output — JSON**
+
+\`\`\`bash
+forja plugins list --json
+\`\`\`
+
+\`\`\`json
+[
+  {
+    "id": "my-plugin:greet",
+    "source": "npm",
+    "path": "/project/node_modules/forja-plugin-greet/dist/index.js",
+    "version": "1.2.0"
+  }
+]
+\`\`\`
+
+**Notes**
+
+- A single plugin file can export multiple exports that match different interface types. When this happens, all matched types are shown comma-separated in the \`Type\` column.
+- The \`--invalid\` flag currently reports that no invalid plugin tracking is available at runtime; check stderr output during bootstrap for loader warnings.
+- If no plugins are discovered, the command prints \`No plugins registered.\` and exits with code 0.`;
+
 export function buildMarkdown(entries: DocEntry[]): string {
   const lines: string[] = [];
 
@@ -156,6 +217,9 @@ export function buildMarkdown(entries: DocEntry[]): string {
     lines.push('---');
     lines.push('');
   }
+
+  lines.push(CLI_REFERENCE);
+  lines.push('');
 
   return lines.join('\n');
 }
