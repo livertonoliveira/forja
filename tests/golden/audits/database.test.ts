@@ -25,7 +25,7 @@ describe('database audit golden test — MongoDB', () => {
   it('produces stable markdown report', async () => {
     const ctx = makeCtx('mongodb', 'mongodb');
     const findings = await databaseAuditModule.run(ctx);
-    const report = databaseAuditModule.report(findings);
+    const report = databaseAuditModule.report(findings, ctx);
     expect(report.markdown).toContain('# MongoDB Audit Report');
     expect(report.markdown).toContain('## Summary');
     expect(report.markdown).toContain('## Findings');
@@ -36,7 +36,7 @@ describe('database audit golden test — MongoDB', () => {
   it('summary total matches findings length', async () => {
     const ctx = makeCtx('mongodb', 'mongodb');
     const findings = await databaseAuditModule.run(ctx);
-    const report = databaseAuditModule.report(findings);
+    const report = databaseAuditModule.report(findings, ctx);
     expect(report.json.summary.total).toBe(findings.length);
   });
 
@@ -88,7 +88,7 @@ describe('database audit golden test — PostgreSQL', () => {
   it('produces stable markdown report', async () => {
     const ctx = makeCtx('postgresql', 'postgresql');
     const findings = await databaseAuditModule.run(ctx);
-    const report = databaseAuditModule.report(findings);
+    const report = databaseAuditModule.report(findings, ctx);
     expect(report.markdown).toContain('# PostgreSQL Audit Report');
     expect(report.markdown).toContain('## Summary');
     expect(report.markdown).toContain('## Findings');
@@ -99,7 +99,7 @@ describe('database audit golden test — PostgreSQL', () => {
   it('summary total matches findings length', async () => {
     const ctx = makeCtx('postgresql', 'postgresql');
     const findings = await databaseAuditModule.run(ctx);
-    const report = databaseAuditModule.report(findings);
+    const report = databaseAuditModule.report(findings, ctx);
     expect(report.json.summary.total).toBe(findings.length);
   });
 
@@ -135,7 +135,7 @@ describe('database audit golden test — MySQL', () => {
   it('produces stable markdown report', async () => {
     const ctx = makeCtx('mysql', 'mysql');
     const findings = await databaseAuditModule.run(ctx);
-    const report = databaseAuditModule.report(findings);
+    const report = databaseAuditModule.report(findings, ctx);
     expect(report.markdown).toContain('# MySQL Audit Report');
     expect(report.markdown).toContain('## Summary');
     expect(report.markdown).toContain('## Findings');
@@ -146,7 +146,7 @@ describe('database audit golden test — MySQL', () => {
   it('summary total matches findings length', async () => {
     const ctx = makeCtx('mysql', 'mysql');
     const findings = await databaseAuditModule.run(ctx);
-    const report = databaseAuditModule.report(findings);
+    const report = databaseAuditModule.report(findings, ctx);
     expect(report.json.summary.total).toBe(findings.length);
   });
 

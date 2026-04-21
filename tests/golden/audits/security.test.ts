@@ -46,7 +46,7 @@ describe('security audit golden test', () => {
   it('produces stable markdown report', async () => {
     const ctx = makeCtx();
     const findings = await securityAuditModule.run(ctx);
-    const report = securityAuditModule.report(findings);
+    const report = securityAuditModule.report(findings, ctx);
     expect(report.markdown).toContain('# Security Audit Report — OWASP Top 10');
     expect(report.markdown).toContain('## Summary');
     expect(report.markdown).toContain('## Findings');
@@ -57,7 +57,7 @@ describe('security audit golden test', () => {
   it('summary total matches findings array length', async () => {
     const ctx = makeCtx();
     const findings = await securityAuditModule.run(ctx);
-    const report = securityAuditModule.report(findings);
+    const report = securityAuditModule.report(findings, ctx);
     expect(report.json.summary.total).toBe(findings.length);
   });
 
@@ -95,7 +95,7 @@ describe('security audit golden test', () => {
   it('PoC report generated when generatePocs = true and critical/high findings present', async () => {
     const ctx = makeCtx(true);
     const findings = await securityAuditModule.run(ctx);
-    const report = securityAuditModule.report(findings);
+    const report = securityAuditModule.report(findings, ctx);
     const hasCriticalOrHigh = findings.some(
       f => (f.severity === 'critical' || f.severity === 'high') && f.exploitVector,
     );
@@ -108,7 +108,7 @@ describe('security audit golden test', () => {
   it('PoC NOT included when generatePocs = false', async () => {
     const ctx = makeCtx(false);
     const findings = await securityAuditModule.run(ctx);
-    const report = securityAuditModule.report(findings);
+    const report = securityAuditModule.report(findings, ctx);
     expect(report.markdown).not.toContain('# Security PoC Report');
   });
 });
