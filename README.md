@@ -164,6 +164,7 @@ forja setup   # re-copies updated slash commands (hooks already in place)
 ```bash
 forja config get store_url     # verify which DSN is active and its source
 forja infra status             # check DB connection and migration state
+forja plugins list             # list all installed plugins with version and type
 ```
 
 Then open Claude Code and run `/forja:init`. If it detects your stack and creates `forja/config.md`, you're live.
