@@ -106,6 +106,7 @@ export interface GateDecision {
   mediumCount: number;
   lowCount: number;
   policyApplied: string;
+  justification: string | null;
   decidedAt: string;
 }
 

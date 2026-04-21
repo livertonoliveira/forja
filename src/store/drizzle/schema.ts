@@ -127,6 +127,7 @@ export const gateDecisions = pgTable('gate_decisions', {
   mediumCount: integer('medium_count').notNull().default(0),
   lowCount: integer('low_count').notNull().default(0),
   policyApplied: text('policy_applied').notNull(),
+  justification: text('justification'),
   decidedAt: timestamp('decided_at', { withTimezone: true }).notNull(),
 }, (t) => ({
   runIdIdx: index('gate_decisions_run_id_idx').on(t.runId),

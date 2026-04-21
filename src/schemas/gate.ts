@@ -10,6 +10,7 @@ export const GateDecisionSchema = z.object({
   mediumCount: z.number().int().min(0),
   lowCount: z.number().int().min(0),
   policyApplied: z.string(),
+  justification: z.string().nullable(),
   decidedAt: z.string().datetime(),
 });
 
