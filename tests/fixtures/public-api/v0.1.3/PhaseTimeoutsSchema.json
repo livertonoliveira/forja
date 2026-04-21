@@ -1,0 +1,47 @@
+{
+  "$ref": "#/definitions/PhaseTimeoutsSchema",
+  "definitions": {
+    "PhaseTimeoutsSchema": {
+      "type": "object",
+      "properties": {
+        "dev": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 600
+        },
+        "test": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 300
+        },
+        "perf": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 180
+        },
+        "security": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 180
+        },
+        "review": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 180
+        },
+        "homolog": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 60
+        },
+        "pr": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 120
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
