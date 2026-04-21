@@ -18,5 +18,5 @@ export type {
   StackInfo,
 } from './types.js';
 
-export { PluginRegistry } from './registry.js';
+export { PluginRegistry, PluginCollisionError } from './registry.js';
 export type { RegisteredPlugin, PluginType } from './registry.js';

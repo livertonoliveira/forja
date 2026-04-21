@@ -1,4 +1,7 @@
+import { relative } from 'node:path';
 import { loadLocalPlugins } from './loader-local.js';
+import { loadNpmPlugins } from './loader-npm.js';
+import type { TraceWriter } from '../trace/writer.js';
 
 export interface RegisteredPlugin {
   id: string;
@@ -10,15 +13,61 @@ export interface RegisteredPlugin {
 
 export type PluginType = 'Command' | 'Phase' | 'FindingCategory' | 'PolicyAction' | 'AuditModule';
 
+export class PluginCollisionError extends Error {
+  constructor(public readonly collidingId: string, public readonly sources: Array<{ id: string; source: string; path: string }>) {
+    super(
+      `Plugin collision: id "${collidingId}" is registered by multiple sources: ` +
+        sources.map(s => `${s.source}:${s.path}`).join(', ')
+    );
+    this.name = 'PluginCollisionError';
+  }
+}
+
 export class PluginRegistry {
   private plugins: RegisteredPlugin[] = [];
   private bootstrapped = false;
 
-  async bootstrap(opts: { cwd: string }): Promise<RegisteredPlugin[]> {
+  async bootstrap(opts: { cwd: string; traceWriter?: TraceWriter }): Promise<RegisteredPlugin[]> {
     if (this.bootstrapped) {
       return this.list();
     }
-    this.plugins = await loadLocalPlugins({ cwd: opts.cwd });
+
+    const localPlugins = await loadLocalPlugins({ cwd: opts.cwd });
+    const npmPlugins = await loadNpmPlugins({ cwd: opts.cwd });
+
+    // Detect collisions: check if any id appears in both lists or within same list
+    const allPlugins = [...localPlugins, ...npmPlugins];
+    const idMap = new Map<string, RegisteredPlugin[]>();
+    for (const plugin of allPlugins) {
+      const existing = idMap.get(plugin.id) ?? [];
+      existing.push(plugin);
+      idMap.set(plugin.id, existing);
+    }
+
+    for (const [id, pluginsWithId] of idMap.entries()) {
+      if (pluginsWithId.length > 1) {
+        throw new PluginCollisionError(
+          id,
+          pluginsWithId.map(p => ({
+            id: p.id,
+            source: p.source,
+            path: relative(opts.cwd, p.path),
+          })),
+        );
+      }
+    }
+
+    // allPlugins is already local-first, npm-after (each group sorted alphabetically)
+    if (opts.traceWriter) {
+      for (const plugin of allPlugins) {
+        await opts.traceWriter.writePluginRegistered({
+          ...plugin,
+          path: relative(opts.cwd, plugin.path),
+        });
+      }
+    }
+
+    this.plugins = allPlugins;
     this.bootstrapped = true;
     return this.plugins;
   }
