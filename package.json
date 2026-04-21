@@ -58,6 +58,7 @@
     "cron-parser": "^5.5.0",
     "drizzle-orm": "^0.30.10",
     "js-yaml": "^4.1.0",
+    "minimatch": "^10.2.5",
     "nanoid": "^5.1.9",
     "pg": "^8.11.5",
     "zod": "^3.22.4"
