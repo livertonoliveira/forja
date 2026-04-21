@@ -395,3 +395,65 @@ export interface AuditModule {
   run(ctx: AuditContext): Promise<AuditFinding[]>;
   report(findings: AuditFinding[]): AuditReport;
 }
+
+/**
+ * Context passed to PluginLifecycleHooks.onRegister during bootstrap.
+ * @since v1.0.0
+ */
+export interface RegisterContext {
+  readonly pluginId: string;
+  readonly runId: string;
+}
+
+/**
+ * Context passed to PluginLifecycleHooks.onRun before each pipeline phase.
+ * @since v1.0.0
+ */
+export interface RunStartContext {
+  readonly runId: string;
+  readonly phase: string;
+  readonly abortSignal: AbortSignal;
+}
+
+/**
+ * Context passed to PluginLifecycleHooks.onResult after each pipeline phase.
+ * @since v1.0.0
+ */
+export interface RunResultContext {
+  readonly runId: string;
+  readonly phase: string;
+  readonly status: 'pass' | 'warn' | 'fail';
+  readonly outputs?: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * Context passed to PluginLifecycleHooks.onError when a pipeline phase fails.
+ * @since v1.0.0
+ */
+export interface RunErrorContext {
+  readonly runId: string;
+  readonly phase: string;
+  readonly error: Error;
+}
+
+/**
+ * Optional lifecycle hooks a plugin can implement to react to pipeline events.
+ *
+ * All hooks are optional. Implement only those relevant to your plugin.
+ * Hooks are called in plugin registration order (deterministic).
+ *
+ * @since v1.0.0
+ * @see PLUGIN-API.md
+ *
+ * @remarks
+ * - Hooks run with a hard timeout (default 5000 ms, configurable via `plugin_hook_timeout_ms`).
+ * - Hook errors are isolated: a throw does not propagate to the pipeline or other hooks.
+ * - Errors are converted to `Finding` with severity `low` (category `plugin_hook_error`).
+ * - Timeouts are recorded as severity `medium`.
+ */
+export interface PluginLifecycleHooks {
+  onRegister?(ctx: RegisterContext): void | Promise<void>;
+  onRun?(ctx: RunStartContext): void | Promise<void>;
+  onResult?(ctx: RunResultContext): void | Promise<void>;
+  onError?(ctx: RunErrorContext): void | Promise<void>;
+}

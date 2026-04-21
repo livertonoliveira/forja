@@ -15,6 +15,7 @@
 - Test framework: Node test runner (built-in) + vitest
 - Lint: eslint
 - Typecheck: tsc --noEmit
+- Plugin hook timeout: pluginHookTimeoutMs = 5000 ms (ConfigSchema field)
 - Package manager: npm
 
 ## Linear Integration

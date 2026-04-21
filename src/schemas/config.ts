@@ -18,6 +18,7 @@ export const ConfigSchema = z.object({
   teamId: z.string(),
   linearToken: z.string().optional(),
   timeouts: PhaseTimeoutsSchema.default({}),
+  pluginHookTimeoutMs: z.number().int().positive().default(5000),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
