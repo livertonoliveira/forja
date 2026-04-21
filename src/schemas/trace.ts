@@ -19,6 +19,7 @@ export const TraceEventSchema = z.object({
     'cost',
     'checkpoint',
     'error',
+    'deprecation_warning',
   ]),
   commandFingerprint: z.string().regex(/^[0-9a-f]{32}$/).optional(),
   payload: z.record(z.string(), z.unknown()),
