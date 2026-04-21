@@ -1,0 +1,87 @@
+name: Check Breaking Changes
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'SEMVER.md'
+      - 'package.json'
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  check-breaking-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run breaking change check
+        id: breaking
+        run: |
+          set +e
+          REPORT=$(npm run check:breaking 2>&1)
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+          {
+            echo "report<<REPORT_EOF"
+            echo "$REPORT"
+            echo "REPORT_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post PR comment
+        uses: actions/github-script@v7
+        if: always() && github.event_name == 'pull_request'
+        env:
+          BREAKING_REPORT: ${{ steps.breaking.outputs.report }}
+        with:
+          script: |
+            const report = process.env.BREAKING_REPORT ?? '';
+            const marker = '<!-- forja-breaking-changes -->';
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c => c.body?.includes(marker));
+            const body = `${marker}\n${report}`;
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Enforce breaking change gate
+        if: steps.breaking.outputs.exit_code == '2'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '[.labels[].name] | join(",")' 2>/dev/null || echo "")
+          if echo "$LABELS" | grep -qw "allow-breaking"; then
+            echo "Label 'allow-breaking' detected — gate bypassed."
+            exit 0
+          fi
+          echo "::error::Breaking changes detected without a major version bump. Add 'allow-breaking' label or bump the major version."
+          exit 2
