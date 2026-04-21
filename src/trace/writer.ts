@@ -90,6 +90,15 @@ export class TraceWriter {
     });
   }
 
+  async writePluginRegistered(plugin: { id: string; source: string; version: string; path: string }, spanId?: string): Promise<void> {
+    await this.write({
+      runId: this.runId,
+      eventType: 'plugin_registered',
+      spanId,
+      payload: { id: plugin.id, source: plugin.source, version: plugin.version, path: plugin.path },
+    });
+  }
+
   async writeError(error: Error, phase?: string, spanId?: string): Promise<void> {
     await this.write({
       runId: this.runId,
