@@ -5,7 +5,7 @@ export type Severity = Finding['severity'];
 export interface EvaluationContext {
   coverage?: { delta: number; absolute: number };
   diff?: { filesChanged: number; linesChanged: number; touched: string[] };
-  time?: { phaseDurationMs: number };
+  time?: { phaseDurationMs?: number; phases?: Record<string, number> };
   cost?: { usd: number };
   findings?: { countBySeverity: Record<Severity, number> };
 }

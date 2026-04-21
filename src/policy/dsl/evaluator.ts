@@ -1,5 +1,6 @@
 import type { Expr, Or, And, Not, Comparison, PredicateCall, Value, PolicyAST } from './ast.js';
 import type { EvaluationContext } from './context.js';
+import { PREDICATES_REGISTRY } from './predicates.js';
 
 export interface EvaluationResult {
   verdict: 'pass' | 'warn' | 'fail';
@@ -15,6 +16,9 @@ function resolvePath(path: string[], ctx: EvaluationContext): unknown {
   let current: unknown = ctx;
   for (const segment of path) {
     if (current === null || current === undefined || typeof current !== 'object') {
+      return undefined;
+    }
+    if (!Object.hasOwn(current as object, segment)) {
       return undefined;
     }
     current = (current as Record<string, unknown>)[segment];
@@ -44,6 +48,19 @@ function evalCall(
   ctx: EvaluationContext,
   metrics: Record<string, unknown>,
 ): NodeResult {
+  const fullKey = expr.path.join('.');
+
+  // Registry lookup takes priority over built-in handlers and path resolution
+  const predicateFn = Object.hasOwn(PREDICATES_REGISTRY, fullKey) ? PREDICATES_REGISTRY[fullKey] : undefined;
+  if (predicateFn) {
+    const result = predicateFn(ctx, expr.args);
+    if (result === undefined || result === null) {
+      return { ok: false, missing: fullKey, trace: `metric ${fullKey} unavailable` };
+    }
+    metrics[fullKey] = result;
+    return { ok: true, value: result as boolean | number | string, trace: `${fullKey} = ${String(result)}` };
+  }
+
   const lastSegment = expr.path[expr.path.length - 1];
 
   if (lastSegment === 'is') {

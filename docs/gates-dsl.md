@@ -241,10 +241,42 @@ nem emitem avisos — o pipeline segue sem interrupção.
 
 ## Predicados Disponíveis
 
-> Esta seção será preenchida em REQ-07. Os predicados listados acima (`severity.is()`,
-> `coverage.dropped()`, `file.changed()`, `finding.count()`) são rascunhos sujeitos a alteração.
-> A lista definitiva incluirá assinaturas completas, valores de retorno, exemplos e notas de
-> compatibilidade por versão da DSL.
+Os predicados abaixo fazem parte da API pública da DSL e seguem garantias SemVer a partir da v1.0.0.
+
+| Predicado | Assinatura | Retorno | Descrição |
+|-----------|-----------|---------|-----------|
+| `coverage.delta` | `coverage.delta()` | `number` | Diff de cobertura entre execução atual e baseline. Unidade: fração (0.05 = 5%). |
+| `coverage.absolute` | `coverage.absolute()` | `number` | Cobertura absoluta da execução atual. |
+| `diff.filesChanged` | `diff.filesChanged()` | `number` | Quantidade de arquivos alterados no diff. |
+| `diff.linesChanged` | `diff.linesChanged()` | `number` | Quantidade de linhas alteradas no diff. |
+| `touched.matches` | `touched.matches(glob: string)` | `boolean` | `true` se qualquer arquivo em `diff.touched` casar com o padrão glob (usa minimatch). |
+| `time.phaseDurationMs` | `time.phaseDurationMs(phase: string)` | `number` | Duração da fase nomeada em milissegundos. |
+| `cost.usd` | `cost.usd()` | `number` | Custo total em USD da execução atual. |
+| `findings.countBySeverity` | `findings.countBySeverity(severity: string)` | `number` | Quantidade de findings com a severidade informada (`critical`, `high`, `medium`, `low`). |
+
+### Exemplos
+
+```yaml
+# Bloqueia se cobertura caiu mais de 5%
+- name: coverage-drop
+  when: "coverage.delta() < -0.05"
+  then: fail
+
+# Bloqueia se arquivo de autenticação foi tocado E há findings críticos
+- name: auth-with-critical
+  when: "touched.matches(\"src/auth/**\") and findings.countBySeverity(\"critical\") > 0"
+  then: fail
+
+# Aviso se fase de testes demorou mais de 2 minutos
+- name: slow-tests
+  when: "time.phaseDurationMs(\"test\") > 120000"
+  then: warn
+
+# Aviso se custo ultrapassou $5
+- name: high-cost
+  when: "cost.usd() > 5"
+  then: warn
+```
 
 ---
 

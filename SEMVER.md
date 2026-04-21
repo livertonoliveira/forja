@@ -111,7 +111,24 @@ Canonical definition: [`policies/tools.yaml`](policies/tools.yaml).
 
 ### Gate DSL
 
-> **Placeholder** — The Gate DSL (Domain-Specific Language) will be formally specified in REQ-05/REQ-06/REQ-07. Until then, `policies/default.yaml` is the reference format for gate rules.
+The 8 canonical predicates below are part of the public DSL surface starting at v1.0.0.
+Defined in [`src/policy/dsl/predicates.ts`](src/policy/dsl/predicates.ts) and exported via `PREDICATES_REGISTRY`.
+
+| Predicate | Signature | Return | Since |
+|-----------|-----------|--------|-------|
+| `coverage.delta` | `coverage.delta()` | `number` | 0.1.4 |
+| `coverage.absolute` | `coverage.absolute()` | `number` | 0.1.4 |
+| `diff.filesChanged` | `diff.filesChanged()` | `number` | 0.1.4 |
+| `diff.linesChanged` | `diff.linesChanged()` | `number` | 0.1.4 |
+| `touched.matches` | `touched.matches(glob: string)` | `boolean` | 0.1.4 |
+| `time.phaseDurationMs` | `time.phaseDurationMs(phase: string)` | `number` | 0.1.4 |
+| `cost.usd` | `cost.usd()` | `number` | 0.1.4 |
+| `findings.countBySeverity` | `findings.countBySeverity(severity: string)` | `number` | 0.1.4 |
+
+**SemVer rules for predicates:**
+- Adding a new predicate → MINOR bump
+- Renaming or removing a predicate → MAJOR bump
+- Changing predicate semantics → MAJOR bump
 
 ### Plugin API
 
