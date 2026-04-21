@@ -60,7 +60,7 @@ async function runSingleAudit(
     // Suppress unhandled rejection if module.run() wins the race and the timer fires later
     timeoutRace.catch(() => {});
     findings = await Promise.race([module.run(auditCtx), timeoutRace]);
-    report = module.report(findings);
+    report = module.report(findings, auditCtx);
   } catch (err) {
     error = err instanceof Error ? err.message : String(err);
     status = timedOut ? 'timed_out' : 'failed';

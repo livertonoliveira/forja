@@ -12,14 +12,11 @@ import { detectTriggerLargeTable } from './heuristics/trigger-large-table.js';
 import { detectDeferrableConstraint } from './heuristics/deferrable-constraint.js';
 import { countBySeverity, buildMarkdown } from '../../shared.js';
 
-// Stores the stack from the last run() call so report() can use it
-let _lastStack: StackInfo = { language: 'typescript', runtime: 'node' };
-
 export const postgresqlAuditModule: AuditModule = {
   id: 'audit:database:postgresql',
 
   detect(stack: StackInfo) {
-    const db = (stack as StackInfo & { database?: string }).database;
+    const db = stack.database;
     if (db?.toLowerCase().includes('postgresql')) {
       return { applicable: true };
     }
@@ -27,7 +24,6 @@ export const postgresqlAuditModule: AuditModule = {
   },
 
   async run(ctx: AuditContext): Promise<AuditFinding[]> {
-    _lastStack = ctx.stack;
     const results = await Promise.all([
       detectMissingIndex(ctx),
       detectSequentialScan(ctx),
@@ -43,14 +39,14 @@ export const postgresqlAuditModule: AuditModule = {
     return results.flat();
   },
 
-  report(findings: AuditFinding[]): AuditReport {
+  report(findings: AuditFinding[], ctx: AuditContext): AuditReport {
     const markdown = buildMarkdown('PostgreSQL Audit Report', findings);
     const now = new Date().toISOString();
 
     const json = AuditReportSchema.parse({
       schemaVersion: '1.0',
       auditId: 'audit:database:postgresql',
-      stackInfo: _lastStack,
+      stackInfo: ctx.stack,
       startedAt: now,
       finishedAt: now,
       findings: findings.map((f, i) => ({

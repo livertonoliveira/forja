@@ -7,11 +7,8 @@ import { countBySeverity, buildMarkdown } from '../shared.js';
 
 const SUPPORTED_DATABASES = ['mongodb', 'postgresql', 'mysql'];
 
-// Stores the stack from the last run() call so report() can use it
-let _lastStack: StackInfo = { language: 'typescript', runtime: 'node' };
-
 function getDatabase(stack: StackInfo): string | undefined {
-  return (stack as StackInfo & { database?: string }).database;
+  return stack.database;
 }
 
 export const databaseAuditModule: AuditModule = {
@@ -34,7 +31,6 @@ export const databaseAuditModule: AuditModule = {
   },
 
   async run(ctx: AuditContext): Promise<AuditFinding[]> {
-    _lastStack = ctx.stack;
     const db = getDatabase(ctx.stack)?.toLowerCase() ?? '';
 
     if (db.includes('mongodb')) {
@@ -52,19 +48,19 @@ export const databaseAuditModule: AuditModule = {
     return [];
   },
 
-  report(findings: AuditFinding[]): AuditReport {
-    const db = getDatabase(_lastStack)?.toLowerCase() ?? '';
+  report(findings: AuditFinding[], ctx: AuditContext): AuditReport {
+    const db = getDatabase(ctx.stack)?.toLowerCase() ?? '';
 
     if (db.includes('mongodb')) {
-      return mongodbAuditModule.report(findings);
+      return mongodbAuditModule.report(findings, ctx);
     }
 
     if (db.includes('postgresql')) {
-      return postgresqlAuditModule.report(findings);
+      return postgresqlAuditModule.report(findings, ctx);
     }
 
     if (db.includes('mysql')) {
-      return mysqlAuditModule.report(findings);
+      return mysqlAuditModule.report(findings, ctx);
     }
 
     // Generic report for unknown databases
@@ -74,7 +70,7 @@ export const databaseAuditModule: AuditModule = {
     const json = AuditReportSchema.parse({
       schemaVersion: '1.0',
       auditId: 'audit:database',
-      stackInfo: _lastStack,
+      stackInfo: ctx.stack,
       startedAt: now,
       finishedAt: now,
       findings: findings.map((f, i) => ({

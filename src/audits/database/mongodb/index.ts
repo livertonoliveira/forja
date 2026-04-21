@@ -17,14 +17,11 @@ import { detectUpsertNoUniqueIndex } from './heuristics/upsert-no-unique-index.j
 import { detectFulltextNoTextIndex } from './heuristics/fulltext-no-text-index.js';
 import { countBySeverity, buildMarkdown } from '../../shared.js';
 
-// Stores the stack from the last run() call so report() can use it
-let _lastStack: StackInfo = { language: 'typescript', runtime: 'node' };
-
 export const mongodbAuditModule: AuditModule = {
   id: 'audit:database:mongodb',
 
   detect(stack: StackInfo) {
-    const db = (stack as StackInfo & { database?: string }).database;
+    const db = stack.database;
     if (db?.toLowerCase().includes('mongodb')) {
       return { applicable: true };
     }
@@ -32,7 +29,6 @@ export const mongodbAuditModule: AuditModule = {
   },
 
   async run(ctx: AuditContext): Promise<AuditFinding[]> {
-    _lastStack = ctx.stack;
     const results = await Promise.all([
       detectMissingIndex(ctx),
       detectUnboundedArray(ctx),
@@ -53,14 +49,14 @@ export const mongodbAuditModule: AuditModule = {
     return results.flat();
   },
 
-  report(findings: AuditFinding[]): AuditReport {
+  report(findings: AuditFinding[], ctx: AuditContext): AuditReport {
     const markdown = buildMarkdown('MongoDB Audit Report', findings);
     const now = new Date().toISOString();
 
     const json = AuditReportSchema.parse({
       schemaVersion: '1.0',
       auditId: 'audit:database:mongodb',
-      stackInfo: _lastStack,
+      stackInfo: ctx.stack,
       startedAt: now,
       finishedAt: now,
       findings: findings.map((f, i) => ({
