@@ -1,6 +1,8 @@
 import type { AuditModule, AuditFinding, AuditReport, StackInfo, AuditContext } from '../../plugin/types.js';
 import { AuditReportSchema } from '../types.js';
 import { mongodbAuditModule } from './mongodb/index.js';
+import { postgresqlAuditModule } from './postgresql/index.js';
+import { mysqlAuditModule } from './mysql/index.js';
 import { countBySeverity, buildMarkdown } from '../shared.js';
 
 const SUPPORTED_DATABASES = ['mongodb', 'postgresql', 'mysql'];
@@ -40,13 +42,11 @@ export const databaseAuditModule: AuditModule = {
     }
 
     if (db.includes('postgresql')) {
-      console.warn('[audit:database] PostgreSQL audit is not yet implemented — returning empty findings.');
-      return [];
+      return postgresqlAuditModule.run(ctx);
     }
 
     if (db.includes('mysql')) {
-      console.warn('[audit:database] MySQL audit is not yet implemented — returning empty findings.');
-      return [];
+      return mysqlAuditModule.run(ctx);
     }
 
     return [];
@@ -59,7 +59,15 @@ export const databaseAuditModule: AuditModule = {
       return mongodbAuditModule.report(findings);
     }
 
-    // Generic report for PostgreSQL, MySQL, or unknown databases
+    if (db.includes('postgresql')) {
+      return postgresqlAuditModule.report(findings);
+    }
+
+    if (db.includes('mysql')) {
+      return mysqlAuditModule.report(findings);
+    }
+
+    // Generic report for unknown databases
     const markdown = buildMarkdown('Database Audit Report', findings);
     const now = new Date().toISOString();
 
