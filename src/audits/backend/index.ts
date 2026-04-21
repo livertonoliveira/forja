@@ -3,6 +3,10 @@ import { AuditReportSchema } from '../types.js';
 import { detectNPlusOne } from './heuristics/n-plus-one.js';
 import { detectMissingCache } from './heuristics/missing-cache.js';
 import { detectPessimisticLocks } from './heuristics/pessimistic-locks.js';
+import { detectBlockingIO } from './heuristics/blocking-io.js';
+import { detectMemoryGrowth } from './heuristics/memory-growth.js';
+import { detectSecretLeaks } from './heuristics/secret-leaks.js';
+import { detectMissingRequestTimeout } from './heuristics/request-timeout.js';
 
 const SUPPORTED_FRAMEWORKS = ['nestjs', 'express', 'fastify', 'fastapi', 'rails'];
 
@@ -67,12 +71,16 @@ export const backendAuditModule: AuditModule = {
 
   async run(ctx: AuditContext): Promise<AuditFinding[]> {
     _lastStack = ctx.stack;
-    const [a, b, c] = await Promise.all([
+    const results = await Promise.all([
       detectNPlusOne(ctx),
       detectMissingCache(ctx),
       detectPessimisticLocks(ctx),
+      detectBlockingIO(ctx),
+      detectMemoryGrowth(ctx),
+      detectSecretLeaks(ctx),
+      detectMissingRequestTimeout(ctx),
     ]);
-    return [...a, ...b, ...c];
+    return results.flat();
   },
 
   report(findings: AuditFinding[]): AuditReport {
