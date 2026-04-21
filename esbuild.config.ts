@@ -24,6 +24,16 @@ await build({
 
 chmodSync('bin/forja.js', '755');
 
+await build({
+  entryPoints: ['src/plugin/index.ts'],
+  bundle: true,
+  platform: 'node',
+  target: 'node20',
+  external: externalDeps,
+  format: 'esm',
+  outfile: 'dist/plugin/index.js',
+});
+
 if (existsSync(hooksDir)) {
   const hookFiles = readdirSync(hooksDir).filter(
     (f) => f.endsWith('.ts') && f !== 'index.ts'
