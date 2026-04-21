@@ -138,6 +138,7 @@ export class DualWriter {
         mediumCount: decision.mediumCount,
         lowCount: decision.lowCount,
         policyApplied: decision.policyApplied,
+        justification: decision.justification ?? null,
         decidedAt: toDbDate(decision.decidedAt) as unknown as string,
       }),
     );

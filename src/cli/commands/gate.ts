@@ -66,6 +66,7 @@ export const gateCommand = new Command('gate')
         mediumCount,
         lowCount,
         policyApplied: rel,
+        justification: null,
         decidedAt: new Date().toISOString(),
       };
 
