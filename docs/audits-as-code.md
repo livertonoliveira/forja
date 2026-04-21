@@ -240,3 +240,72 @@ npm run schemas:gen
 Both files (`audit-finding.json`, `audit-report.json`) follow **JSON Schema Draft 7** and can be used for validation in any language or toolchain that supports that specification.
 
 See [`SEMVER.md`](../SEMVER.md) for the stability guarantee of `AuditFindingSchema` and `AuditReportSchema`.
+
+---
+
+## Case study: backend audit
+
+The built-in `audit:backend` module ships 7 heuristics that detect common backend performance and security problems in TypeScript/JavaScript projects.
+
+### Before (Part 1 — 3 heuristics)
+
+The initial port covered database-focused patterns:
+
+| Heuristic | Category | Severity |
+|-----------|----------|----------|
+| N+1 query inside forEach/map | `performance:n-plus-one` | medium |
+| GET endpoint missing cache directive | `performance:missing-cache` | low |
+| FOR UPDATE without timeout or SKIP LOCKED | `performance:pessimistic-locks` | medium |
+
+Running `forja audit:backend` on a typical NestJS project would catch N+1 loops and unprotected pessimistic locks, but miss async/sync mismatches, memory leaks, and insecure logging.
+
+### After (Part 2 — 4 additional heuristics)
+
+Part 2 adds cross-cutting heuristics that cover I/O, memory, security, and network:
+
+| Heuristic | Category | Severity |
+|-----------|----------|----------|
+| Synchronous I/O inside async handler | `performance:blocking-io` | medium |
+| Unbounded Map/Set used as in-memory cache | `performance:memory-growth` | medium |
+| Potential secret value in error log | `security:secret-leaks` | high |
+| HTTP request without timeout | `performance:missing-request-timeout` | medium |
+
+**Example: blocking sync I/O detected**
+
+```typescript
+// Detected — blocks the event loop
+async function getConfig() {
+  const data = readFileSync('/etc/app/config.json', 'utf8');
+  return JSON.parse(data);
+}
+
+// Fixed — non-blocking
+async function getConfig() {
+  const data = await fs.promises.readFile('/etc/app/config.json', 'utf8');
+  return JSON.parse(data);
+}
+```
+
+**Example: secret leaked in error log**
+
+```typescript
+// Detected — password exposed in logs
+catch (err) {
+  console.error('Login failed', { password, err });
+}
+
+// Fixed — log only the error message
+catch (err) {
+  console.error('Login failed:', err.message);
+}
+```
+
+### Golden test parity
+
+A golden test at `tests/golden/audits/backend.test.ts` runs the full module against all 7 fixture pairs and asserts:
+
+1. **Zero regressions** — every baseline finding must still be detected.
+2. **Stable markdown** — the report structure (`# Backend Audit Report`, `## Summary`, `## Findings`) does not change.
+3. **Consistent counts** — `summary.total` equals the actual findings array length.
+
+New findings (improvements) are tolerated; lost findings fail the test.
