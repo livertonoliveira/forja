@@ -22,6 +22,10 @@
 - Team: Mobitech
 - Team ID: 90497937-52ef-4562-9273-ade6c868032a
 
+## Gate Behavior
+- on_fail: fix
+- on_warn: fix
+
 ## Conventions
 - Artifacts language: pt-BR (specs, issues, docs, milestones, reports, PR descriptions)
 - Code language: English (code, variable names, commits, branch names)
