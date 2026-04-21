@@ -1,1 +1,19 @@
-export type { Command, CommandContext, CommandResult, Phase, PhaseContext, PhaseResult, StoreAdapter } from './types.js';
+export type {
+  Severity,
+  Logger,
+  Command,
+  CommandContext,
+  CommandResult,
+  Phase,
+  PhaseContext,
+  PhaseResult,
+  StoreAdapter,
+  FindingCategory,
+  PolicyAction,
+  PolicyActionContext,
+  AuditModule,
+  AuditContext,
+  AuditFinding,
+  AuditReport,
+  StackInfo,
+} from './types.js';
