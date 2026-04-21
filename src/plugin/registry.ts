@@ -119,3 +119,24 @@ function matchesPluginType(value: unknown, type: PluginType): boolean {
       return false;
   }
 }
+
+const PLUGIN_TYPES: PluginType[] = ['Command', 'Phase', 'FindingCategory', 'PolicyAction', 'AuditModule'];
+
+/**
+ * Returns the list of PluginType names matched by any export in the given plugin module.
+ * Returns `['unknown']` if no exports match any known type.
+ */
+export function detectPluginTypes(plugin: RegisteredPlugin): string[] {
+  const mod = plugin.module as Record<string, unknown>;
+  const matched = new Set<string>();
+
+  for (const value of Object.values(mod)) {
+    for (const type of PLUGIN_TYPES) {
+      if (matchesPluginType(value, type)) {
+        matched.add(type);
+      }
+    }
+  }
+
+  return matched.size > 0 ? [...matched] : ['unknown'];
+}
