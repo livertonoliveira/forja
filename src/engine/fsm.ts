@@ -1,6 +1,7 @@
-import { join } from 'path';
+import { join } from 'node:path';
 import type { ForjaStore } from '../store/interface.js';
 import type { Run } from '../store/types.js';
+import type { PluginRegistry } from '../plugin/registry.js';
 import { TraceWriter } from '../trace/writer.js';
 import { fingerprintCommand } from './fingerprint.js';
 
@@ -40,6 +41,7 @@ export class PipelineFSM {
     private store: ForjaStore,
     private runId: string,
     commandsDir?: string,
+    _registry?: PluginRegistry, // reserved for Part 3 consumption
   ) {
     this.trace = new TraceWriter(runId);
     this.commandsDir = commandsDir ?? join(process.cwd(), '.claude', 'commands', 'forja');
