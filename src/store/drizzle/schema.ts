@@ -3,6 +3,7 @@ import {
   pgEnum,
   uuid,
   text,
+  varchar,
   timestamp,
   numeric,
   integer,
@@ -29,6 +30,7 @@ export const runs = pgTable('runs', {
   model: text('model'),
   totalCost: numeric('total_cost', { precision: 10, scale: 6 }).notNull().default('0'),
   totalTokens: integer('total_tokens').notNull().default(0),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   issueIdIdx: index('runs_issue_id_idx').on(t.issueId),
   statusIdx: index('runs_status_idx').on(t.status),
@@ -41,6 +43,7 @@ export const phases = pgTable('phases', {
   startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
   finishedAt: timestamp('finished_at', { withTimezone: true }),
   status: text('status').notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('phases_run_id_idx').on(t.runId),
 }));
@@ -75,6 +78,7 @@ export const findings = pgTable('findings', {
   owasp: text('owasp'),
   cwe: text('cwe'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('findings_run_id_idx').on(t.runId),
   phaseIdIdx: index('findings_phase_id_idx').on(t.phaseId),
@@ -92,6 +96,7 @@ export const toolCalls = pgTable('tool_calls', {
   output: jsonb('output'),
   durationMs: integer('duration_ms'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('tool_calls_run_id_idx').on(t.runId),
   phaseIdIdx: index('tool_calls_phase_id_idx').on(t.phaseId),
@@ -111,6 +116,7 @@ export const costEvents = pgTable('cost_events', {
   cacheReadTokens: integer('cache_read_tokens').notNull().default(0),
   costUsd: numeric('cost_usd', { precision: 10, scale: 6 }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('cost_events_run_id_idx').on(t.runId),
   phaseIdIdx: index('cost_events_phase_id_idx').on(t.phaseId),
@@ -129,6 +135,7 @@ export const gateDecisions = pgTable('gate_decisions', {
   policyApplied: text('policy_applied').notNull(),
   justification: text('justification'),
   decidedAt: timestamp('decided_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('gate_decisions_run_id_idx').on(t.runId),
   runPhaseIdx: index('gate_decisions_run_id_phase_id_idx').on(t.runId, t.phaseId),
@@ -141,6 +148,7 @@ export const issueLinks = pgTable('issue_links', {
   issueUrl: text('issue_url'),
   title: text('title'),
   linkedAt: timestamp('linked_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('issue_links_run_id_idx').on(t.runId),
 }));
