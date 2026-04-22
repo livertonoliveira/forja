@@ -16,6 +16,7 @@ import { loadPolicy } from './parser.js';
 import { evaluatePolicy } from './evaluator.js';
 import { executeActions } from './actions.js';
 import type { Finding } from '../schemas/finding.js';
+import { CURRENT_SCHEMA_VERSION } from '../schemas/versioning.js';
 import type { PolicyFile } from './parser.js';
 
 // ---------------------------------------------------------------------------
@@ -30,6 +31,7 @@ const POLICY_PATH = join(process.cwd(), 'policies/default.yaml');
 
 function makeFinding(overrides: Partial<Finding> = {}): Finding {
   return {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     id: 'aaaaaaaa-0000-0000-0000-000000000001',
     runId: 'bbbbbbbb-0000-0000-0000-000000000002',
     phaseId: 'cccccccc-0000-0000-0000-000000000003',

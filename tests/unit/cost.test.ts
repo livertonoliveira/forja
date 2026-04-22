@@ -375,7 +375,12 @@ describe('handlePostToolUse — happy path', () => {
 
     const tracePath = path.join(runDir(runId), 'trace.jsonl');
     const raw = await fs.readFile(tracePath, 'utf8');
-    const lines = raw.split('\n').filter((l) => l.trim());
+    const lines = raw
+      .split('\n')
+      .filter((l) => l.trim())
+      .filter((l) => {
+        try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+      });
     expect(lines.length).toBeGreaterThanOrEqual(1);
 
     const event = JSON.parse(lines[0]);

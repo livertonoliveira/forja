@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Finding } from '../../schemas/finding.js';
+import { CURRENT_SCHEMA_VERSION } from '../../schemas/versioning.js';
 import type { PolicyFile } from '../parser.js';
 import { evaluatePolicy } from '../evaluator.js';
 
@@ -11,6 +12,7 @@ const ISO_DT = '2024-01-01T00:00:00.000Z';
 
 function makeFinding(overrides: Partial<Finding> = {}): Finding {
   return {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     id: UUID,
     runId: UUID,
     phaseId: UUID,

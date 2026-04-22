@@ -52,6 +52,9 @@ async function readEvents(runId: string): Promise<Record<string, unknown>[]> {
   return raw
     .split('\n')
     .filter((l) => l.trim().length > 0)
+    .filter((l) => {
+      try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+    })
     .map((l) => JSON.parse(l) as Record<string, unknown>);
 }
 

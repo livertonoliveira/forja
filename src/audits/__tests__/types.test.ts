@@ -48,17 +48,16 @@ describe('AuditFindingSchema', () => {
     ).toThrow(z.ZodError);
   });
 
-  it('rejects invalid schemaVersion', () => {
-    expect(() =>
-      AuditFindingSchema.parse({
-        schemaVersion: '2.0', // must be '1.0'
-        id: 'f1',
-        severity: 'low',
-        title: 'T',
-        category: 'c',
-        description: 'd',
-      })
-    ).toThrow(z.ZodError);
+  it('accepts any schemaVersion string', () => {
+    const result = AuditFindingSchema.parse({
+      schemaVersion: '2.0',
+      id: 'f1',
+      severity: 'low',
+      title: 'T',
+      category: 'c',
+      description: 'd',
+    });
+    expect(result.schemaVersion).toBe('2.0');
   });
 
   it('roundtrip: Zod schema converts to valid JSON Schema', () => {

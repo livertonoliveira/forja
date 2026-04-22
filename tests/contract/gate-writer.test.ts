@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import fs from 'fs/promises';
 import { TraceWriter } from '../../src/trace/writer.js';
 import { FindingWriter } from '../../src/trace/finding-writer.js';
-import { GateDecisionSchema } from '../../src/schemas/index.js';
+import { GateDecisionSchema, CURRENT_SCHEMA_VERSION } from '../../src/schemas/index.js';
 import type { GateDecision } from '../../src/schemas/index.js';
 import { makeRunId, tracePath } from './_helpers.js';
 
@@ -31,6 +31,7 @@ describe('gate-writer contract — fail decision with findings conforms to GateD
     await findingWriter.flush();
 
     const gateDecision: GateDecision = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       id: randomUUID(),
       runId,
       decision: 'fail',
@@ -39,6 +40,7 @@ describe('gate-writer contract — fail decision with findings conforms to GateD
       mediumCount: 1,
       lowCount: 1,
       policyApplied: 'policies/default.yaml',
+      justification: null,
       decidedAt: new Date().toISOString(),
     };
 
@@ -54,6 +56,7 @@ describe('gate-writer contract — pass decision with zero findings conforms to 
     const runId = makeRunId();
 
     const gateDecision: GateDecision = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       id: randomUUID(),
       runId,
       decision: 'pass',
@@ -62,6 +65,7 @@ describe('gate-writer contract — pass decision with zero findings conforms to 
       mediumCount: 0,
       lowCount: 0,
       policyApplied: 'policies/default.yaml',
+      justification: null,
       decidedAt: new Date().toISOString(),
     };
 

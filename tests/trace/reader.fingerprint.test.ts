@@ -213,7 +213,10 @@ describe('e2e — TraceWriter with commandFingerprint → readTrace → formatTr
 
       const tracePath = path.join(runDir, 'trace.jsonl');
       const raw = await fs.readFile(tracePath, 'utf8');
-      const parsed = JSON.parse(raw.trim());
+      const eventLine = raw
+        .split('\n')
+        .filter((l) => l.trim() && !l.includes('"type":"header"'))[0];
+      const parsed = JSON.parse(eventLine);
 
       expect(parsed.commandFingerprint).toBe(fp);
       expect(parsed.eventType).toBe('phase_start');
