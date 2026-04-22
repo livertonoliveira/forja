@@ -249,7 +249,7 @@ describe('executeActions — mixed action list', () => {
     fetchSpy.mockRestore();
   });
 
-  it('logs multiple messages; notify_slack warns when no URL, http_post is silent', async () => {
+  it('logs multiple messages; notify_slack warns when no URL, http_post warns when no url', async () => {
     delete process.env.FORJA_SLACK_WEBHOOK_URL;
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -265,7 +265,7 @@ describe('executeActions — mixed action list', () => {
     await executeActions(actions, makeContext());
 
     expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(warnSpy).toHaveBeenCalledOnce();
+    expect(warnSpy).toHaveBeenCalledTimes(2);
     expect(warnSpy).toHaveBeenCalledWith('[forja] FORJA_SLACK_WEBHOOK_URL not set — Slack notification skipped');
 
     logSpy.mockRestore();

@@ -20,7 +20,7 @@ const SKIP_IN_CI = process.env.CI === 'true';
 
 async function getStore() {
   const { DrizzlePostgresStore } = await import('../../src/store/drizzle/adapter.js');
-  const connectionString = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/forja_test';
+  const connectionString = process.env.DATABASE_URL ?? 'postgresql://forja:forja@localhost:5432/forja_test';
   return new DrizzlePostgresStore(connectionString);
 }
 
