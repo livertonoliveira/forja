@@ -1,4 +1,4 @@
 import type { Migration } from './primitives.js';
+import { pre1ToV10 } from './m_pre1_to_v10.js';
 
-// Currently empty: only schema version 1.0 exists, no migrations needed yet.
-export const registry: Migration[] = [];
+export const registry: Migration[] = [pre1ToV10];
