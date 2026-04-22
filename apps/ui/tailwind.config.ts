@@ -18,6 +18,8 @@ const config: Config = {
       },
       boxShadow: {
         'gold-glow': `0 0 20px ${hexToRgba(colors.gold.mid, 0.3)}, 0 0 40px ${hexToRgba(colors.gold.mid, 0.1)}`,
+        'gold-glow-strong': `0 0 20px ${hexToRgba(colors.gold.mid, 0.5)}, 0 0 40px ${hexToRgba(colors.gold.mid, 0.25)}`,
+        'surface': '0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3)',
       },
       backgroundImage: {
         'gold-gradient': `linear-gradient(135deg, ${colors.gold.from}, ${colors.gold.mid}, ${colors.gold.to})`,
