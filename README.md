@@ -23,7 +23,9 @@
   <a href="#slash-commands">Slash Commands</a> ·
   <a href="#cli-reference">CLI</a> ·
   <a href="#dashboard">Dashboard</a> ·
-  <a href="#policies">Policies</a>
+  <a href="#policies">Policies</a> ·
+  <a href="#plugins--extensibility">Plugins</a> ·
+  <a href="#stability--versioning">Stability</a>
 </p>
 
 ---
@@ -52,10 +54,13 @@ Behind the scenes, the **Harness Engine** — a TypeScript runtime registered as
 | Security posture | Eyeballed | OWASP Top 10 scan on every diff, policy-gated |
 | Cost visibility | None | USD per phase, per model, per tool call |
 | Session crash | Start over | `forja resume <run-id>` picks up at the last checkpoint |
-| Quality gate | LLM opinion | Policy YAML evaluator, `0=pass 1=warn 2=fail` exit codes |
+| Quality gate | LLM opinion | Gate DSL with 8 typed predicates + persisted justification; `0=pass 1=warn 2=fail` exit codes |
 | Audit trail | Chat log | Full PostgreSQL trace + signed GitHub Check |
 | Commit discipline | "Initial commit" × 20 | Atomic Conventional Commits by design |
 | Stack coverage | Manual setup per repo | Auto-detects Node / Python / Go / Rust / Java / Ruby / PHP / .NET |
+| Extensibility | Fork the prompts | Typed Plugin API: custom commands, phases, audit modules, policy actions |
+| Public-API stability | Vibes | `SEMVER.md`, `DEPRECATIONS.md`, breaking-change CI, signed upgrade guides |
+| Artifact compatibility | "Works on my machine" | `schemaVersion` on every Zod schema, JSONL header, report front-matter, and Postgres row — `forja migrate` for upgrades |
 
 ---
 
@@ -362,6 +367,27 @@ Only HTTPS webhooks are accepted.
 - **PostgreSQL** for queryable history
 - **Next.js dashboard** (`forja ui`) for humans
 
+### Schema versioning & migrations
+
+Every artifact Forja produces — Zod-validated records, JSONL trace headers, markdown report front-matter, and 7 of the Postgres tables (`runs`, `phases`, `findings`, `gate_decisions`, `tool_calls`, `cost_events`, `issue_links`) — carries a `schemaVersion` field stamped from `CURRENT_SCHEMA_VERSION` (`src/schemas/versioning.ts`). The current version is `1.0`, set by migration `0004_schema_versioning.sql`.
+
+Upgrading old artifacts is a single-command operation:
+
+```bash
+forja migrate trace path/to/trace.jsonl   # in-place upgrade of a JSONL trace
+forja migrate report path/to/report.md    # upgrade a markdown report front-matter
+forja migrate postgres                    # migrate every row in the configured DB
+
+# All subcommands accept:
+#   --dry-run            preview the change without writing
+#   --from <version>     explicit source version (default: read from header)
+#   --to   <version>     explicit target version (default: CURRENT_SCHEMA_VERSION)
+```
+
+The runners (`src/store/migrations/{trace,report,postgres}-runner.ts`) walk a registry of versioned migration steps, applying them sequentially. Forward-compatibility is verified by golden-file roundtrip tests: fixtures in `tests/fixtures/schemas/{pre-1.0,v1.0,hypothetical-1.1}/` exercise pre-1.0 → 1.0 upgrades, current parsing, and forward-version tolerance for unknown fields. CI re-runs the roundtrip suite on every change under `src/schemas/` or `src/store/migrations/`.
+
+Releases that bump a `schemaVersion` ship with an upgrade guide under `docs/upgrades/v<X.Y>.md`, generated from `docs/upgrades/_template.md` and validated by `scripts/validate-upgrade-guide.ts` before tagging — the release script will refuse to publish if any `...` placeholder is left unfilled.
+
 ### Retention
 
 ```bash
@@ -387,7 +413,7 @@ Cron-driven recurring runs. Schedules live in `.forja/schedules.json`; next-run 
 | Pipeline state | Linear / markdown | PostgreSQL + FSM |
 | Session interruption | Start over | `forja resume <run-id>` |
 | Cost tracking | — | USD per phase via `forja cost` |
-| Quality gate verdict | LLM decision | Policy YAML, exit-code enforced |
+| Quality gate verdict | LLM decision | Gate DSL evaluator with persisted justification, exit-code enforced |
 | Full tool-call history | — | Queryable in PostgreSQL |
 | Real-time tool interception | — | Pre/post hooks block disallowed tools |
 | Dashboard | — | `forja ui` Next.js app |
@@ -433,6 +459,8 @@ Every command runs standalone — you don't have to start from `/forja:spec` if 
 - Pipeline phases (`/forja:perf`, `/forja:security`) analyze **only the diff** — fast, task-scoped, runs on every task.
 - Audit commands (`/forja:audit:*`) analyze the **entire codebase** — run periodically or before a release.
 
+**Audits are typed `AuditModule`s, not just prompts.** Each audit implements the `AuditModule` interface (`src/plugin/types.ts`) with a Zod-validated `AuditFinding`/`AuditReport` shape, exported as JSON Schema (Draft 7) under `schemas/audit/`. The audit runner (`src/audits/runner.ts`) executes modules in parallel with a configurable concurrency cap (default 4, max 64) and per-module `AbortController` timeout (default 120s), invoking `onRun` / `onResult` lifecycle hooks for plugins. The security audit additionally runs `src/audits/security/poc-generator.ts`, which produces a curl/exploit PoC with CWE mapping for every `critical`/`high` finding that carries an `exploitVector`. Because audits are first-class plugins, you can ship your own under `forja/plugins/` or as a `forja-plugin-*` npm package — see [Plugins & Extensibility](#plugins--extensibility).
+
 ---
 
 ## CLI Reference
@@ -451,6 +479,11 @@ forja <command> [options]
 | `forja infra migrate` | Run pending database migrations |
 | `forja infra status` | Show connection status and applied migrations |
 | `forja infra up` / `down` | Docker-backed Postgres lifecycle (equivalent to compose up/down) |
+| `forja migrate trace <path>` | Upgrade a `trace.jsonl` artifact to the current `schemaVersion` |
+| `forja migrate report <path>` | Upgrade a markdown report's front-matter |
+| `forja migrate postgres` | Migrate every row in the configured Postgres store |
+| `forja policies migrate [--in <file>] [--out <file>] [--dry-run]` | Convert legacy YAML policies to the v2 Gate DSL format |
+| `forja plugins list [--json] [--invalid]` | List registered plugins with ID, type, version, source, and path |
 
 ### Pipeline execution
 
@@ -509,40 +542,68 @@ A Next.js observability dashboard backed by the same PostgreSQL database as the 
 
 ## Policies
 
-Three YAML files in `policies/` (overridable at the project level) drive every declarative decision.
+Three YAML files in `policies/` (overridable at the project level) drive every declarative decision: gate behavior, tool restrictions, and model assignment.
 
-### `default.yaml` — gate policy
+### `default.yaml` — Gate Policy (v2 DSL)
+
+The gate policy is no longer a hard-coded severity table — it's a small declarative DSL (Domain-Specific Language) embedded in YAML. Each gate has a `when:` expression and a list of `then:` actions. Expressions support `and` / `or` / `not`, comparison operators (`> < >= <= == !=`), and predicate calls with typed arguments. The full EBNF grammar lives at [`docs/gates-dsl.md`](docs/gates-dsl.md); the rationale for staying YAML-embedded (instead of TypeScript hooks or CEL) is in [ADR 0001](docs/adr/0001-gates-dsl-yaml-only.md).
 
 ```yaml
-# Phase timeouts (seconds)
-timeouts:
-  develop: 600
-  test: 300
-  perf: 180
-  security: 180
-  review: 180
-  homolog: 60
-  pr: 120
+version: '2'
+gates:
+  - name: gate-critical
+    when: findings.countBySeverity("critical") > 0
+    then:
+      - fail
+      - 'log("Critical finding: {{finding.title}}")'
+      - notify_slack("#eng-alerts", "Critical finding in run {{runId}}")
 
-# Finding-to-gate mapping
-rules:
-  - when: { severity: [critical, high] }
-    action: fail_gate
-  - when: { severity: [medium] }
-    action: warn_gate
-  - when: { severity: [low] }
-    action: log
+  - name: gate-high
+    when: findings.countBySeverity("high") > 0
+    then: [fail]
 
-# Side effects
-actions:
-  on_fail:
-    - kind: notify_slack
-      text: "Pipeline {{runId}} FAILED: {{finding.title}}"
-    - kind: http_post
-      url: https://events.pagerduty.com/...
+  - name: gate-coverage-regression
+    when: coverage.delta() < -0.02 and touched.matches("src/**")
+    then: [warn]
+
+  - name: gate-expensive-run
+    when: cost.usd() > 5.00 or time.phaseDurationMs("dev") > 600000
+    then:
+      - 'log("Run {{runId}} is unusually expensive — see /cost dashboard")'
 ```
 
-Override per project with `forja/.forja-policy.yml`.
+#### The 8 canonical predicates
+
+Defined in [`src/policy/dsl/predicates.ts`](src/policy/dsl/predicates.ts) and exported via `PREDICATES_REGISTRY`. All return strongly-typed values usable in comparisons.
+
+| Predicate | Returns | Purpose |
+|-----------|---------|---------|
+| `coverage.delta()` | `number` | Coverage delta vs. base (fraction; `-0.05` = -5pp) |
+| `coverage.absolute()` | `number` | Absolute coverage percentage on this run |
+| `diff.filesChanged()` | `number` | Count of files modified in the diff |
+| `diff.linesChanged()` | `number` | Count of lines modified in the diff |
+| `touched.matches(glob)` | `boolean` | Whether any changed file matches the glob |
+| `time.phaseDurationMs(phase)` | `number` | Wall-clock duration of a phase, in ms |
+| `cost.usd()` | `number` | Total LLM cost of the current run in USD |
+| `findings.countBySeverity(sev)` | `number` | Count of findings at the given severity |
+
+Adding a new predicate is a MINOR bump; renaming or removing one is a MAJOR bump (per [`SEMVER.md`](SEMVER.md)).
+
+#### Justification trail
+
+The DSL evaluator (`src/policy/dsl/evaluator.ts`) is a pure function: given an AST and a context, it returns a `decision` plus a `justification` string that traces every predicate value, comparison, and boolean operator that contributed. This justification is persisted to the `gate_decisions.justification` column (migration `0003_dsl_justification.sql`) — meaning every `pass` / `warn` / `fail` in your trace can be explained, audited, and replayed. No more "why did this gate fire?" archaeology.
+
+#### Migrating legacy YAML
+
+If you still have v1 policies (`finding.severity: critical` style), one command converts them in place:
+
+```bash
+forja policies migrate                    # convert every policies/*.yaml
+forja policies migrate --in old.yaml --dry-run   # preview the diff
+forja policies migrate --in old.yaml --out new.dsl.yaml
+```
+
+The migrator (`src/policy/dsl/migrator.ts`) is conservative: it warns instead of silently dropping rules it can't translate.
 
 ### `tools.yaml` — phase-scoped tool restrictions
 
@@ -575,6 +636,150 @@ audit_*: claude-sonnet-4-6
 ```
 
 Pick the right brain for the right job: Opus for deep specification, Sonnet for the grind, Haiku for summarization. Cost drops ~5× without quality loss on the cheaper phases.
+
+---
+
+## Plugins & Extensibility
+
+Forja ships a typed Plugin API so you can extend any layer of the pipeline — custom CLI commands, new pipeline phases, new finding categories, new policy actions, or entire audit modules — without forking the codebase. The full reference lives in [`PLUGIN-API.md`](PLUGIN-API.md), regenerated from `src/plugin/types.ts` via `npm run plugin-api:gen`.
+
+### What you can extend
+
+All five interfaces are exported from the **`@forja-hq/cli/plugin`** subpath (resolves to `dist/plugin/index.js`).
+
+| Interface | Purpose |
+|-----------|---------|
+| **`Command`** | Add a custom `forja <id>` subcommand. Receives a `CommandContext` (`cwd`, `config`, `store`, `logger`) and returns an exit code. |
+| **`Phase`** | Inject a new pipeline phase via `insertAfter`. Receives a `PhaseContext` (`runId`, `previousPhases`, `store`, `abortSignal`) and returns `pass` / `warn` / `fail`. |
+| **`FindingCategory`** | Register a new category (`id`, `name`, `defaultSeverity`) so your findings are recognized by gate predicates and the dashboard heatmap. |
+| **`PolicyAction`** | Define a custom `then:` action callable from the Gate DSL — e.g. file a Jira ticket, ping a webhook, push a metric. |
+| **`AuditModule`** | Ship a full audit (`detect` + `run` + `report`) that the audit runner schedules in parallel with the built-in audits. |
+
+### Discovery
+
+The plugin loader auto-discovers extensions from two sources, with collision detection across both:
+
+1. **Local plugins** — every JS/TS module under `forja/plugins/` (override path with `FORJA_PLUGIN_DIR`). Source = `local`.
+2. **NPM plugins** — every package in `dependencies` or `devDependencies` whose name matches `forja-plugin-*`. Source = `npm`.
+
+If the same plugin `id` is registered from two sources, bootstrap fails with a `PluginCollisionError` listing every conflicting source, path, and ID — no silent overrides.
+
+```bash
+forja plugins list           # human-readable table: ID | Type | Version | Source | Path
+forja plugins list --json    # machine-readable for CI
+```
+
+### Lifecycle hooks
+
+Every plugin can optionally implement four lifecycle hooks (`src/plugin/hooks.ts`). They run isolated from the pipeline — a thrown error or timeout never crashes a run, only surfaces as a `low`/`medium` finding in the trace.
+
+| Hook | When it fires |
+|------|---------------|
+| `onRegister(ctx)` | Once at plugin bootstrap |
+| `onRun(ctx)` | Before every pipeline phase |
+| `onResult(ctx)` | After every phase completes |
+| `onError(ctx)` | When a phase fails |
+
+Hard timeout per hook is **5000 ms** by default, overridable via the `plugin_hook_timeout_ms` config key.
+
+### Authoring a plugin in 9 steps
+
+```bash
+mkdir my-forja-plugin && cd my-forja-plugin
+npm init -y && npm install --save-dev typescript
+npm install --save-peer @forja-hq/cli
+# write src/index.ts (see snippet below)
+npx tsc
+# in a target project, register: forja.config.ts → plugins: ['./dist/index.js']
+forja plugins list           # verify
+npm publish                  # publish as forja-plugin-<name> for auto-discovery
+```
+
+```ts
+import type { Command } from '@forja-hq/cli/plugin';
+
+export const greetCommand: Command = {
+  id: 'my-plugin:greet',
+  description: 'Prints a greeting to the log',
+  labels: ['demo'],
+  async run(ctx) {
+    ctx.logger.info('Hello from my-plugin!');
+    return { exitCode: 0, summary: 'Greeted successfully' };
+  },
+};
+```
+
+`id` must be globally unique — namespace with your plugin prefix (`my-plugin:greet`) to coexist cleanly with other plugins. `run` must never throw: catch internally and return a non-zero `exitCode`.
+
+---
+
+## Stability & Versioning
+
+Forja treats its public surface like an API consumers depend on. Five artifacts together define what's promised, what's deprecated, and how upgrades happen.
+
+### `SEMVER.md` — the contract
+
+[`SEMVER.md`](SEMVER.md) enumerates exactly what's covered by Semantic Versioning starting at v1.0.0:
+
+- **CLI flags** — every `forja` subcommand argument, with type, default, and `Since` version
+- **Zod schemas** — `ConfigSchema`, `FindingSchema`, `GateDecisionSchema`, `CostEventSchema`, `RunStateEnum`, `TraceEventSchema`, `AuditFindingSchema`, `AuditReportSchema`, `StackInfoSchema`
+- **Policy YAML formats** — gate / models / tools, all `version: "1"`
+- **Gate DSL** — the 8 canonical predicates and their signatures
+- **Plugin API** — `Command`, `Phase`, `FindingCategory`, `PolicyAction`, `AuditModule` and their context types
+- **Audit JSON Schemas** — `schemas/audit/audit-finding.json` and `schemas/audit/audit-report.json` (Draft 7)
+
+Anything not on that list — internal TypeScript symbols, the Postgres table layout, the binary checkpoint format, the slash-command markdown — is explicitly marked **internal** and may change in any release.
+
+### `DEPRECATIONS.md` + `warnDeprecated`
+
+Deprecated surfaces live in [`DEPRECATIONS.md`](DEPRECATIONS.md) for **two minor versions** before removal (longer if a security CVE forces an exception). At runtime, the `warnDeprecated()` helper emits a Node `DeprecationWarning` and writes a `deprecation_warning` trace event when `FORJA_RUN_ID` is set — so deprecated calls show up in your observability trail, not just stderr. Set `FORJA_SUPPRESS_DEPRECATION_WARNINGS=1` to silence.
+
+### `CHANGELOG.md` (Keep a Changelog)
+
+[`CHANGELOG.md`](CHANGELOG.md) follows the [Keep a Changelog](https://keepachangelog.com/) format and SemVer. Generate a draft entry from your conventional commits with:
+
+```bash
+npm run changelog
+```
+
+The release script refuses to publish if `CHANGELOG.md` has no entry for the version being tagged.
+
+### Breaking-change CI
+
+Every PR runs `.github/workflows/check-breaking-changes.yml`, which:
+
+1. Re-emits JSON Schemas from current Zod schemas (`scripts/check-breaking-changes.ts`)
+2. Diffs against the snapshot at `tests/fixtures/public-api/<major.minor>/`
+3. Exits `2` and posts a PR comment if a breaking change is detected
+4. Blocks the merge unless the PR carries the `allow-breaking` label
+
+Snapshots are committed — accidentally breaking the public surface is a CI failure, not a runtime surprise.
+
+### Release script
+
+Tagging a release is an interactive command:
+
+```bash
+npm run release                          # interactive
+npm run release -- --dry-run             # preview without tagging or pushing
+npm run release -- --bump minor --yes    # non-interactive (CI)
+```
+
+`scripts/release.ts` auto-detects the bump (breaking-change CI exit code → MAJOR; `feat!:` / `feat:` / others in `git log` → MAJOR / MINOR / PATCH), validates that the matching `docs/upgrades/v<X.Y>.md` exists with no unfilled `...` placeholders, requires an RFC reference in `SEMVER.md` for MAJOR bumps, then creates the git tag.
+
+### Upgrade guides
+
+Every minor (and major) ships an upgrade guide at `docs/upgrades/v<X.Y>.md`, scaffolded from [`docs/upgrades/_template.md`](docs/upgrades/_template.md):
+
+```
+What's new   →   Breaking changes   →   Deprecations (v+2)   →   Migration steps   →   Known issues
+```
+
+The validator (`scripts/validate-upgrade-guide.ts`) parses the file and rejects any leftover placeholder line (`...`, `- ...`, `3. ...`). The guide also carries a CHANGELOG anchor link (`[v<X.Y>](../CHANGELOG.md#vxy)`), so consumers move between high-level changelog and step-by-step migration with one click.
+
+### Gate Behavior config
+
+The `gate_behavior` block in `forja/config.md` controls how the evaluator collapses multiple actions into a single decision. Logic: any `fail_gate` → `fail`; else any `warn_gate` → `warn`; else `pass`. Exit codes are stable and part of the public surface: `0=pass`, `1=warn`, `2=fail` — drop `forja gate --run <id>` into CI and you have a deterministic quality gate.
 
 ---
 
@@ -715,12 +920,14 @@ forja schedule list
 ```
 forja/
 ├── config.md                      # Project stack + conventions (from /forja:init)
+├── plugins/                       # Local plugin modules (auto-discovered)
+│   └── my-plugin/index.js
 ├── changes/
 │   └── <feature-name>/
 │       ├── proposal.md            # Requirements, acceptance criteria, scope
 │       ├── design.md              # Architecture and technical decisions
 │       ├── tasks.md               # Granular tasks (<400 lines each)
-│       ├── report-<task>.md       # Per-task quality reports
+│       ├── report-<task>.md       # Per-task quality reports (with schemaVersion front-matter)
 │       └── tracking.md            # Issue + finding tracker
 ├── audits/                        # Project-wide audit reports
 │   ├── backend-<date>.md
@@ -730,10 +937,34 @@ forja/
 │   └── run-<date>.md              # Consolidated audit suite
 └── state/                         # Harness runtime data (gitignored)
     └── runs/<run-id>/
-        └── trace.jsonl
+        └── trace.jsonl            # JSONL with schemaVersion header
 ```
 
 When Linear MCP is connected, everything under `forja/changes/` and the Linear tracking live in Linear instead — only `config.md` stays local.
+
+### Repository layout (for contributors)
+
+```
+.
+├── SEMVER.md                      # Public-API contract (CLI + schemas + DSL + Plugin API)
+├── DEPRECATIONS.md                # Items scheduled for removal (2-minor window)
+├── CHANGELOG.md                   # Keep a Changelog format
+├── PLUGIN-API.md                  # Generated reference (npm run plugin-api:gen)
+├── docs/
+│   ├── gates-dsl.md               # EBNF grammar for the Gate DSL
+│   ├── adr/0001-gates-dsl-yaml-only.md
+│   └── upgrades/
+│       ├── _template.md           # Source for every upgrade guide
+│       └── v<X.Y>.md              # One guide per release
+├── migrations/                    # SQL migrations (incl. 0004_schema_versioning.sql)
+├── policies/                      # default.yaml (Gate DSL) + tools.yaml + models.yaml
+├── schemas/audit/                 # JSON Schema (Draft 7) exports
+└── src/
+    ├── audits/{backend,frontend,database,security}/   # Typed AuditModules
+    ├── plugin/                    # Plugin types, registry, loaders, hooks
+    ├── policy/dsl/                # Parser, AST, evaluator, predicates, migrator
+    └── store/migrations/          # Trace / report / Postgres migration runners
+```
 
 ---
 
