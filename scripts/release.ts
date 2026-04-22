@@ -11,6 +11,7 @@ import * as path from 'path';
 import * as readline from 'readline';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { validateUpgradeGuide } from './validate-upgrade-guide.ts';
 
 // ---------------------------------------------------------------------------
 // Setup
@@ -172,12 +173,14 @@ async function main(): Promise<void> {
     process.stdout.write('RFC reference found in SEMVER.md.\n');
   }
 
-  // 4d. Minor: check upgrade guide exists
-  if (bump === 'minor') {
+  // 4d. Minor/major: validate upgrade guide exists and has no unfilled placeholders
+  if (bump === 'minor' || bump === 'major') {
     const upgradeGuide = path.join(ROOT_DIR, 'docs', 'upgrades', `v${nextVersion}.md`);
-    if (!fs.existsSync(upgradeGuide)) {
-      process.stderr.write(`Warning: upgrade guide not found: docs/upgrades/v${nextVersion}.md\n`);
+    const guideResult = validateUpgradeGuide(upgradeGuide);
+    if (!guideResult.ok) {
+      die(`Upgrade guide validation failed: ${guideResult.reason}\nCreate and fill docs/upgrades/v${nextVersion}.md before releasing.`);
     }
+    process.stdout.write('Upgrade guide validated.\n');
   }
 
   // 4e. Run tests
