@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import { parseBumpFromCommits, computeNextVersion } from '../release.ts';
 
 const SCRIPT = path.resolve(__dirname, '../release.ts');
+const VALIDATE_UPGRADE_GUIDE_SCRIPT = path.resolve(__dirname, '../validate-upgrade-guide.ts');
 
 function runRelease(dir: string, args: string[]): { stdout: string; stderr: string; code: number } {
   const scriptPath = path.join(dir, 'release.ts');
@@ -46,7 +47,9 @@ function setupReleaseRepo(): string {
       'path.resolve(path.dirname(__filename))',
     );
   fs.writeFileSync(path.join(dir, 'release.ts'), scriptContent, 'utf-8');
-  execSync('git add release.ts', { cwd: dir });
+  // Copy validate-upgrade-guide.ts alongside release.ts so the import resolves
+  fs.copyFileSync(VALIDATE_UPGRADE_GUIDE_SCRIPT, path.join(dir, 'validate-upgrade-guide.ts'));
+  execSync('git add release.ts validate-upgrade-guide.ts', { cwd: dir });
   execSync('git commit -m "chore: add release script"', { cwd: dir });
 
   return dir;
@@ -125,7 +128,15 @@ describe('Caso 2: validação de RFC para major', () => {
   it('exits 0 and prints RFC reference found when SEMVER.md has RFC reference', () => {
     const dir = setupReleaseRepo();
     fs.writeFileSync(path.join(dir, 'SEMVER.md'), '# Semver\n\nRFC: docs/rfc/001-major.md\n', 'utf-8');
-    execSync('git add SEMVER.md && git commit -m "chore: add semver"', { cwd: dir });
+    // Create a valid upgrade guide for v1.0.0 (major bump from 0.1.0)
+    fs.mkdirSync(path.join(dir, 'docs', 'upgrades'), { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, 'docs', 'upgrades', 'v1.0.0.md'),
+      '# Upgrade Guide — v1.0\n\n## What\'s new\n\n- Added plugin system\n\n## Breaking changes\n\n- None.\n\n## Migration steps\n\n1. Run forja migrate\n',
+      'utf-8',
+    );
+    execSync('git add SEMVER.md docs/', { cwd: dir });
+    execSync('git commit -m "chore: add semver and upgrade guide"', { cwd: dir });
 
     const result = runRelease(dir, ['--dry-run', '--yes', '--bump', 'major']);
     expect(result.code).toBe(0);

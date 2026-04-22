@@ -117,11 +117,20 @@ function renderUnreleased(sections: Map<string, string[]>): string {
   return lines.join('\n');
 }
 
-function renderRelease(version: string, sections: Map<string, string[]>): string {
+function renderRelease(version: string, sections: Map<string, string[]>, upgradeGuideLink?: string): string {
   const today = new Date().toISOString().slice(0, 10);
-  if (sections.size === 0) return `## [${version}] — ${today}\n\n_Nenhuma mudança neste release._\n`;
 
-  const lines = [`## [${version}] — ${today}`, ''];
+  const lines: string[] = [`## [${version}] — ${today}`, ''];
+
+  if (upgradeGuideLink) {
+    lines.push(`> Upgrade guide: [${upgradeGuideLink}](${upgradeGuideLink})`, '');
+  }
+
+  if (sections.size === 0) {
+    lines.push('_Nenhuma mudança neste release._', '');
+    return lines.join('\n');
+  }
+
   for (const [section, entries] of sections) {
     lines.push(`### ${section}`, ...entries, '');
   }
@@ -246,8 +255,19 @@ function main(): void {
     return;
   }
 
+  let upgradeGuideLink: string | undefined;
+  if (forVersion) {
+    const isMinorOrMajor = forVersion.endsWith('.0');
+    if (isMinorOrMajor) {
+      const guidePath = path.join(ROOT, 'docs', 'upgrades', `v${forVersion}.md`);
+      if (fs.existsSync(guidePath)) {
+        upgradeGuideLink = `docs/upgrades/v${forVersion}.md`;
+      }
+    }
+  }
+
   const block = forVersion
-    ? renderRelease(forVersion, sections)
+    ? renderRelease(forVersion, sections, upgradeGuideLink)
     : renderUnreleased(sections);
 
   updateChangelog(block, forVersion);
