@@ -15,6 +15,8 @@ import {
   issueLinks,
 } from './schema.js';
 
+import { CURRENT_SCHEMA_VERSION, isCompatible } from '../../schemas/versioning.js';
+
 import type { ForjaStore } from '../interface.js';
 import type {
   Run, NewRun,
@@ -66,7 +68,16 @@ type DrizzleCostEvent = typeof costEvents.$inferSelect;
 type DrizzleGateDecision = typeof gateDecisions.$inferSelect;
 type DrizzleIssueLink = typeof issueLinks.$inferSelect;
 
+function assertCompatible(schemaVersion: string, entity: string): void {
+  if (!isCompatible(schemaVersion, CURRENT_SCHEMA_VERSION)) {
+    throw new Error(
+      `Incompatible schemaVersion "${schemaVersion}" on ${entity} (current: "${CURRENT_SCHEMA_VERSION}"). Major versions must match.`
+    );
+  }
+}
+
 function toRun(r: DrizzleRun): Run {
+  assertCompatible(r.schemaVersion, 'Run');
   return {
     ...r,
     startedAt: r.startedAt instanceof Date ? r.startedAt.toISOString() : r.startedAt,
@@ -75,6 +86,7 @@ function toRun(r: DrizzleRun): Run {
 }
 
 function toPhase(r: DrizzlePhase): Phase {
+  assertCompatible(r.schemaVersion, 'Phase');
   return {
     ...r,
     startedAt: r.startedAt instanceof Date ? r.startedAt.toISOString() : r.startedAt,
@@ -91,6 +103,7 @@ function toAgent(r: DrizzleAgent): Agent {
 }
 
 function toFinding(r: DrizzleFinding): Finding {
+  assertCompatible(r.schemaVersion, 'Finding');
   return {
     ...r,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
@@ -98,6 +111,7 @@ function toFinding(r: DrizzleFinding): Finding {
 }
 
 function toToolCall(r: DrizzleToolCall): ToolCall {
+  assertCompatible(r.schemaVersion, 'ToolCall');
   return {
     ...r,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
@@ -105,6 +119,7 @@ function toToolCall(r: DrizzleToolCall): ToolCall {
 }
 
 function toCostEvent(r: DrizzleCostEvent): CostEvent {
+  assertCompatible(r.schemaVersion, 'CostEvent');
   return {
     ...r,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
@@ -112,6 +127,7 @@ function toCostEvent(r: DrizzleCostEvent): CostEvent {
 }
 
 function toGateDecision(r: DrizzleGateDecision): GateDecision {
+  assertCompatible(r.schemaVersion, 'GateDecision');
   return {
     ...r,
     decidedAt: r.decidedAt instanceof Date ? r.decidedAt.toISOString() : r.decidedAt,
@@ -119,6 +135,7 @@ function toGateDecision(r: DrizzleGateDecision): GateDecision {
 }
 
 function toIssueLink(r: DrizzleIssueLink): IssueLink {
+  assertCompatible(r.schemaVersion, 'IssueLink');
   return {
     ...r,
     linkedAt: r.linkedAt instanceof Date ? r.linkedAt.toISOString() : r.linkedAt,
@@ -141,6 +158,7 @@ export class DrizzlePostgresStore implements ForjaStore {
   async createRun(data: NewRun): Promise<Run> {
     const [row] = await this.db.insert(runs).values({
       ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       startedAt: toDate(data.startedAt),
       finishedAt: toDateOrNull(data.finishedAt),
     } as unknown as DrizzleRun).returning();
@@ -176,6 +194,7 @@ export class DrizzlePostgresStore implements ForjaStore {
   async createPhase(data: NewPhase): Promise<Phase> {
     const [row] = await this.db.insert(phases).values({
       ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       startedAt: toDate(data.startedAt),
       finishedAt: toDateOrNull(data.finishedAt),
     } as unknown as DrizzlePhase).returning();
@@ -226,6 +245,7 @@ export class DrizzlePostgresStore implements ForjaStore {
   async insertFinding(data: NewFinding): Promise<Finding> {
     const [row] = await this.db.insert(findings).values({
       ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       createdAt: toDate(data.createdAt),
     } as unknown as DrizzleFinding).returning();
     return toFinding(row);
@@ -233,7 +253,7 @@ export class DrizzlePostgresStore implements ForjaStore {
 
   async insertFindings(data: NewFinding[]): Promise<Finding[]> {
     const rows = await this.db.insert(findings).values(
-      data.map(d => ({ ...d, createdAt: toDate(d.createdAt) } as unknown as DrizzleFinding))
+      data.map(d => ({ ...d, schemaVersion: CURRENT_SCHEMA_VERSION, createdAt: toDate(d.createdAt) } as unknown as DrizzleFinding))
     ).returning();
     return rows.map(toFinding);
   }
@@ -252,6 +272,7 @@ export class DrizzlePostgresStore implements ForjaStore {
   async insertToolCall(data: NewToolCall): Promise<ToolCall> {
     const [row] = await this.db.insert(toolCalls).values({
       ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       createdAt: toDate(data.createdAt),
     } as unknown as DrizzleToolCall).returning();
     return toToolCall(row);
@@ -260,6 +281,7 @@ export class DrizzlePostgresStore implements ForjaStore {
   async insertCostEvent(data: NewCostEvent): Promise<CostEvent> {
     const [row] = await this.db.insert(costEvents).values({
       ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       createdAt: toDate(data.createdAt),
     } as unknown as DrizzleCostEvent).returning();
     return toCostEvent(row);
@@ -292,6 +314,7 @@ export class DrizzlePostgresStore implements ForjaStore {
   async insertGateDecision(data: NewGateDecision): Promise<GateDecision> {
     const [row] = await this.db.insert(gateDecisions).values({
       ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       decidedAt: toDate(data.decidedAt),
     } as unknown as DrizzleGateDecision).returning();
     return toGateDecision(row);
@@ -329,7 +352,10 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async linkIssue(data: NewIssueLink): Promise<IssueLink> {
-    const [row] = await this.db.insert(issueLinks).values(data as unknown as DrizzleIssueLink).returning();
+    const [row] = await this.db.insert(issueLinks).values({
+      ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+    } as unknown as DrizzleIssueLink).returning();
     return toIssueLink(row);
   }
 
