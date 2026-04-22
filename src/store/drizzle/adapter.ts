@@ -41,6 +41,19 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers: convert between ISO strings and Date objects for drizzle columns
+// ---------------------------------------------------------------------------
+
+function toDate(value: Date | string): Date {
+  return value instanceof Date ? value : new Date(value as string);
+}
+
+function toDateOrNull(value: Date | string | null | undefined): Date | null {
+  if (!value) return null;
+  return value instanceof Date ? value : new Date(value as string);
+}
+
+// ---------------------------------------------------------------------------
 // Helpers: convert Drizzle row shapes (Date timestamps) to plain domain types
 // ---------------------------------------------------------------------------
 
@@ -126,12 +139,21 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async createRun(data: NewRun): Promise<Run> {
-    const [row] = await this.db.insert(runs).values(data as unknown as DrizzleRun).returning();
+    const [row] = await this.db.insert(runs).values({
+      ...data,
+      startedAt: toDate(data.startedAt),
+      finishedAt: toDateOrNull(data.finishedAt),
+    } as unknown as DrizzleRun).returning();
     return toRun(row);
   }
 
   async updateRun(id: string, data: Partial<Omit<NewRun, 'id'>>): Promise<Run> {
-    const [row] = await this.db.update(runs).set(data as unknown as Partial<DrizzleRun>).where(eq(runs.id, id)).returning();
+    const values = {
+      ...data,
+      ...(data.startedAt !== undefined && { startedAt: toDate(data.startedAt) }),
+      ...(data.finishedAt !== undefined && { finishedAt: toDateOrNull(data.finishedAt) }),
+    };
+    const [row] = await this.db.update(runs).set(values as unknown as Partial<DrizzleRun>).where(eq(runs.id, id)).returning();
     if (!row) throw new Error(`Not found: Run ${id}`);
     return toRun(row);
   }
@@ -152,12 +174,21 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async createPhase(data: NewPhase): Promise<Phase> {
-    const [row] = await this.db.insert(phases).values(data as unknown as DrizzlePhase).returning();
+    const [row] = await this.db.insert(phases).values({
+      ...data,
+      startedAt: toDate(data.startedAt),
+      finishedAt: toDateOrNull(data.finishedAt),
+    } as unknown as DrizzlePhase).returning();
     return toPhase(row);
   }
 
   async updatePhase(id: string, data: Partial<Omit<NewPhase, 'id'>>): Promise<Phase> {
-    const [row] = await this.db.update(phases).set(data as unknown as Partial<DrizzlePhase>).where(eq(phases.id, id)).returning();
+    const values = {
+      ...data,
+      ...(data.startedAt !== undefined && { startedAt: toDate(data.startedAt) }),
+      ...(data.finishedAt !== undefined && { finishedAt: toDateOrNull(data.finishedAt) }),
+    };
+    const [row] = await this.db.update(phases).set(values as unknown as Partial<DrizzlePhase>).where(eq(phases.id, id)).returning();
     if (!row) throw new Error(`Not found: Phase ${id}`);
     return toPhase(row);
   }
@@ -173,23 +204,37 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async createAgent(data: NewAgent): Promise<Agent> {
-    const [row] = await this.db.insert(agents).values(data as unknown as DrizzleAgent).returning();
+    const [row] = await this.db.insert(agents).values({
+      ...data,
+      startedAt: toDate(data.startedAt),
+      finishedAt: toDateOrNull(data.finishedAt),
+    } as unknown as DrizzleAgent).returning();
     return toAgent(row);
   }
 
   async updateAgent(id: string, data: Partial<Omit<NewAgent, 'id'>>): Promise<Agent> {
-    const [row] = await this.db.update(agents).set(data as unknown as Partial<DrizzleAgent>).where(eq(agents.id, id)).returning();
+    const values = {
+      ...data,
+      ...(data.startedAt !== undefined && { startedAt: toDate(data.startedAt) }),
+      ...(data.finishedAt !== undefined && { finishedAt: toDateOrNull(data.finishedAt) }),
+    };
+    const [row] = await this.db.update(agents).set(values as unknown as Partial<DrizzleAgent>).where(eq(agents.id, id)).returning();
     if (!row) throw new Error(`Not found: Agent ${id}`);
     return toAgent(row);
   }
 
   async insertFinding(data: NewFinding): Promise<Finding> {
-    const [row] = await this.db.insert(findings).values(data as unknown as DrizzleFinding).returning();
+    const [row] = await this.db.insert(findings).values({
+      ...data,
+      createdAt: toDate(data.createdAt),
+    } as unknown as DrizzleFinding).returning();
     return toFinding(row);
   }
 
   async insertFindings(data: NewFinding[]): Promise<Finding[]> {
-    const rows = await this.db.insert(findings).values(data as unknown as DrizzleFinding[]).returning();
+    const rows = await this.db.insert(findings).values(
+      data.map(d => ({ ...d, createdAt: toDate(d.createdAt) } as unknown as DrizzleFinding))
+    ).returning();
     return rows.map(toFinding);
   }
 
@@ -205,12 +250,18 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async insertToolCall(data: NewToolCall): Promise<ToolCall> {
-    const [row] = await this.db.insert(toolCalls).values(data as unknown as DrizzleToolCall).returning();
+    const [row] = await this.db.insert(toolCalls).values({
+      ...data,
+      createdAt: toDate(data.createdAt),
+    } as unknown as DrizzleToolCall).returning();
     return toToolCall(row);
   }
 
   async insertCostEvent(data: NewCostEvent): Promise<CostEvent> {
-    const [row] = await this.db.insert(costEvents).values(data as unknown as DrizzleCostEvent).returning();
+    const [row] = await this.db.insert(costEvents).values({
+      ...data,
+      createdAt: toDate(data.createdAt),
+    } as unknown as DrizzleCostEvent).returning();
     return toCostEvent(row);
   }
 
@@ -239,7 +290,10 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async insertGateDecision(data: NewGateDecision): Promise<GateDecision> {
-    const [row] = await this.db.insert(gateDecisions).values(data as unknown as DrizzleGateDecision).returning();
+    const [row] = await this.db.insert(gateDecisions).values({
+      ...data,
+      decidedAt: toDate(data.decidedAt),
+    } as unknown as DrizzleGateDecision).returning();
     return toGateDecision(row);
   }
 

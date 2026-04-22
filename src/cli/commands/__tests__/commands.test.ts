@@ -251,10 +251,10 @@ describe('CLI Commands', () => {
       expect(uiCommand.name()).toBe('ui');
     });
 
-    it('has --port option with default 3737', () => {
+    it('has --port option with default 4242', () => {
       const portOpt = uiCommand.options.find((o) => o.flags.includes('--port'));
       expect(portOpt).toBeDefined();
-      expect(portOpt?.defaultValue).toBe('3737');
+      expect(portOpt?.defaultValue).toBe('4242');
     });
   });
 });

@@ -20,6 +20,7 @@ export async function executeActions(actions: PolicyAction[], context: ActionCon
       await notifySlack({ channel, message: action.message ?? '', context });
     } else if (action.action === 'http_post') {
       if (!action.url) {
+        console.warn('[forja] http_post action skipped: url is missing or undefined');
         return;
       }
       await httpPost({
