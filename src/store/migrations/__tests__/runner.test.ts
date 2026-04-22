@@ -172,7 +172,9 @@ describe('registry', () => {
     expect(Array.isArray(registry)).toBe(true);
   });
 
-  it('is currently empty (no migrations needed yet)', () => {
-    expect(registry).toHaveLength(0);
+  it('contains the pre-1.0 → 1.0 migration', () => {
+    expect(registry).toHaveLength(1);
+    expect(registry[0].from).toBe('pre-1.0');
+    expect(registry[0].to).toBe('1.0');
   });
 });
