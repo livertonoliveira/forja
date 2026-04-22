@@ -1,5 +1,6 @@
 import type { AuditFinding } from '../plugin/types.js';
 import type { AuditRunResult } from './runner.js';
+import { CURRENT_SCHEMA_VERSION } from '../schemas/versioning.js';
 
 const SEVERITY_ORDER: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
 
@@ -9,7 +10,7 @@ export interface ConsolidatedReport {
 }
 
 export interface ConsolidatedReportJson {
-  schemaVersion: '1.0';
+  schemaVersion: string;
   consolidatedAt: string;
   summary: {
     total: number;
@@ -62,7 +63,7 @@ export function consolidate(results: AuditRunResult[]): ConsolidatedReport {
   const markdown = buildMarkdown(results, totalBySeverity, top10Findings, modules, allFindings.length);
 
   const json: ConsolidatedReportJson = {
-    schemaVersion: '1.0',
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     consolidatedAt,
     summary: {
       total: allFindings.length,

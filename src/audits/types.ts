@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CURRENT_SCHEMA_VERSION } from '../schemas/versioning.js';
 
 export const StackInfoSchema = z.object({
   language: z.string(),
@@ -7,7 +8,7 @@ export const StackInfoSchema = z.object({
 });
 
 export const AuditFindingSchema = z.object({
-  schemaVersion: z.literal('1.0'),
+  schemaVersion: z.string().default(CURRENT_SCHEMA_VERSION),
   id: z.string().min(1).max(128).regex(/^[\w:\-]+$/),
   severity: z.enum(['low', 'medium', 'high', 'critical']),
   title: z.string().min(1).max(512),
@@ -24,7 +25,7 @@ export const AuditFindingSchema = z.object({
 });
 
 export const AuditReportSchema = z.object({
-  schemaVersion: z.literal('1.0'),
+  schemaVersion: z.string().default(CURRENT_SCHEMA_VERSION),
   auditId: z.string().min(1).max(128),
   stackInfo: StackInfoSchema,
   startedAt: z.string().datetime(),

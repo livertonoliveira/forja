@@ -1,5 +1,6 @@
 import type { AuditModule, AuditFinding, AuditReport, StackInfo, AuditContext } from '../../plugin/types.js';
 import { AuditReportSchema } from '../types.js';
+import { CURRENT_SCHEMA_VERSION } from '../../schemas/versioning.js';
 import { countBySeverity, buildMarkdown } from '../shared.js';
 import { detectNPlusOne } from './heuristics/n-plus-one.js';
 import { detectMissingCache } from './heuristics/missing-cache.js';
@@ -47,13 +48,13 @@ export const backendAuditModule: AuditModule = {
     const now = new Date().toISOString();
 
     const json = AuditReportSchema.parse({
-      schemaVersion: '1.0',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       auditId: 'audit:backend',
       stackInfo: ctx.stack,
       startedAt: now,
       finishedAt: now,
       findings: findings.map((f, i) => ({
-        schemaVersion: '1.0',
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         id: `finding-${String(i + 1).padStart(3, '0')}`,
         severity: f.severity,
         title: f.title,
