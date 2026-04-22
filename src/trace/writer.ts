@@ -33,7 +33,11 @@ export class TraceWriter {
       createdAt: new Date().toISOString(),
       runId: this.runId,
     };
-    await fs.writeFile(this.tracePath, JSON.stringify(header) + '\n', { encoding: 'utf8' });
+    try {
+      await fs.writeFile(this.tracePath, JSON.stringify(header) + '\n', { encoding: 'utf8', flag: 'wx' });
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err;
+    }
   }
 
   async write(event: Omit<TraceEvent, 'ts' | 'schemaVersion'>): Promise<void> {
