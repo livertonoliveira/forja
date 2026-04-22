@@ -14,6 +14,7 @@ import { replayCommand } from './commands/replay.js';
 import { setupCommand } from './commands/setup.js';
 import { pluginsCommand } from './commands/plugins.js';
 import { policiesCommand } from './commands/policies.js';
+import { migrateCommand } from './commands/migrate.js';
 
 declare const __FORJA_VERSION__: string;
 
@@ -37,6 +38,7 @@ program
   .addCommand(replayCommand)
   .addCommand(setupCommand)
   .addCommand(pluginsCommand)
-  .addCommand(policiesCommand);
+  .addCommand(policiesCommand)
+  .addCommand(migrateCommand);
 
 program.parse();
