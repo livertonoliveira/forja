@@ -9,6 +9,7 @@ import type {
 import type { TraceWriter } from '../trace/writer.js';
 import type { ForjaStore } from '../store/interface.js';
 import type { Finding } from '../schemas/index.js';
+import { CURRENT_SCHEMA_VERSION } from '../schemas/index.js';
 
 export interface HookRunnerOptions {
   timeoutMs?: number;
@@ -117,6 +118,7 @@ export class HookRunner {
     const createdAt = new Date().toISOString();
 
     const finding: Finding = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       id: randomUUID(),
       runId: this.options.runId,
       phaseId,
