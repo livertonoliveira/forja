@@ -1,6 +1,19 @@
 import type { Metadata } from 'next';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import Link from 'next/link';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Forja UI',
@@ -17,17 +30,17 @@ const navLinks = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="flex min-h-screen bg-gray-950 text-gray-100">
-        <nav className="w-48 shrink-0 border-r border-gray-800 px-4 py-6 flex flex-col gap-1">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">
+    <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className="flex min-h-screen bg-forja-bg-base text-forja-text-primary">
+        <nav className="w-48 shrink-0 border-r border-forja-border-subtle px-4 py-6 flex flex-col gap-1">
+          <span className="text-xs font-semibold text-forja-text-muted uppercase tracking-widest mb-4">
             Forja
           </span>
           {navLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className="px-3 py-2 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              className="px-3 py-2 rounded-md text-sm text-forja-text-secondary hover:bg-forja-bg-elevated hover:text-forja-text-primary transition-colors"
             >
               {label}
             </Link>
