@@ -5,6 +5,21 @@ import { TraceWriter } from '../../src/trace/writer.js';
 import { TraceEventSchema } from '../../src/schemas/index.js';
 import { makeRunId, tracePath } from './_helpers.js';
 
+/** Read only the trace event lines (skip the header line). */
+async function readTraceEventLines(runId: string): Promise<string[]> {
+  const raw = await fs.readFile(tracePath(runId), 'utf8');
+  return raw
+    .split('\n')
+    .filter(l => l.trim() !== '')
+    .filter(l => {
+      try {
+        return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header';
+      } catch {
+        return false;
+      }
+    });
+}
+
 describe('TraceWriter contract — 5 event types each parse against TraceEventSchema', () => {
   it('writes exactly 5 lines and every line parses against TraceEventSchema', async () => {
     const runId = makeRunId();
@@ -16,8 +31,7 @@ describe('TraceWriter contract — 5 event types each parse against TraceEventSc
     await writer.writeCheckpoint('perf');
     await writer.writeError(new Error('test error'), 'perf');
 
-    const raw = await fs.readFile(tracePath(runId), 'utf8');
-    const lines = raw.split('\n').filter(l => l.trim() !== '');
+    const lines = await readTraceEventLines(runId);
 
     expect(lines).toHaveLength(5);
     for (const line of lines) {
@@ -33,7 +47,8 @@ describe('TraceWriter contract — writePhaseStart payload fields', () => {
 
     await writer.writePhaseStart('security');
 
-    const parsed = TraceEventSchema.parse(JSON.parse((await fs.readFile(tracePath(runId), 'utf8')).trim()));
+    const lines = await readTraceEventLines(runId);
+    const parsed = TraceEventSchema.parse(JSON.parse(lines[0]));
 
     expect(parsed).toMatchObject({ eventType: 'phase_start', runId, payload: { phase: 'security' } });
     expect(parsed.ts).toBeDefined();
@@ -47,7 +62,8 @@ describe('TraceWriter contract — writePhaseEnd payload fields', () => {
 
     await writer.writePhaseEnd('review', 'failed');
 
-    const parsed = TraceEventSchema.parse(JSON.parse((await fs.readFile(tracePath(runId), 'utf8')).trim()));
+    const lines = await readTraceEventLines(runId);
+    const parsed = TraceEventSchema.parse(JSON.parse(lines[0]));
 
     expect(parsed).toMatchObject({ eventType: 'phase_end', runId, payload: { phase: 'review', status: 'failed' } });
   });
@@ -61,7 +77,8 @@ describe('TraceWriter contract — writeToolCall payload fields', () => {
 
     await writer.writeToolCall('Bash', agentId, 250);
 
-    const parsed = TraceEventSchema.parse(JSON.parse((await fs.readFile(tracePath(runId), 'utf8')).trim()));
+    const lines = await readTraceEventLines(runId);
+    const parsed = TraceEventSchema.parse(JSON.parse(lines[0]));
 
     expect(parsed).toMatchObject({ eventType: 'tool_call', runId, agentId, payload: { tool: 'Bash', durationMs: 250 } });
   });
@@ -74,7 +91,8 @@ describe('TraceWriter contract — writeCheckpoint payload fields', () => {
 
     await writer.writeCheckpoint('perf');
 
-    const parsed = TraceEventSchema.parse(JSON.parse((await fs.readFile(tracePath(runId), 'utf8')).trim()));
+    const lines = await readTraceEventLines(runId);
+    const parsed = TraceEventSchema.parse(JSON.parse(lines[0]));
 
     expect(parsed).toMatchObject({ eventType: 'checkpoint', runId, payload: { checkpoint: true, phase: 'perf' } });
   });
@@ -87,7 +105,8 @@ describe('TraceWriter contract — writeError payload fields', () => {
 
     await writer.writeError(new Error('something went wrong'), 'security');
 
-    const parsed = TraceEventSchema.parse(JSON.parse((await fs.readFile(tracePath(runId), 'utf8')).trim()));
+    const lines = await readTraceEventLines(runId);
+    const parsed = TraceEventSchema.parse(JSON.parse(lines[0]));
 
     expect(parsed).toMatchObject({ eventType: 'error', runId, payload: { message: 'something went wrong', phase: 'security' } });
   });

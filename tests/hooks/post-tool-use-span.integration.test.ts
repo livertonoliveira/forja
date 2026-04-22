@@ -29,6 +29,9 @@ async function readTraceEvents(runId: string, tmpDir: string) {
   return content
     .split('\n')
     .filter((l) => l.trim().length > 0)
+    .filter((l) => {
+      try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+    })
     .map((l) => TraceEventSchema.parse(JSON.parse(l)));
 }
 
@@ -140,9 +143,15 @@ describe('handlePostToolUse — without FORJA_SPAN_ID set', () => {
 
     await handlePostToolUse(validPayload());
 
-    const tracePath = path.join(tmpDir, 'forja', 'state', 'runs', runId, 'trace.jsonl');
-    const raw = await fs.readFile(tracePath, 'utf8');
-    const parsed = JSON.parse(raw.trim());
+    const traceFilePath = path.join(tmpDir, 'forja', 'state', 'runs', runId, 'trace.jsonl');
+    const raw = await fs.readFile(traceFilePath, 'utf8');
+    const eventLines = raw
+      .split('\n')
+      .filter((l) => l.trim().length > 0)
+      .filter((l) => {
+        try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+      });
+    const parsed = JSON.parse(eventLines[0]);
 
     // spanId must not be serialized when absent
     expect(Object.prototype.hasOwnProperty.call(parsed, 'spanId')).toBe(false);

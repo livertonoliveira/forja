@@ -135,7 +135,8 @@ describe('TraceWriter.writePhaseStart — commandFingerprint field', () => {
     await writer.writePhaseStart('dev', undefined, undefined, fingerprint);
 
     const raw = await fs.readFile(tracePath(runId), 'utf8');
-    const parsed = JSON.parse(raw.trim());
+    const eventLine = raw.split('\n').filter((l) => l.trim() && !l.includes('"type":"header"'))[0];
+    const parsed = JSON.parse(eventLine);
 
     expect(parsed.commandFingerprint).toBe(fingerprint);
     expect(parsed.eventType).toBe('phase_start');
@@ -149,7 +150,8 @@ describe('TraceWriter.writePhaseStart — commandFingerprint field', () => {
     await writer.writePhaseStart('dev');
 
     const raw = await fs.readFile(tracePath(runId), 'utf8');
-    const parsed = JSON.parse(raw.trim());
+    const eventLine = raw.split('\n').filter((l) => l.trim() && !l.includes('"type":"header"'))[0];
+    const parsed = JSON.parse(eventLine);
 
     expect(parsed.commandFingerprint).toBeUndefined();
     expect(parsed.eventType).toBe('phase_start');
@@ -163,7 +165,8 @@ describe('TraceWriter.writePhaseStart — commandFingerprint field', () => {
     await writer.writePhaseStart('test', undefined, undefined, fingerprint);
 
     const raw = await fs.readFile(tracePath(runId), 'utf8');
-    const parsed = JSON.parse(raw.trim());
+    const eventLine = raw.split('\n').filter((l) => l.trim() && !l.includes('"type":"header"'))[0];
+    const parsed = JSON.parse(eventLine);
 
     expect(() => TraceEventSchema.parse(parsed)).not.toThrow();
     const validated = TraceEventSchema.parse(parsed);

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { readTrace } from './reader.js';
 import { FindingWriter } from './finding-writer.js';
 import { CostAccumulator } from '../cost/accumulator.js';
-import { TraceEvent } from '../schemas/index.js';
+import { TraceEvent, CURRENT_SCHEMA_VERSION } from '../schemas/index.js';
 
 function formatDuration(ms: number): string {
   const totalSecs = Math.floor(ms / 1000);
@@ -185,5 +185,14 @@ export async function generateDashboard(runId: string): Promise<string> {
     lines.push(`| ${label} | ${findingCounts[sev] ?? 0} |`);
   }
 
-  return lines.join('\n');
+  const frontMatter = [
+    '---',
+    `schemaVersion: "${CURRENT_SCHEMA_VERSION}"`,
+    `runId: "${runId}"`,
+    `createdAt: "${new Date().toISOString()}"`,
+    '---',
+    '',
+  ].join('\n');
+
+  return frontMatter + lines.join('\n');
 }

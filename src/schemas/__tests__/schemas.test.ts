@@ -90,6 +90,7 @@ describe('GateDecisionSchema', () => {
       mediumCount: 1,
       lowCount: 3,
       policyApplied: 'default',
+      justification: null,
       decidedAt: ISO_DT,
     };
     expect(() => GateDecisionSchema.parse(valid)).not.toThrow();
@@ -106,6 +107,7 @@ describe('GateDecisionSchema', () => {
       mediumCount: 2,
       lowCount: 0,
       policyApplied: 'strict',
+      justification: null,
       decidedAt: ISO_DT,
     };
     expect(() => GateDecisionSchema.parse(valid)).not.toThrow();

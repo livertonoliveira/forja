@@ -25,7 +25,12 @@ describe('warnDeprecated contract — deprecation_warning event passes TraceEven
     await new Promise(resolve => setTimeout(resolve, 100));
 
     const raw = await fs.readFile(tracePath(runId), 'utf8');
-    const lines = raw.split('\n').filter(l => l.trim() !== '');
+    const lines = raw
+      .split('\n')
+      .filter(l => l.trim() !== '')
+      .filter(l => {
+        try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+      });
     expect(lines).toHaveLength(1);
 
     const event = TraceEventSchema.parse(JSON.parse(lines[0]));

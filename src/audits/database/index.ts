@@ -1,5 +1,6 @@
 import type { AuditModule, AuditFinding, AuditReport, StackInfo, AuditContext } from '../../plugin/types.js';
 import { AuditReportSchema } from '../types.js';
+import { CURRENT_SCHEMA_VERSION } from '../../schemas/versioning.js';
 import { mongodbAuditModule } from './mongodb/index.js';
 import { postgresqlAuditModule } from './postgresql/index.js';
 import { mysqlAuditModule } from './mysql/index.js';
@@ -68,13 +69,13 @@ export const databaseAuditModule: AuditModule = {
     const now = new Date().toISOString();
 
     const json = AuditReportSchema.parse({
-      schemaVersion: '1.0',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       auditId: 'audit:database',
       stackInfo: ctx.stack,
       startedAt: now,
       finishedAt: now,
       findings: findings.map((f, i) => ({
-        schemaVersion: '1.0',
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         id: `finding-${String(i + 1).padStart(3, '0')}`,
         severity: f.severity,
         title: f.title,

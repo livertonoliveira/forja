@@ -102,7 +102,12 @@ describe('E2E: full pipeline run with 3 phases', () => {
 
     // 3. trace.jsonl has 3 cost event lines, all valid
     const traceRaw = await fs.readFile(tracePath(runId), 'utf8');
-    const traceLines = traceRaw.split('\n').filter((l) => l.trim());
+    const traceLines = traceRaw
+      .split('\n')
+      .filter((l) => l.trim())
+      .filter((l) => {
+        try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+      });
     expect(traceLines).toHaveLength(3);
     for (const line of traceLines) {
       const event = JSON.parse(line);
@@ -152,9 +157,14 @@ describe('E2E: multiple hook calls within the same phase', () => {
     expect(byPhase['develop'].tokens).toBe(expectedTokens);
     expect(totalUsd).toBeCloseTo(byPhase['develop'].usd, 6);
 
-    // trace must have 5 lines
+    // trace must have 5 cost event lines (excluding header)
     const traceRaw = await fs.readFile(tracePath(runId), 'utf8');
-    const lines = traceRaw.split('\n').filter((l) => l.trim());
+    const lines = traceRaw
+      .split('\n')
+      .filter((l) => l.trim())
+      .filter((l) => {
+        try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+      });
     expect(lines).toHaveLength(5);
   });
 });
@@ -183,9 +193,14 @@ describe('E2E: resilience — invalid payloads do not break valid ones', () => {
     expect(byPhase['develop'].tokens).toBe(450); // (100+50) + (200+100)
     expect(totalUsd).toBeGreaterThan(0);
 
-    // trace must have exactly 2 lines
+    // trace must have exactly 2 cost event lines (excluding header)
     const traceRaw = await fs.readFile(tracePath(runId), 'utf8');
-    const lines = traceRaw.split('\n').filter((l) => l.trim());
+    const lines = traceRaw
+      .split('\n')
+      .filter((l) => l.trim())
+      .filter((l) => {
+        try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+      });
     expect(lines).toHaveLength(2);
   });
 });

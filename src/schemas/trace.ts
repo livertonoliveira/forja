@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import { CURRENT_SCHEMA_VERSION } from './versioning.js';
 
 export const TraceEventSchema = z.object({
+  schemaVersion: z.string().default(CURRENT_SCHEMA_VERSION),
   ts: z.string().datetime(),
   runId: z.string().uuid(),
   phaseId: z.string().uuid().optional(),

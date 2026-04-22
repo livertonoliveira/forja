@@ -1,5 +1,6 @@
 import type { AuditModule, AuditFinding, AuditReport, StackInfo, AuditContext } from '../../../plugin/types.js';
 import { AuditReportSchema } from '../../types.js';
+import { CURRENT_SCHEMA_VERSION } from '../../../schemas/versioning.js';
 import { detectMissingIndex } from './heuristics/missing-index.js';
 import { detectUnboundedArray } from './heuristics/unbounded-array.js';
 import { detectBsonLimit } from './heuristics/bson-limit.js';
@@ -54,13 +55,13 @@ export const mongodbAuditModule: AuditModule = {
     const now = new Date().toISOString();
 
     const json = AuditReportSchema.parse({
-      schemaVersion: '1.0',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       auditId: 'audit:database:mongodb',
       stackInfo: ctx.stack,
       startedAt: now,
       finishedAt: now,
       findings: findings.map((f, i) => ({
-        schemaVersion: '1.0',
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         id: `finding-${String(i + 1).padStart(3, '0')}`,
         severity: f.severity,
         title: f.title,
