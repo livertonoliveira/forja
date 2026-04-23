@@ -1,5 +1,6 @@
 import { listRunIds, readRunEventsAll, readRunSummaryEventsAll, buildRunFromEvents } from './jsonl-reader';
 import { parseFindings } from './findings-parser';
+import { getPool } from './db';
 import type { Finding } from './types';
 
 type RunStatus = 'init' | 'spec' | 'dev' | 'test' | 'perf' | 'security' | 'review' | 'homolog' | 'pr' | 'done' | 'failed';
@@ -20,20 +21,6 @@ export interface RunSummary {
   durationMs: number | null;
   totalCost: string;
   gate: GateDecision | null;
-}
-
-let pool: import('pg').Pool | null = null;
-
-async function getPool(): Promise<import('pg').Pool | null> {
-  if (!process.env.DATABASE_URL) return null;
-  if (pool) return pool;
-  try {
-    const { Pool } = await import('pg');
-    pool = new Pool({ connectionString: process.env.DATABASE_URL });
-    return pool;
-  } catch {
-    return null;
-  }
 }
 
 async function listRunsFromJsonl(limit: number): Promise<RunSummary[]> {
@@ -96,4 +83,49 @@ export async function listRecentRuns(limit = 10): Promise<RunSummary[]> {
     console.error('[forja-store] DB query failed, falling back to JSONL:', err);
     return listRunsFromJsonl(limit);
   }
+}
+
+export async function searchRuns(query: string): Promise<RunSummary[]> {
+  const db = await getPool();
+  if (db) {
+    try {
+      const { rows } = await db.query<{
+        id: string; issue_id: string; status: RunStatus;
+        started_at: string; finished_at: string | null;
+        total_cost: string; gate: GateDecision | null;
+      }>(
+        `SELECT r.id, r.issue_id, r.status, r.started_at, r.finished_at, r.total_cost,
+                g.decision as gate
+         FROM runs r
+         LEFT JOIN LATERAL (
+           SELECT decision FROM gate_decisions WHERE run_id = r.id ORDER BY decided_at DESC LIMIT 1
+         ) g ON true
+         WHERE r.search_vector @@ plainto_tsquery('english', $1)
+         ORDER BY r.started_at DESC
+         LIMIT 100`,
+        [query]
+      );
+      return rows.map(r => ({
+        id: r.id,
+        issueId: r.issue_id,
+        status: r.status,
+        startedAt: r.started_at,
+        finishedAt: r.finished_at,
+        durationMs: r.finished_at
+          ? new Date(r.finished_at).getTime() - new Date(r.started_at).getTime()
+          : null,
+        totalCost: r.total_cost,
+        gate: r.gate,
+      }));
+    } catch (err) {
+      console.error('[forja-store] searchRuns DB query failed, falling back to JSONL:', err);
+    }
+  }
+
+  const lower = query.toLowerCase();
+  const all = await listRunsFromJsonl(1000);
+  return all.filter(r =>
+    r.issueId?.toLowerCase().includes(lower) ||
+    r.status?.toLowerCase().includes(lower)
+  );
 }
