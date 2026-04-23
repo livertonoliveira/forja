@@ -63,7 +63,7 @@ describe('GET /api/trend', () => {
 
     // @ts-expect-error — we're using the lightweight mock shape, not NextResponse
     expect(res._status).toBe(400);
-    // @ts-expect-error
+    // @ts-expect-error — mock shape uses _json instead of real NextResponse body
     expect(res._json).toEqual({ error: 'invalid metric' });
     expect(mockGetTrend).not.toHaveBeenCalled();
   });
@@ -73,9 +73,9 @@ describe('GET /api/trend', () => {
   it('returns 400 with { error: "invalid metric" } for an unrecognised metric', async () => {
     const res = await callRoute('http://localhost/api/trend?metric=invalid');
 
-    // @ts-expect-error
+    // @ts-expect-error — mock shape uses _status instead of real NextResponse
     expect(res._status).toBe(400);
-    // @ts-expect-error
+    // @ts-expect-error — mock shape uses _json instead of real NextResponse body
     expect(res._json).toEqual({ error: 'invalid metric' });
     expect(mockGetTrend).not.toHaveBeenCalled();
   });
@@ -91,9 +91,9 @@ describe('GET /api/trend', () => {
 
     const res = await callRoute('http://localhost/api/trend?metric=findings');
 
-    // @ts-expect-error
+    // @ts-expect-error — mock shape uses _status instead of real NextResponse
     expect(res._status).toBe(200);
-    // @ts-expect-error
+    // @ts-expect-error — mock shape uses _json instead of real NextResponse body
     expect(res._json).toEqual(buckets);
     expect(mockGetTrend).toHaveBeenCalledOnce();
   });
@@ -105,7 +105,7 @@ describe('GET /api/trend', () => {
       'http://localhost/api/trend?metric=cost&granularity=week',
     );
 
-    // @ts-expect-error
+    // @ts-expect-error — mock shape uses _status instead of real NextResponse
     expect(res._status).toBe(200);
     expect(mockGetTrend).toHaveBeenCalledOnce();
 
@@ -121,9 +121,9 @@ describe('GET /api/trend', () => {
 
     const res = await callRoute('http://localhost/api/trend?metric=run_duration');
 
-    // @ts-expect-error
+    // @ts-expect-error — mock shape uses _status instead of real NextResponse
     expect(res._status).toBe(500);
-    // @ts-expect-error
+    // @ts-expect-error — mock shape uses _json instead of real NextResponse body
     expect(res._json).toEqual({ error: 'internal error' });
   });
 });
