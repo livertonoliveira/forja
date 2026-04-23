@@ -1,4 +1,4 @@
-import { listRunIds, readRunEventsAll } from './jsonl-reader';
+import { listRunIds, readRunEventsAll, readRunSummaryEventsAll, buildRunFromEvents } from './jsonl-reader';
 import { parseFindings } from './findings-parser';
 import type { Finding } from './types';
 
@@ -36,9 +36,33 @@ async function getPool(): Promise<import('pg').Pool | null> {
   }
 }
 
+async function listRunsFromJsonl(limit: number): Promise<RunSummary[]> {
+  const runIds = await listRunIds();
+  if (runIds.length === 0) return [];
+  const allEvents = await readRunSummaryEventsAll(runIds);
+  return runIds
+    .map((runId, i) => {
+      const run = buildRunFromEvents(runId, allEvents[i]);
+      return {
+        id: run.id,
+        issueId: run.issueId,
+        status: run.status as RunStatus,
+        startedAt: run.startedAt,
+        finishedAt: run.finishedAt,
+        durationMs: run.finishedAt
+          ? new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime()
+          : null,
+        totalCost: run.totalCostUsd,
+        gate: run.gateFinal,
+      };
+    })
+    .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1))
+    .slice(0, limit);
+}
+
 export async function listRecentRuns(limit = 10): Promise<RunSummary[]> {
   const db = await getPool();
-  if (!db) return mockRuns(limit);
+  if (!db) return listRunsFromJsonl(limit);
 
   try {
     const { rows } = await db.query<{
@@ -69,28 +93,7 @@ export async function listRecentRuns(limit = 10): Promise<RunSummary[]> {
       gate: r.gate,
     }));
   } catch (err) {
-    console.error('[forja-store] DB query failed, using mock data:', err);
-    return mockRuns(limit);
+    console.error('[forja-store] DB query failed, falling back to JSONL:', err);
+    return listRunsFromJsonl(limit);
   }
-}
-
-function mockRuns(limit: number): RunSummary[] {
-  const statuses: RunStatus[] = ['done', 'failed', 'test', 'dev', 'done', 'done', 'review', 'perf', 'done', 'failed'];
-  const gates: (GateDecision | null)[] = ['pass', 'fail', null, null, 'pass', 'warn', null, null, 'pass', 'fail'];
-  return Array.from({ length: Math.min(limit, 10) }, (_, i) => {
-    const started = new Date(Date.now() - i * 4 * 3600 * 1000);
-    const finished = statuses[i] !== 'dev' && statuses[i] !== 'test'
-      ? new Date(started.getTime() + (30 + i * 5) * 60 * 1000)
-      : null;
-    return {
-      id: `mock-${String(i + 1).padStart(3, '0')}`,
-      issueId: `MOB-${1000 + i}`,
-      status: statuses[i],
-      startedAt: started.toISOString(),
-      finishedAt: finished?.toISOString() ?? null,
-      durationMs: finished ? finished.getTime() - started.getTime() : null,
-      totalCost: (0.04 + i * 0.015).toFixed(4),
-      gate: gates[i],
-    };
-  });
 }

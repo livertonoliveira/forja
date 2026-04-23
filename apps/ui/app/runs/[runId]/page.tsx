@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { listRunIds, readRunEvents, buildRunFromEvents, buildPhasesFromEvents } from '@/lib/jsonl-reader';
-import { getMockRun, getMockPhases } from '@/lib/mock-data';
 import { statusColors, gateTextColors } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
 import RunGantt from '@/components/RunGantt';
@@ -14,23 +13,12 @@ interface Props {
 
 export default async function RunDetailPage({ params }: Props) {
   const { runId } = params;
+  const allIds = await listRunIds();
+  if (!allIds.includes(runId)) notFound();
+
   const events = await readRunEvents(runId);
-
-  let run;
-  let phases;
-
-  if (events.length === 0) {
-    const mockRun = getMockRun(runId);
-    if (!mockRun) {
-      const allIds = await listRunIds();
-      if (!allIds.includes(runId)) notFound();
-    }
-    run = mockRun ?? buildRunFromEvents(runId, events);
-    phases = getMockPhases(runId);
-  } else {
-    run = buildRunFromEvents(runId, events);
-    phases = buildPhasesFromEvents(events);
-  }
+  const run = buildRunFromEvents(runId, events);
+  const phases = buildPhasesFromEvents(events);
 
   return (
     <div>
