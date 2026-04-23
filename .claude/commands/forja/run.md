@@ -55,6 +55,20 @@ Analyze `$ARGUMENTS` to determine what to work on:
 
 For each task, execute the following phases:
 
+### 0. Start trace
+
+Before loading context or touching any code, initialize the run trace:
+
+```bash
+forja trace init --issue <issue-id>
+```
+
+Capture the UUID printed to stdout — this is the `FORJA_RUN_ID` for this session. Use it in all subsequent CLI calls (e.g., `forja gate --run <FORJA_RUN_ID>`).
+
+If the `forja` binary is not found, run via `npx forja trace init --issue <issue-id>` instead.
+
+Report to the user: `Run ID: <uuid>` so they can monitor progress in the dashboard.
+
 ### 1. Load task context
 
 **Linear mode:**

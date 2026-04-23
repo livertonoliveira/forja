@@ -238,7 +238,21 @@ After the PR is created (step 6), post the Forja gate result as a GitHub Check R
 
 > **Note:** If `GITHUB_TOKEN` is not set (in env or config), `createCheck` logs a warning and skips silently — this step never blocks the pipeline.
 
-### 9. Archive feature (Local mode only)
+### 9. Finalize trace
+
+After the PR is created and the URL is known, finalize the run trace:
+
+```bash
+forja trace finish --status done --pr-url <pr-url>
+```
+
+If `forja` is not found, run via `npx forja trace finish --status done --pr-url <pr-url>`.
+
+This writes the `run_end` event to the trace, links the PR URL, and clears `forja/state/.active-run`. The run will now appear as complete in the dashboard.
+
+> **Note:** If you skip this step, the Stop hook will still close the run automatically when the session ends — but without the PR URL recorded.
+
+### 11. Archive feature (Local mode only)
 
 **Local mode:**
 Move the feature folder to the archive:
@@ -249,7 +263,7 @@ mv forja/changes/<feature-name> forja/changes/archive/$(date +%Y-%m-%d)-<feature
 **Linear mode:**
 No local files to archive. Linear artifacts remain in Linear.
 
-### 10. Finalize
+### 12. Finalize
 
 Inform the user:
 - URL of the created PR
