@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { listRunIds, readRunEventsAll, buildRunFromEvents } from '@/lib/jsonl-reader';
+import { getMockRunsByIssue } from '@/lib/mock-data';
 import type { Run } from '@/lib/types';
 
 export async function GET(
@@ -10,6 +11,10 @@ export async function GET(
     const { issueId } = params;
     const runIds = await listRunIds();
 
+    if (runIds.length === 0) {
+      return NextResponse.json(getMockRunsByIssue(issueId), { status: 200 });
+    }
+
     const allEvents = await readRunEventsAll(runIds);
     const runs: Run[] = runIds.map((runId, i) => buildRunFromEvents(runId, allEvents[i]));
 
@@ -19,6 +24,6 @@ export async function GET(
 
     return NextResponse.json(filtered, { status: 200 });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(getMockRunsByIssue(params.issueId), { status: 200 });
   }
 }
