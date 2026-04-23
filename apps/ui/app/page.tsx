@@ -1,4 +1,6 @@
 import { listRecentRuns } from '@/lib/forja-store';
+import { typography } from '@/lib/typography';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 export const dynamic = 'force-dynamic';
 import { statusColors, gateTextColors } from '@/lib/ui-constants';
@@ -9,44 +11,42 @@ export default async function HomePage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-gray-100 mb-6">Recent Runs</h1>
+      <h1 className={`${typography.heading.lg} text-forja-text-primary mb-6`}>Recent Runs</h1>
       {runs.length === 0 ? (
         <p className="text-gray-500 text-sm">No runs yet. Start a pipeline with <code className="text-gray-300">forja run</code>.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-800">
-                <th className="pb-3 pr-6 font-medium">Issue</th>
-                <th className="pb-3 pr-6 font-medium">Status</th>
-                <th className="pb-3 pr-6 font-medium">Duration</th>
-                <th className="pb-3 pr-6 font-medium">Cost</th>
-                <th className="pb-3 pr-6 font-medium">Gate</th>
-                <th className="pb-3 font-medium">Started</th>
-              </tr>
-            </thead>
-            <tbody>
-              {runs.map((run) => (
-                <tr key={run.id} className="border-b border-gray-900 hover:bg-gray-900/50 transition-colors">
-                  <td className="py-3 pr-6 font-mono text-gray-300">{run.issueId}</td>
-                  <td className="py-3 pr-6">
-                    <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${statusColors[run.status] ?? 'bg-gray-800 text-gray-400'}`}>
-                      {run.status}
-                    </span>
-                  </td>
-                  <td className="py-3 pr-6 text-gray-400">{formatDuration(run.startedAt, run.finishedAt)}</td>
-                  <td className="py-3 pr-6 text-gray-400">${run.totalCost}</td>
-                  <td className={`py-3 pr-6 font-medium ${run.gate ? gateTextColors[run.gate] : 'text-gray-600'}`}>
-                    {run.gate ?? '—'}
-                  </td>
-                  <td className="py-3 text-gray-500 text-xs">
-                    {new Date(run.startedAt).toLocaleString('pt-BR')}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Issue</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>Cost</TableHead>
+              <TableHead>Gate</TableHead>
+              <TableHead>Started</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {runs.map((run) => (
+              <TableRow key={run.id}>
+                <TableCell className={typography.mono.md}>{run.issueId}</TableCell>
+                <TableCell>
+                  <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${statusColors[run.status] ?? 'bg-forja-bg-overlay text-forja-text-muted'}`}>
+                    {run.status}
+                  </span>
+                </TableCell>
+                <TableCell className="text-forja-text-secondary">{formatDuration(run.startedAt, run.finishedAt)}</TableCell>
+                <TableCell className="text-forja-text-secondary">${run.totalCost}</TableCell>
+                <TableCell className={`font-medium ${run.gate ? gateTextColors[run.gate] : 'text-forja-text-muted'}`}>
+                  {run.gate ?? '—'}
+                </TableCell>
+                <TableCell className={typography.body.sm + ' text-forja-text-muted'}>
+                  {new Date(run.startedAt).toLocaleString('pt-BR')}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );
