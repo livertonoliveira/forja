@@ -28,10 +28,28 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const filterRunId = url.searchParams.get('runId');
+    const q = url.searchParams.get('q')?.slice(0, 200) ?? null;
+    const limitParam = url.searchParams.get('limit');
+    const limit = limitParam ? Math.min(100, Math.max(1, parseInt(limitParam, 10))) : null;
 
     const allRunIds = await listRunIds();
 
     if (allRunIds.length === 0) {
+      // Handle search against mock data
+      if (q !== null) {
+        const lower = q.toLowerCase();
+        const allMock: Finding[] = [
+          ...MOCK_FINDINGS.critical,
+          ...MOCK_FINDINGS.high,
+          ...MOCK_FINDINGS.medium,
+          ...MOCK_FINDINGS.low,
+        ].filter(f =>
+          f.message.toLowerCase().includes(lower) ||
+          (f.file !== null && f.file.toLowerCase().includes(lower))
+        );
+        const results = limit !== null ? allMock.slice(0, limit) : allMock;
+        return NextResponse.json(results, { status: 200 });
+      }
       return NextResponse.json(MOCK_FINDINGS, { status: 200 });
     }
 
@@ -49,6 +67,22 @@ export async function GET(req: NextRequest) {
       for (const finding of parseFindings(runId, events)) {
         grouped[finding.severity].push(finding);
       }
+    }
+
+    // If ?q= param provided, return flat filtered array
+    if (q !== null) {
+      const lower = q.toLowerCase();
+      const all: Finding[] = [
+        ...grouped.critical,
+        ...grouped.high,
+        ...grouped.medium,
+        ...grouped.low,
+      ].filter(f =>
+        f.message.toLowerCase().includes(lower) ||
+        (f.file !== null && f.file.toLowerCase().includes(lower))
+      );
+      const results = limit !== null ? all.slice(0, limit) : all;
+      return NextResponse.json(results, { status: 200 });
     }
 
     const total = Object.values(grouped).reduce((sum, arr) => sum + arr.length, 0);
