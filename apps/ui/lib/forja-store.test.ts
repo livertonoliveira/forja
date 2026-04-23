@@ -9,7 +9,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { RunSummary } from './forja-store';
 
 // ---------------------------------------------------------------------------
 // Mocks — declared before importing the module under test
