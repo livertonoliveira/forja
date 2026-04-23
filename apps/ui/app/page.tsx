@@ -11,19 +11,19 @@ export default async function HomePage() {
 
   return (
     <div>
-      <h1 className={`${typography.heading.lg} text-forja-text-primary mb-6`}>Recent Runs</h1>
+      <h1 className={`${typography.heading.lg} text-forja-text-primary mb-6`}>Execuções Recentes</h1>
       {runs.length === 0 ? (
-        <p className="text-gray-500 text-sm">No runs yet. Start a pipeline with <code className="text-gray-300">forja run</code>.</p>
+        <p className="text-gray-500 text-sm">Nenhuma execução ainda. Inicie um pipeline com <code className="text-gray-300">forja run</code>.</p>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Issue</TableHead>
+              <TableHead>Tarefa</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Duration</TableHead>
-              <TableHead>Cost</TableHead>
+              <TableHead>Duração</TableHead>
+              <TableHead>Custo</TableHead>
               <TableHead>Gate</TableHead>
-              <TableHead>Started</TableHead>
+              <TableHead>Início</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

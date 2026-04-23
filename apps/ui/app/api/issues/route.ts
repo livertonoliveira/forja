@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { listRunIds, readRunEventsAll, buildRunFromEvents } from '@/lib/jsonl-reader';
-import { MOCK_RUNS } from '@/lib/mock-data';
 import type { Run } from '@/lib/types';
 
 interface IssueSummary {
@@ -26,15 +25,11 @@ function buildIssuesFromRuns(runs: Run[]): IssueSummary[] {
 export async function GET(): Promise<NextResponse> {
   try {
     const runIds = await listRunIds();
-
-    if (runIds.length === 0) {
-      return NextResponse.json(buildIssuesFromRuns(MOCK_RUNS), { status: 200 });
-    }
-
+    if (runIds.length === 0) return NextResponse.json([], { status: 200 });
     const allEvents = await readRunEventsAll(runIds);
     const runs: Run[] = runIds.map((runId, i) => buildRunFromEvents(runId, allEvents[i]));
     return NextResponse.json(buildIssuesFromRuns(runs), { status: 200 });
   } catch {
-    return NextResponse.json(buildIssuesFromRuns(MOCK_RUNS), { status: 200 });
+    return NextResponse.json([], { status: 500 });
   }
 }

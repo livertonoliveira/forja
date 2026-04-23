@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { CostEventSchema, CostEvent } from '../schemas/index.js';
 import { TraceWriter } from '../trace/writer.js';
+import { readActiveRun } from '../trace/active-run.js';
 import { DualWriter } from '../trace/dual-writer.js';
 import { CostAccumulator } from '../cost/accumulator.js';
 import { loadConfig } from '../config/loader.js';
@@ -65,10 +66,15 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
     return;
   }
 
-  const runId = process.env.FORJA_RUN_ID;
+  let runId = process.env.FORJA_RUN_ID;
   if (!runId || !UUID_RE.test(runId)) {
-    process.stderr.write('[forja] post-tool-use: FORJA_RUN_ID is missing or not a UUID, skipping\n');
-    return;
+    const active = await readActiveRun();
+    if (active) {
+      runId = active.runId;
+    } else {
+      process.stderr.write('[forja] post-tool-use: FORJA_RUN_ID is missing and no active run found, skipping\n');
+      return;
+    }
   }
 
   const phase = process.env.FORJA_PHASE ?? 'unknown';
