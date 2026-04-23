@@ -1,3 +1,4 @@
+// @ts-nocheck — reference spec, @playwright/test not installed in this project
 /**
  * Playwright smoke test — Tendências section on /runs (MOB-1068)
  *
