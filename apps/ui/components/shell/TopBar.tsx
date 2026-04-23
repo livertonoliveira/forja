@@ -3,7 +3,6 @@
 import { Search, Settings } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { useI18n } from '@/lib/i18n-context';
-import { useEffect } from 'react';
 
 type TopBarProps = {
   onSearchOpen?: () => void;
@@ -11,18 +10,6 @@ type TopBarProps = {
 
 export function TopBar({ onSearchOpen }: TopBarProps) {
   const { t, toggle } = useI18n();
-
-  // Register Cmd+K / Ctrl+K global shortcut
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        onSearchOpen?.();
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onSearchOpen]);
 
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between px-4 gap-4 h-14 bg-forja-bg-surface border-b border-forja-border-subtle shrink-0">

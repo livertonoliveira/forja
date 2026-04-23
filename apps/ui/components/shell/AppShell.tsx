@@ -1,19 +1,19 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
-import { SearchPalette } from '@/components/SearchPalette';
+import { CommandPalette } from './CommandPalette';
+import { useCommandPalette } from '@/hooks/useCommandPalette';
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const [searchOpen, setSearchOpen] = useState(false);
+  const { open, openPalette, closePalette } = useCommandPalette();
 
   return (
     <>
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0 min-h-screen">
-        <TopBar onSearchOpen={() => setSearchOpen(true)} />
+        <TopBar onSearchOpen={openPalette} />
         <main className="flex-1 p-8 min-w-0 relative overflow-x-hidden">
           {children}
           <span
@@ -24,7 +24,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </span>
         </main>
       </div>
-      <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <CommandPalette open={open} onClose={closePalette} />
     </>
   );
 }
