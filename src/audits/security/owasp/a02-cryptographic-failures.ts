@@ -6,6 +6,7 @@ import { collectFiles, validateCwd } from '../../backend/utils.js';
 const WEAK_HASH_RE = /(?:createHash|md5|sha1|sha256)\s*\(\s*['"`](?:md5|sha1|sha256)['"`]/i;
 const WEAK_BCRYPT_RE = /bcrypt\.(?:hash|genSalt)\s*\([^,)]+,\s*([1-9])\s*\)/;
 const HARDCODED_SECRET_RE = /(?:secret|password|token|key|api_?key)\s*[:=]\s*['"`][A-Za-z0-9\/+]{8,}['"`]/i;
+// eslint-disable-next-line no-useless-escape
 const HTTP_URL_RE = /['"`]http:\/\/(?!localhost|127\.0\.0\.1|0\.0\.0\.0)[^'"`]+['"`]/;
 
 export async function detectCryptographicFailures(ctx: AuditContext): Promise<AuditFinding[]> {

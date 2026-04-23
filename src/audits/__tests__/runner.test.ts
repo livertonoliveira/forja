@@ -102,6 +102,7 @@ describe('runAudits', () => {
     const hookRunner = {
       runOnRun: vi.fn().mockResolvedValue(undefined),
       runOnResult: vi.fn().mockResolvedValue(undefined),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
     await runAudits([module], { cwd: '/tmp', stack, runId: 'run-123' }, hookRunner);

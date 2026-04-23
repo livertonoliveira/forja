@@ -4,7 +4,7 @@ import type { AuditContext, AuditFinding } from '../../../plugin/types.js';
 import { collectFiles, validateCwd } from '../../backend/utils.js';
 
 const JWT_ALG_NONE_RE = /algorithm\s*[:=]\s*['"`]none['"`]/i;
-const JWT_NO_EXP_RE = /sign\s*\([^)]+\)(?![^{]*expiresIn)/;
+const _JWT_NO_EXP_RE = /sign\s*\([^)]+\)(?![^{]*expiresIn)/;
 const JWT_WEAK_SECRET_RE = /(?:secret|jwtSecret|JWT_SECRET)\s*[:=]\s*['"`](?:secret|password|changeme|test|dev|jwt_secret|mysecret|1234)[^'"]*['"`]/i;
 const SESSION_NO_REGEN_RE = /req\.session\.(?:user|userId|role)\s*=/;
 

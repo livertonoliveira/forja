@@ -94,6 +94,7 @@ async function runWithConcurrency<T>(
   let nextIndex = 0;
 
   async function worker(): Promise<void> {
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const index = nextIndex++;
       if (index >= tasks.length) break;

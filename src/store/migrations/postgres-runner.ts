@@ -81,6 +81,7 @@ export class PostgresRunner extends MigrationRunner<string> {
     let totalMigrated = 0;
     let offset = 0;
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const rows: Record<string, unknown>[] = await db
         .select()

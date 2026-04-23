@@ -5,7 +5,7 @@ import { collectFiles, validateCwd } from '../../../backend/utils.js';
 
 const MAX_FINDINGS = 50;
 
-const QUERY_PATTERN = /\.(find|findOne|findMany)\s*\(\s*\{/g;
+const _QUERY_PATTERN = /\.(find|findOne|findMany)\s*\(\s*\{/g;
 const HINT_PATTERN = /\.hint\s*\(/;
 
 export async function detectMissingIndex(ctx: AuditContext): Promise<AuditFinding[]> {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseExpr, PolicyParseError } from '../parser.js';
-import type { Expr, And, Or, Not, Comparison, PredicateCall } from '../ast.js';
+import type { And, Or, Not, Comparison, PredicateCall } from '../ast.js';
 
 
 describe('parseExpr — valid expressions', () => {

@@ -9,6 +9,7 @@ export const StackInfoSchema = z.object({
 
 export const AuditFindingSchema = z.object({
   schemaVersion: z.string().default(CURRENT_SCHEMA_VERSION),
+  // eslint-disable-next-line no-useless-escape
   id: z.string().min(1).max(128).regex(/^[\w:\-]+$/),
   severity: z.enum(['low', 'medium', 'high', 'critical']),
   title: z.string().min(1).max(512),
