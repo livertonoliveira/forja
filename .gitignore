@@ -24,6 +24,7 @@ dist/
 bin/
 state/
 .next/
+storybook-static/
 *.tsbuildinfo
 
 # Forja local config (may contain sensitive credentials)
