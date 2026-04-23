@@ -1,148 +1,288 @@
 'use client';
 
-import { useState, Fragment } from 'react';
-import type { Finding } from '@/lib/types';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
-const SEVERITIES = ['critical', 'high', 'medium', 'low'] as const;
-type Severity = (typeof SEVERITIES)[number];
+type Metric = 'runs' | 'critical_findings' | 'cost';
 
-const SEVERITY_COLORS: Record<Severity, string> = {
-  critical: '239,68,68',
-  high: '249,115,22',
-  medium: '234,179,8',
-  low: '59,130,246',
-};
-
-const SEVERITY_LABELS: Record<Severity, string> = {
-  critical: 'Critical',
-  high: 'High',
-  medium: 'Medium',
-  low: 'Low',
-};
-
-interface HeatmapGridProps {
-  findings: Finding[];
+interface HeatmapCell {
+  date: string;
+  hour: number;
+  value: number;
 }
 
-export default function HeatmapGrid({ findings }: HeatmapGridProps) {
-  const [selected, setSelected] = useState<{ severity: Severity; category: string } | null>(null);
+interface ApiResponse {
+  cells: HeatmapCell[];
+  max: number;
+}
 
-  const categories = Array.from(new Set(findings.map((f) => f.category))).sort();
+interface TooltipState {
+  date: string;
+  hour: number;
+  value: number | null;
+  clientX: number;
+  clientY: number;
+}
 
-  const matrix: Record<Severity, Record<string, Finding[]>> = {
-    critical: {},
-    high: {},
-    medium: {},
-    low: {},
-  };
-  for (const sev of SEVERITIES) {
-    for (const cat of categories) {
-      matrix[sev][cat] = [];
-    }
+const CELL_SIZE = 12;
+const CELL_GAP = 1;
+const CELL_STEP = CELL_SIZE + CELL_GAP;
+
+const COLOR_EMPTY = '#0A0A0A';
+const COLOR_MAX_R = 226; // #E2C97E
+const COLOR_MAX_G = 201;
+const COLOR_MAX_B = 126;
+
+const METRIC_LABELS: Record<Metric, string> = {
+  runs: 'Runs',
+  critical_findings: 'Findings Críticos',
+  cost: 'Custo (USD)',
+};
+
+const MONTH_ABBR = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+function intensityToColor(value: number, max: number): string {
+  if (max === 0) return COLOR_EMPTY;
+  const t = Math.min(value / max, 1);
+  const r = Math.round(10 + (COLOR_MAX_R - 10) * t);
+  const g = Math.round(10 + (COLOR_MAX_G - 10) * t);
+  const b = Math.round(10 + (COLOR_MAX_B - 10) * t);
+  return `rgb(${r},${g},${b})`;
+}
+
+function getLast365Dates(): string[] {
+  const dates: string[] = [];
+  const today = new Date();
+  for (let i = 364; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    dates.push(d.toISOString().split('T')[0]);
   }
-  for (const f of findings) {
-    if (matrix[f.severity]?.[f.category] !== undefined) {
-      matrix[f.severity][f.category].push(f);
-    }
-  }
+  return dates;
+}
 
-  const maxCount = Math.max(
-    1,
-    ...SEVERITIES.flatMap((sev) => categories.map((cat) => matrix[sev][cat].length))
+function bucketEnd(date: string, hour: number): string {
+  const d = new Date(`${date}T${String(hour).padStart(2, '0')}:00:00Z`);
+  d.setUTCHours(d.getUTCHours() + 1);
+  return d.toISOString().replace('.000Z', 'Z');
+}
+
+export default function HeatmapGrid() {
+  const [metric, setMetric] = useState<Metric>('runs');
+  const [project, setProject] = useState('');
+  const [data, setData] = useState<ApiResponse>({ cells: [], max: 0 });
+  const [loading, setLoading] = useState(true);
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    const controller = new AbortController();
+    const params = new URLSearchParams({ metric });
+    if (project) params.set('project', project);
+    fetch(`/api/heatmap?${params.toString()}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((d: ApiResponse) => setData(d))
+      .catch((err) => { if (err.name !== 'AbortError') setData({ cells: [], max: 0 }); })
+      .finally(() => setLoading(false));
+    return () => controller.abort();
+  }, [metric, project]);
+
+  const dates = useMemo(() => getLast365Dates(), []);
+
+  const cellMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const cell of data.cells) {
+      map.set(`${cell.date}:${cell.hour}`, cell.value);
+    }
+    return map;
+  }, [data.cells]);
+
+  const cells = useMemo(() => {
+    const items: JSX.Element[] = [];
+    for (let h = 0; h < 24; h++) {
+      for (let col = 0; col < dates.length; col++) {
+        const value = cellMap.get(`${dates[col]}:${h}`);
+        const color = value != null ? intensityToColor(value, data.max) : COLOR_EMPTY;
+        items.push(
+          <div
+            key={`${col}-${h}`}
+            style={{ backgroundColor: color, width: CELL_SIZE, height: CELL_SIZE }}
+          />
+        );
+      }
+    }
+    return items;
+  }, [cellMap, data.max, dates]);
+
+  const monthLabels = useMemo(() => {
+    const labels: { label: string; colIndex: number }[] = [];
+    let lastMonth = -1;
+    for (let i = 0; i < dates.length; i++) {
+      const month = new Date(dates[i]).getUTCMonth();
+      if (month !== lastMonth) {
+        labels.push({ label: MONTH_ABBR[month], colIndex: i });
+        lastMonth = month;
+      }
+    }
+    return labels;
+  }, [dates]);
+
+  const handleGridMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const col = Math.floor((e.clientX - rect.left) / CELL_STEP);
+      const row = Math.floor((e.clientY - rect.top) / CELL_STEP);
+      if (col >= 0 && col < dates.length && row >= 0 && row < 24) {
+        const value = cellMap.get(`${dates[col]}:${row}`) ?? null;
+        setTooltip({ date: dates[col], hour: row, value, clientX: e.clientX, clientY: e.clientY });
+      } else {
+        setTooltip(null);
+      }
+    },
+    [dates, cellMap]
   );
 
-  const selectedFindings = selected
-    ? (matrix[selected.severity]?.[selected.category] ?? [])
-    : [];
+  const handleGridMouseLeave = useCallback(() => setTooltip(null), []);
 
-  if (categories.length === 0) {
-    return <p className="text-gray-500 text-sm">Nenhum achado para exibir.</p>;
-  }
+  const exportPNG = useCallback(() => {
+    const Y_OFFSET = 36;
+    const X_OFFSET = 20;
+    const canvas = document.createElement('canvas');
+    canvas.width = Y_OFFSET + dates.length * CELL_STEP;
+    canvas.height = X_OFFSET + 24 * CELL_STEP;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.fillStyle = '#111111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#888888';
+    ctx.font = '10px monospace';
+    for (const { label, colIndex } of monthLabels) {
+      ctx.fillText(label, Y_OFFSET + colIndex * CELL_STEP, 14);
+    }
+
+    ctx.fillStyle = '#666666';
+    ctx.font = '9px monospace';
+    for (let h = 0; h < 24; h++) {
+      if (h % 6 === 0) ctx.fillText(`${h}h`, 0, X_OFFSET + h * CELL_STEP + CELL_SIZE);
+    }
+
+    for (let col = 0; col < dates.length; col++) {
+      for (let h = 0; h < 24; h++) {
+        const value = cellMap.get(`${dates[col]}:${h}`) ?? null;
+        ctx.fillStyle = value != null ? intensityToColor(value, data.max) : COLOR_EMPTY;
+        ctx.fillRect(Y_OFFSET + col * CELL_STEP, X_OFFSET + h * CELL_STEP, CELL_SIZE, CELL_SIZE);
+      }
+    }
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `heatmap-${metric}-${new Date().toISOString().split('T')[0]}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }, [dates, cellMap, data.max, metric, monthLabels]);
 
   return (
     <div>
-      <div className="overflow-x-auto">
-        <div
-          className="grid gap-1"
-          style={{ gridTemplateColumns: `120px repeat(${categories.length}, minmax(80px, 1fr))` }}
-        >
-          <div />
-          {categories.map((cat) => (
-            <div
-              key={cat}
-              className="text-xs text-gray-400 font-medium text-center pb-2 truncate px-1"
-              title={cat}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex gap-2">
+          {(['runs', 'critical_findings', 'cost'] as Metric[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMetric(m)}
+              className={
+                metric === m
+                  ? 'px-3 py-1.5 rounded text-sm bg-[#C9A84C] text-black font-semibold'
+                  : 'px-3 py-1.5 rounded text-sm bg-gray-800 text-gray-400'
+              }
             >
-              {cat}
-            </div>
-          ))}
-
-          {SEVERITIES.map((sev) => (
-            <Fragment key={sev}>
-              <div className="text-xs font-medium text-gray-300 flex items-center pr-3 h-12">
-                {SEVERITY_LABELS[sev]}
-              </div>
-              {categories.map((cat) => {
-                const cellFindings = matrix[sev][cat];
-                const count = cellFindings.length;
-                const isSelected = selected?.severity === sev && selected?.category === cat;
-                const opacity = count > 0 ? 0.2 + (count / maxCount) * 0.8 : 0;
-                const bg = count > 0
-                  ? `rgba(${SEVERITY_COLORS[sev]}, ${opacity})`
-                  : undefined;
-
-                return (
-                  <button
-                    key={`${sev}-${cat}`}
-                    onClick={() =>
-                      count > 0
-                        ? setSelected(isSelected ? null : { severity: sev, category: cat })
-                        : undefined
-                    }
-                    className={[
-                      'rounded h-12 flex items-center justify-center text-sm font-semibold transition-all',
-                      count === 0
-                        ? 'bg-gray-900 cursor-default'
-                        : 'cursor-pointer hover:ring-2 hover:ring-white/20',
-                      isSelected ? 'ring-2 ring-white/40' : '',
-                    ].join(' ')}
-                    style={bg ? { backgroundColor: bg } : undefined}
-                  >
-                    {count > 0 ? (
-                      <span className="text-white">{count}</span>
-                    ) : (
-                      <span className="text-gray-700">—</span>
-                    )}
-                  </button>
-                );
-              })}
-            </Fragment>
+              {METRIC_LABELS[m]}
+            </button>
           ))}
         </div>
+        <button
+          onClick={exportPNG}
+          className="px-3 py-1.5 rounded text-sm bg-gray-800 text-gray-400 hover:text-gray-200"
+        >
+          Exportar PNG
+        </button>
       </div>
 
-      {selected && selectedFindings.length > 0 && (
-        <div className="mt-6 border-t border-gray-800 pt-6">
-          <h3 className="text-sm font-semibold text-gray-300 mb-3">
-            {SEVERITY_LABELS[selected.severity]} / {selected.category}
-            <span className="ml-2 text-gray-500 font-normal">
-              {selectedFindings.length} finding{selectedFindings.length !== 1 ? 's' : ''}
-            </span>
-          </h3>
-          <div className="space-y-2">
-            {selectedFindings.map((f) => (
-              <div key={f.id} className="bg-gray-900 rounded-md px-4 py-3 text-sm">
-                <p className="text-gray-100">{f.message}</p>
-                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                  {f.file && <span className="font-mono truncate">{f.file}</span>}
-                  <span>
-                    Run: <span className="font-mono">{f.runId}</span>
-                  </span>
-                  {f.phase && <span>Phase: {f.phase}</span>}
-                </div>
-              </div>
+      {loading ? (
+        <div className="text-sm text-gray-500 py-8 text-center">Carregando...</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <div className="ml-10 mb-1 relative h-4">
+            {monthLabels.map(({ label, colIndex }) => (
+              <span
+                key={`${label}-${colIndex}`}
+                className="absolute text-[10px] text-gray-500"
+                style={{ left: colIndex * CELL_STEP }}
+              >
+                {label}
+              </span>
             ))}
           </div>
+
+          <div className="flex flex-row">
+            <div
+              className="w-8 grid"
+              style={{ gridTemplateRows: `repeat(24, ${CELL_SIZE}px)`, gap: '1px' }}
+            >
+              {Array.from({ length: 24 }, (_, h) => (
+                <div key={h} className="flex items-center justify-end pr-1">
+                  {h % 6 === 0 && (
+                    <span className="text-[9px] text-gray-600">{h}h</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div
+              className="grid"
+              style={{
+                gridTemplateColumns: `repeat(${dates.length}, ${CELL_SIZE}px)`,
+                gridAutoRows: `${CELL_SIZE}px`,
+                gap: '1px',
+              }}
+              onMouseMove={handleGridMouseMove}
+              onMouseLeave={handleGridMouseLeave}
+            >
+              {cells}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tooltip && (
+        <div
+          className="fixed z-50 pointer-events-none bg-gray-900 border border-gray-700 rounded px-3 py-2 text-xs shadow-lg"
+          style={{ left: tooltip.clientX, top: tooltip.clientY - 8, transform: 'translate(-50%, -100%)' }}
+        >
+          <div className="text-gray-300 font-medium">
+            {tooltip.date} — {tooltip.hour}h
+          </div>
+          {tooltip.value != null ? (
+            <>
+              <div className="text-[#E2C97E]">
+                {METRIC_LABELS[metric]}: {tooltip.value}
+              </div>
+              <a
+                href={`/runs?from=${tooltip.date}T${String(tooltip.hour).padStart(2, '0')}:00:00Z&to=${bucketEnd(tooltip.date, tooltip.hour)}`}
+                className="text-gray-500 hover:text-gray-300 underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Ver runs
+              </a>
+            </>
+          ) : (
+            <div className="text-gray-600">Sem atividade</div>
+          )}
         </div>
       )}
     </div>
