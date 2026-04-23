@@ -1,20 +1,48 @@
 import Link from 'next/link';
-import { listRunIds, readRunSummaryEventsAll, buildRunFromEvents } from '@/lib/jsonl-reader';
+import { listRuns, type RunFilters } from '@/lib/forja-store';
 import { statusColors, gateDisplay } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
-import type { Run } from '@/lib/types';
+import { FilterBar } from '@/components/filters/FilterBar';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RunsPage() {
-  const runIds = await listRunIds();
-  const allEvents = await readRunSummaryEventsAll(runIds);
-  const runs: Run[] = runIds.map((id, i) => buildRunFromEvents(id, allEvents[i]));
-  runs.sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
+const MAX_Q_LEN = 200;
+const VALID_GATES = new Set(['pass', 'warn', 'fail']);
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+interface RunsPageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function RunsPage({ searchParams }: RunsPageProps) {
+  const filters: RunFilters = {};
+
+  if (searchParams.q) {
+    const q = String(searchParams.q).slice(0, MAX_Q_LEN);
+    if (q) filters.q = q;
+  }
+  if (searchParams.from) {
+    const from = String(searchParams.from);
+    if (ISO_DATE_RE.test(from)) filters.from = from;
+  }
+  if (searchParams.to) {
+    const to = String(searchParams.to);
+    if (ISO_DATE_RE.test(to)) filters.to = to;
+  }
+  if (searchParams.gate) {
+    const raw = Array.isArray(searchParams.gate)
+      ? searchParams.gate
+      : String(searchParams.gate).split(',');
+    const valid = raw.filter(g => VALID_GATES.has(g));
+    if (valid.length > 0) filters.gate = valid;
+  }
+
+  const runs = await listRuns(filters);
 
   return (
     <div>
       <h1 className="text-xl font-semibold text-forja-text-primary mb-6">Execuções</h1>
+      <FilterBar />
       {runs.length === 0 ? (
         <p className="text-forja-text-secondary text-sm">
           Nenhuma execução encontrada. Inicie um pipeline com{' '}
@@ -36,8 +64,7 @@ export default async function RunsPage() {
             </thead>
             <tbody>
               {runs.map((run) => {
-                const gate = run.gateFinal;
-                const gd = gate ? gateDisplay[gate] : null;
+                const gd = run.gate ? gateDisplay[run.gate] : null;
                 return (
                   <tr key={run.id} className="border-b border-forja-border-subtle hover:bg-forja-bg-surface transition-colors">
                     <td className="py-3 pr-6">
@@ -60,7 +87,7 @@ export default async function RunsPage() {
                       {new Date(run.startedAt).toLocaleString('pt-BR')}
                     </td>
                     <td className="py-3 pr-6 text-forja-text-secondary">{formatDuration(run.startedAt, run.finishedAt)}</td>
-                    <td className="py-3 pr-6 text-forja-text-secondary">${run.totalCostUsd}</td>
+                    <td className="py-3 pr-6 text-forja-text-secondary">${run.totalCost}</td>
                     <td className={`py-3 font-medium ${gd ? gd.cls : 'text-forja-text-muted'}`}>
                       {gd ? gd.label : '—'}
                     </td>
