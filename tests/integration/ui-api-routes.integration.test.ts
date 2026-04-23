@@ -163,7 +163,7 @@ describe('GET /api/runs', () => {
       });
 
     const { GET } = await import('../../apps/ui/app/api/runs/route.ts');
-    const response = await GET() as unknown as MockNextResponse;
+    const response = await GET(new Request('http://localhost/api/runs')) as unknown as MockNextResponse;
     const body = await response.json() as typeof runA[];
 
     expect(response.status).toBe(200);
@@ -177,7 +177,7 @@ describe('GET /api/runs', () => {
     vi.mocked(jsonlReader.listRunIds).mockResolvedValue([]);
 
     const { GET } = await import('../../apps/ui/app/api/runs/route.ts');
-    const response = await GET() as unknown as MockNextResponse;
+    const response = await GET(new Request('http://localhost/api/runs')) as unknown as MockNextResponse;
     const body = await response.json() as unknown[];
 
     expect(response.status).toBe(200);
@@ -188,7 +188,7 @@ describe('GET /api/runs', () => {
     vi.mocked(jsonlReader.listRunIds).mockRejectedValue(new Error('disk error'));
 
     const { GET } = await import('../../apps/ui/app/api/runs/route.ts');
-    const response = await GET() as unknown as MockNextResponse;
+    const response = await GET(new Request('http://localhost/api/runs')) as unknown as MockNextResponse;
     const body = await response.json() as { error: string };
 
     expect(response.status).toBe(500);
