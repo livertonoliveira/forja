@@ -19,6 +19,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n-context';
 
 const STORAGE_KEY = 'forja-sidebar-collapsed';
 
@@ -27,17 +28,6 @@ type NavItem = {
   label: string;
   icon: React.ElementType;
 };
-
-const pipelineItems: NavItem[] = [
-  { href: '/runs', label: 'Runs', icon: Play },
-  { href: '/issues', label: 'Issues', icon: AlertCircle },
-  { href: '/cost', label: 'Cost', icon: DollarSign },
-];
-
-const observabilityItems: NavItem[] = [
-  { href: '/heatmap', label: 'Heatmap', icon: Map },
-  { href: '/dlq', label: 'DLQ', icon: Layers },
-];
 
 function NavGroup({
   items,
@@ -92,6 +82,7 @@ export function Sidebar() {
     () => typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY) === 'true',
   );
   const pathname = usePathname();
+  const { t } = useI18n();
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, String(collapsed));
@@ -100,6 +91,17 @@ export function Sidebar() {
   function toggle() {
     setCollapsed((prev) => !prev);
   }
+
+  const pipelineItems: NavItem[] = [
+    { href: '/runs', label: t.nav.runs, icon: Play },
+    { href: '/issues', label: t.nav.issues, icon: AlertCircle },
+    { href: '/cost', label: t.nav.cost, icon: DollarSign },
+  ];
+
+  const observabilityItems: NavItem[] = [
+    { href: '/heatmap', label: t.nav.heatmap, icon: Map },
+    { href: '/dlq', label: t.nav.dlq, icon: Layers },
+  ];
 
   return (
     <aside
@@ -110,15 +112,17 @@ export function Sidebar() {
       )}
     >
       <div className="flex items-center px-4 h-14 shrink-0">
-        {collapsed ? (
-          <span className="font-display text-lg text-forja-text-gold tracking-tight select-none">
-            F
-          </span>
-        ) : (
-          <span className="font-display text-lg text-forja-text-gold tracking-tight [font-feature-settings:'smcp'] select-none">
-            Forja
-          </span>
-        )}
+        <Link href="/" title="Home">
+          {collapsed ? (
+            <span className="font-display text-lg text-forja-text-gold tracking-tight select-none">
+              F
+            </span>
+          ) : (
+            <span className="font-display text-lg text-forja-text-gold tracking-tight [font-feature-settings:'smcp'] select-none">
+              Forja
+            </span>
+          )}
+        </Link>
       </div>
 
       <div className="h-px bg-forja-border-gold/20 mx-3 shrink-0" />
@@ -126,14 +130,14 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 flex flex-col gap-4">
         <NavGroup
           items={pipelineItems}
-          label="Pipeline"
+          label={t.nav.pipeline}
           collapsed={collapsed}
           pathname={pathname}
         />
         <div className="h-px bg-forja-border-subtle mx-3" />
         <NavGroup
           items={observabilityItems}
-          label="Observabilidade"
+          label={t.nav.observability}
           collapsed={collapsed}
           pathname={pathname}
         />
