@@ -56,7 +56,7 @@ export default function HeatmapGrid({ findings }: HeatmapGridProps) {
     : [];
 
   if (categories.length === 0) {
-    return <p className="text-gray-500 text-sm">No findings to display.</p>;
+    return <p className="text-gray-500 text-sm">Nenhum achado para exibir.</p>;
   }
 
   return (
