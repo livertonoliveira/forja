@@ -56,6 +56,23 @@ export const translations = {
       lang: 'EN',
       langFull: 'Switch to English',
     },
+    commandPalette: {
+      placeholder: 'Buscar comandos, runs, findings…',
+      noResults: 'Nenhum resultado para',
+      tryDifferentTerm: 'Tente um termo diferente',
+      groups: {
+        navigation: 'Navegação',
+        recentRuns: 'Runs Recentes',
+        findings: 'Findings',
+        actions: 'Ações',
+        help: 'Ajuda',
+      },
+      footer: {
+        navigate: 'navegar',
+        select: 'selecionar',
+        close: 'fechar',
+      },
+    },
   },
   en: {
     nav: {
@@ -111,6 +128,23 @@ export const translations = {
       settings: 'Settings',
       lang: 'PT',
       langFull: 'Mudar para Português',
+    },
+    commandPalette: {
+      placeholder: 'Search commands, runs, findings…',
+      noResults: 'No results for',
+      tryDifferentTerm: 'Try a different term',
+      groups: {
+        navigation: 'Navigation',
+        recentRuns: 'Recent Runs',
+        findings: 'Findings',
+        actions: 'Actions',
+        help: 'Help',
+      },
+      footer: {
+        navigate: 'navigate',
+        select: 'select',
+        close: 'close',
+      },
     },
   },
 } as const satisfies Record<Locale, object>;
