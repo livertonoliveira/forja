@@ -51,6 +51,8 @@ export const runCommand = new Command('run')
     const defaultTimeouts = PhaseTimeoutsSchema.parse({});
     const effectiveTimeouts: Record<string, number> = { ...defaultTimeouts, ...timeoutOverrides };
 
+    console.log(`[forja] starting run for issue ${issueId}`);
+
     let modelsPolicy: ModelsPolicy | null = null;
     try {
       modelsPolicy = await loadModelsPolicy(MODELS_POLICY_PATH);

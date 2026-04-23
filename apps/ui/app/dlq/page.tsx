@@ -1,24 +1,37 @@
 import Link from 'next/link';
-import { listRunIds, readRunSummaryEventsAll, buildRunFromEvents } from '@/lib/jsonl-reader';
 import { statusColors, gateDisplay } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
 import type { Run } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RunsPage() {
-  const runIds = await listRunIds();
-  const allEvents = await readRunSummaryEventsAll(runIds);
-  const runs: Run[] = runIds.map((id, i) => buildRunFromEvents(id, allEvents[i]));
-  runs.sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
+async function getFailedRuns(): Promise<Run[]> {
+  try {
+    const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:4242';
+    const res = await fetch(`${base}/api/runs`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const runs: Run[] = await res.json();
+    return runs.filter((r) => r.status === 'failed' || r.gateFinal === 'fail');
+  } catch {
+    return [];
+  }
+}
+
+export default async function DLQPage() {
+  const runs = await getFailedRuns();
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-forja-text-primary mb-6">Execuções</h1>
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold text-forja-text-primary">Fila Morta</h1>
+        <p className="text-forja-text-secondary text-sm mt-1">
+          Runs com falha que precisam de atenção ({runs.length} pendente{runs.length !== 1 ? 's' : ''})
+        </p>
+      </div>
+
       {runs.length === 0 ? (
         <p className="text-forja-text-secondary text-sm">
-          Nenhuma execução encontrada. Inicie um pipeline com{' '}
-          <code className="text-forja-text-primary font-mono">forja run</code>.
+          Nenhuma execução com falha. Todos os pipelines estão saudáveis.
         </p>
       ) : (
         <div className="overflow-x-auto">

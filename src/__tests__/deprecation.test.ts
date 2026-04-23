@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { randomUUID } from 'crypto';
-import fs from 'fs/promises';
-import path from 'path';
 
 vi.mock('../trace/writer.js', () => ({
   TraceWriter: vi.fn(),

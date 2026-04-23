@@ -3,51 +3,27 @@
 @tailwind utilities;
 
 @layer base {
-  /* :root mirrors .dark intentionally — this is a dark-only app; both blocks
-     ensure the palette is applied whether or not the `dark` class is present. */
   :root {
-    --background: 0 0% 4%;           /* #0A0A0A bg.base */
-    --foreground: 0 0% 98%;          /* #FAFAFA text.primary */
-    --card: 0 0% 7%;                 /* #111111 bg.surface */
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 10%;             /* #1A1A1A bg.elevated */
-    --popover-foreground: 0 0% 98%;
-    --primary: 43 52% 54%;           /* #C9A84C gold.mid */
-    --primary-foreground: 0 0% 4%;
-    --secondary: 0 0% 10%;           /* #1A1A1A bg.elevated */
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 13%;               /* #222222 bg.overlay */
-    --muted-foreground: 0 0% 63%;    /* #A0A0A0 text.secondary */
-    --accent: 43 52% 54%;            /* #C9A84C gold.mid */
-    --accent-foreground: 0 0% 4%;
-    --destructive: 0 63% 31%;        /* #7F1D1D gate.fail.border */
-    --destructive-foreground: 0 91% 71%; /* #F87171 gate.fail.text */
-    --border: 0 0% 20%;              /* #333333 border.default */
-    --input: 0 0% 20%;
-    --ring: 43 52% 54%;              /* #C9A84C gold.mid */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
+    --card: 0 0% 97%;
+    --card-foreground: 0 0% 4%;
+    --popover: 0 0% 94%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 43 64% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 4%;
+    --muted: 0 0% 91%;
+    --muted-foreground: 0 0% 33%;
+    --accent: 43 64% 44%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 83%;
+    --input: 0 0% 83%;
+    --ring: 43 64% 44%;
     --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 43 52% 54%;
-    --primary-foreground: 0 0% 4%;
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 13%;
-    --muted-foreground: 0 0% 63%;
-    --accent: 43 52% 54%;
-    --accent-foreground: 0 0% 4%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 91% 71%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 43 52% 54%;
   }
 }
 

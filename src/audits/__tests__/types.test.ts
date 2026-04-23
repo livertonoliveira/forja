@@ -63,6 +63,7 @@ describe('AuditFindingSchema', () => {
   it('roundtrip: Zod schema converts to valid JSON Schema', () => {
     const jsonSchema = zodToJsonSchema(AuditFindingSchema, { name: 'AuditFinding', target: 'jsonSchema7' });
     expect(jsonSchema).toHaveProperty('definitions.AuditFinding');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const def = (jsonSchema as any).definitions.AuditFinding;
     expect(def.properties.severity.enum).toEqual(['low', 'medium', 'high', 'critical']);
   });
