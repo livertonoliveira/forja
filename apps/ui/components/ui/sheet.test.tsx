@@ -179,17 +179,17 @@ describe('sheet.tsx — SheetTitle render', () => {
     expect(className).toContain('text-forja-text-gold');
   });
 
-  it('SheetTitle includes font-mono and font-semibold classes', () => {
+  it('SheetTitle includes font-sans and font-semibold classes', () => {
     const el = renderComp(SheetTitle);
     const className: string = el.props.className ?? '';
-    expect(className).toContain('font-mono');
+    expect(className).toContain('font-sans');
     expect(className).toContain('font-semibold');
   });
 
-  it('SheetTitle includes text-lg class', () => {
+  it('SheetTitle includes text-xl class', () => {
     const el = renderComp(SheetTitle);
     const className: string = el.props.className ?? '';
-    expect(className).toContain('text-lg');
+    expect(className).toContain('text-xl');
   });
 
   it('SheetTitle merges custom className', () => {
