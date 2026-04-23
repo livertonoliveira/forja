@@ -25,7 +25,7 @@ export default async function IssueDetailPage({
   }
 
   const res = await fetch(`http://localhost:4242/api/issues/${issueId}`, {
-    next: { revalidate: 30 },
+    cache: 'no-store',
   });
 
   const newestFirst: Run[] = res.ok ? await res.json() : [];
@@ -34,34 +34,34 @@ export default async function IssueDetailPage({
   return (
     <div>
       <div className="mb-6">
-        <Link href="/issues" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
-          ← Issues
+        <Link href="/issues" className="text-sm text-forja-text-secondary hover:text-forja-text-primary transition-colors">
+          ← Tarefas
         </Link>
       </div>
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-xl font-semibold text-gray-100">Issue</h1>
+        <h1 className="text-xl font-semibold text-forja-text-primary">Tarefa</h1>
         <a
           href={`https://linear.app/mobitech/issue/${issueId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-mono text-blue-400 hover:text-blue-300 transition-colors"
+          className="font-mono text-forja-text-gold hover:text-forja-text-gold/80 transition-colors"
         >
           {issueId}
         </a>
       </div>
       {runs.length === 0 ? (
-        <p className="text-gray-500 text-sm">Nenhum run encontrado para esta issue.</p>
+        <p className="text-forja-text-secondary text-sm">Nenhuma execução encontrada para esta tarefa.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-800">
+              <tr className="text-left text-forja-text-secondary border-b border-forja-border-default">
                 <th className="pb-3 pr-6 font-medium">#</th>
-                <th className="pb-3 pr-6 font-medium">Started</th>
-                <th className="pb-3 pr-6 font-medium">Phases</th>
-                <th className="pb-3 pr-6 font-medium">Cost</th>
+                <th className="pb-3 pr-6 font-medium">Início</th>
+                <th className="pb-3 pr-6 font-medium">Status</th>
+                <th className="pb-3 pr-6 font-medium">Custo</th>
                 <th className="pb-3 pr-6 font-medium">Gate</th>
-                <th className="pb-3 font-medium">Regression</th>
+                <th className="pb-3 font-medium">Regressão</th>
               </tr>
             </thead>
             <tbody>
@@ -70,20 +70,20 @@ export default async function IssueDetailPage({
                 const regression = previous !== null && isRegression(run.gateFinal, previous.gateFinal);
 
                 return (
-                  <tr key={run.id} className="border-b border-gray-900 hover:bg-gray-900/50 transition-colors">
-                    <td className="py-3 pr-6 text-gray-400">{index + 1}</td>
-                    <td className="py-3 pr-6 text-gray-500 text-xs">
+                  <tr key={run.id} className="border-b border-forja-border-subtle hover:bg-forja-bg-surface transition-colors">
+                    <td className="py-3 pr-6 text-forja-text-muted">{index + 1}</td>
+                    <td className="py-3 pr-6 text-forja-text-muted text-xs">
                       {new Date(run.startedAt).toLocaleString('pt-BR')}
                     </td>
                     <td className="py-3 pr-6">
-                      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${statusColors[run.status] ?? 'bg-gray-800 text-gray-400'}`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${statusColors[run.status] ?? 'bg-gray-100 text-gray-600'}`}>
                         {run.status}
                       </span>
                     </td>
-                    <td className="py-3 pr-6 text-gray-400">
+                    <td className="py-3 pr-6 text-forja-text-secondary">
                       ${parseFloat(run.totalCostUsd).toFixed(4)}
                     </td>
-                    <td className={`py-3 pr-6 font-medium ${run.gateFinal ? gateTextColors[run.gateFinal] : 'text-gray-600'}`}>
+                    <td className={`py-3 pr-6 font-medium ${run.gateFinal ? gateTextColors[run.gateFinal] : 'text-forja-text-muted'}`}>
                       {run.gateFinal ?? '—'}
                     </td>
                     <td className="py-3">

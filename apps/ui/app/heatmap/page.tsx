@@ -8,8 +8,8 @@ export default async function HeatmapPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-gray-100 mb-2">Findings Heatmap</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <h1 className="text-xl font-semibold text-forja-text-primary mb-2">Mapa de Achados</h1>
+      <p className="text-sm text-forja-text-secondary mb-6">
         Severity × category — {findings.length} total finding{findings.length !== 1 ? 's' : ''}
       </p>
       <HeatmapGrid findings={findings} />

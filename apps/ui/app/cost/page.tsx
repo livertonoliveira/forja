@@ -27,14 +27,14 @@ function BarChart({ entries, max }: { entries: [string, number][]; max: number }
     <div className="space-y-2">
       {entries.map(([label, value]) => (
         <div key={label} className="flex items-center gap-3 text-sm">
-          <span className="w-32 text-right text-gray-400 truncate shrink-0">{label}</span>
-          <div className="flex-1 bg-gray-800 rounded-sm h-5 overflow-hidden">
+          <span className="w-32 text-right text-forja-text-secondary truncate shrink-0">{label}</span>
+          <div className="flex-1 bg-forja-bg-elevated border border-forja-border-subtle rounded-sm h-5 overflow-hidden">
             <div
-              className="h-full bg-blue-600"
+              className="h-full bg-forja-text-gold"
               style={{ width: `${max > 0 ? (value / max) * 100 : 0}%` }}
             />
           </div>
-          <span className="w-24 text-right text-gray-300 font-mono shrink-0">
+          <span className="w-24 text-right text-forja-text-primary font-mono shrink-0">
             ${value.toFixed(4)}
           </span>
         </div>
@@ -101,46 +101,46 @@ export default async function CostPage() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-xl font-semibold text-gray-100 mb-2">Cost Dashboard</h1>
-        <p className="text-gray-500 text-sm">Accumulated cost across all Forja runs</p>
+        <h1 className="text-xl font-semibold text-forja-text-primary mb-2">Custo</h1>
+        <p className="text-forja-text-secondary text-sm">Custo acumulado em todas as execuções Forja</p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg px-6 py-5 inline-block">
-        <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Total Accumulated Cost</p>
-        <p className="text-3xl font-mono font-semibold text-green-400">
+      <div className="bg-forja-bg-surface border border-forja-border-default rounded-lg px-6 py-5 inline-block">
+        <p className="text-forja-text-muted text-xs uppercase tracking-wide mb-1">Custo Total Acumulado</p>
+        <p className="text-3xl font-mono font-semibold text-green-600">
           ${totalRaw.toFixed(4)}
         </p>
-        <p className="text-gray-600 text-xs mt-1">{runRows.length} run{runRows.length !== 1 ? 's' : ''} tracked</p>
+        <p className="text-forja-text-muted text-xs mt-1">{runRows.length} execuç{runRows.length !== 1 ? 'ões' : 'ão'} rastreada{runRows.length !== 1 ? 's' : ''}</p>
       </div>
 
       <div>
-        <h2 className="text-base font-medium text-gray-200 mb-4">Top 10 Most Expensive Runs</h2>
+        <h2 className="text-base font-medium text-forja-text-primary mb-4">Top 10 Execuções Mais Caras</h2>
         {topRuns.length === 0 ? (
-          <p className="text-gray-500 text-sm">No runs yet. Start a pipeline with <code className="text-gray-300">forja run</code>.</p>
+          <p className="text-forja-text-secondary text-sm">Nenhuma execução encontrada.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500 border-b border-gray-800">
+                <tr className="text-left text-forja-text-secondary border-b border-forja-border-default">
                   <th className="pb-3 pr-6 font-medium">Run ID</th>
-                  <th className="pb-3 pr-6 font-medium">Issue</th>
-                  <th className="pb-3 pr-6 font-medium">Date</th>
-                  <th className="pb-3 pr-6 font-medium">Cost (USD)</th>
-                  <th className="pb-3 font-medium">Priciest Phase</th>
+                  <th className="pb-3 pr-6 font-medium">Tarefa</th>
+                  <th className="pb-3 pr-6 font-medium">Data</th>
+                  <th className="pb-3 pr-6 font-medium">Custo (USD)</th>
+                  <th className="pb-3 font-medium">Fase Mais Cara</th>
                 </tr>
               </thead>
               <tbody>
                 {topRuns.map((run) => (
-                  <tr key={run.id} className="border-b border-gray-900 hover:bg-gray-900/50 transition-colors">
-                    <td className="py-3 pr-6 font-mono text-gray-400 text-xs">
+                  <tr key={run.id} className="border-b border-forja-border-subtle hover:bg-forja-bg-surface transition-colors">
+                    <td className="py-3 pr-6 font-mono text-forja-text-muted text-xs">
                       {run.id.slice(0, 8)}&hellip;
                     </td>
-                    <td className="py-3 pr-6 font-mono text-gray-300">{run.issueId}</td>
-                    <td className="py-3 pr-6 text-gray-500 text-xs">
-                      {run.startedAt ? new Date(run.startedAt).toLocaleString() : '—'}
+                    <td className="py-3 pr-6 font-mono text-forja-text-primary">{run.issueId}</td>
+                    <td className="py-3 pr-6 text-forja-text-muted text-xs">
+                      {run.startedAt ? new Date(run.startedAt).toLocaleString('pt-BR') : '—'}
                     </td>
-                    <td className="py-3 pr-6 text-gray-200 font-mono">${run.totalCost.toFixed(4)}</td>
-                    <td className="py-3 text-gray-400">{run.priciestPhase}</td>
+                    <td className="py-3 pr-6 text-forja-text-primary font-mono">${run.totalCost.toFixed(4)}</td>
+                    <td className="py-3 text-forja-text-secondary">{run.priciestPhase}</td>
                   </tr>
                 ))}
               </tbody>
@@ -150,18 +150,18 @@ export default async function CostPage() {
       </div>
 
       <div>
-        <h2 className="text-base font-medium text-gray-200 mb-4">Cost by Model</h2>
+        <h2 className="text-base font-medium text-forja-text-primary mb-4">Custo por Modelo</h2>
         {modelEntries.length === 0 ? (
-          <p className="text-gray-500 text-sm">No model cost data available.</p>
+          <p className="text-forja-text-secondary text-sm">Sem dados de custo por modelo.</p>
         ) : (
           <BarChart entries={modelEntries} max={maxModel} />
         )}
       </div>
 
       <div>
-        <h2 className="text-base font-medium text-gray-200 mb-4">Cost by Phase</h2>
+        <h2 className="text-base font-medium text-forja-text-primary mb-4">Custo por Fase</h2>
         {phaseEntries.length === 0 ? (
-          <p className="text-gray-500 text-sm">No phase cost data available.</p>
+          <p className="text-forja-text-secondary text-sm">Sem dados de custo por fase.</p>
         ) : (
           <BarChart entries={phaseEntries} max={maxPhase} />
         )}
