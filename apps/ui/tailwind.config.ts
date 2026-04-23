@@ -11,6 +11,15 @@ function hexToRgba(hex: string, alpha: number): string {
 const config: Config = {
   darkMode: 'class',
   content: ['./app/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  safelist: [
+    'font-display', 'font-sans', 'font-mono',
+    'text-6xl', 'text-5xl', 'text-4xl', 'text-3xl', 'text-2xl', 'text-xl', 'text-lg', 'text-base', 'text-sm', 'text-xs', 'text-[10px]',
+    'leading-none', 'leading-tight', 'leading-snug', 'leading-relaxed', 'leading-normal',
+    'tracking-tight', 'tracking-[0.2em]', 'tracking-[0.25em]',
+    'font-semibold', 'font-medium',
+    'uppercase',
+    'text-forja-text-gold', 'text-forja-text-gold/80',
+  ],
   theme: {
     extend: {
       colors: {
@@ -32,6 +41,11 @@ const config: Config = {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
+      },
+      fontFamily: {
+        display: ['var(--font-display)', 'Georgia', 'serif'],
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'monospace'],
       },
     },
   },

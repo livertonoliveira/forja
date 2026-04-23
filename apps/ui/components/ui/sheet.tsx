@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { cn } from "@/lib/utils"
+import { typography } from '@/lib/typography'
 
 const Sheet = DialogPrimitive.Root
 
@@ -41,7 +42,7 @@ const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-forja-text-gold font-mono text-lg font-semibold", className)}
+    className={cn(`text-forja-text-gold ${typography.heading.lg}`, className)}
     {...props}
   />
 ))

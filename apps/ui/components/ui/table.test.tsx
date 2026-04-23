@@ -267,10 +267,10 @@ describe('table.tsx — TableHead render', () => {
     expect(className).toContain('text-forja-text-gold');
   });
 
-  it('TableHead includes font-mono and uppercase classes', () => {
+  it('TableHead includes font-sans and uppercase classes', () => {
     const el = renderComp(TableHead);
     const className: string = el.props.className ?? '';
-    expect(className).toContain('font-mono');
+    expect(className).toContain('font-sans');
     expect(className).toContain('uppercase');
   });
 
