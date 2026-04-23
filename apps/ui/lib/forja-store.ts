@@ -212,3 +212,284 @@ export async function searchRuns(query: string): Promise<RunSummary[]> {
     r.status?.toLowerCase().includes(lower)
   );
 }
+
+// ─── Trend Analysis ───────────────────────────────────────────────────────────
+
+export type TrendMetric = 'findings' | 'gate_fail_rate' | 'run_duration' | 'cost';
+export type TrendGranularity = 'hour' | 'day' | 'week' | 'month';
+
+export interface TrendFilters {
+  metric: TrendMetric;
+  granularity: TrendGranularity;
+  from: string;
+  to: string;
+  project?: string;
+}
+
+export type FindingsBucket = {
+  bucket: string;
+  critical: number | null;
+  high: number | null;
+  medium: number | null;
+  low: number | null;
+};
+
+export type CostBucket = {
+  bucket: string;
+  totalCost: string | null;
+};
+
+export type GateBucket = {
+  bucket: string;
+  pass: number | null;
+  warn: number | null;
+  fail: number | null;
+};
+
+export type DurationBucket = {
+  bucket: string;
+  avgDurationMs: number | null;
+};
+
+export type TrendBucket = FindingsBucket | CostBucket | GateBucket | DurationBucket;
+
+function truncateToBucket(date: Date, granularity: TrendGranularity): Date {
+  const d = new Date(date);
+  if (granularity === 'hour') {
+    d.setMinutes(0, 0, 0);
+  } else if (granularity === 'day') {
+    d.setHours(0, 0, 0, 0);
+  } else if (granularity === 'week') {
+    const day = d.getDay(); // 0=Sun
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - day);
+  } else {
+    // month
+    d.setDate(1);
+    d.setHours(0, 0, 0, 0);
+  }
+  return d;
+}
+
+function stepBucket(date: Date, granularity: TrendGranularity): Date {
+  const d = new Date(date);
+  if (granularity === 'hour') {
+    d.setHours(d.getHours() + 1);
+  } else if (granularity === 'day') {
+    d.setDate(d.getDate() + 1);
+  } else if (granularity === 'week') {
+    d.setDate(d.getDate() + 7);
+  } else {
+    // month
+    d.setMonth(d.getMonth() + 1);
+  }
+  return d;
+}
+
+function fillGaps<T extends { bucket: string }>(
+  rows: T[],
+  from: string,
+  to: string,
+  granularity: TrendGranularity,
+  emptyBucket: (bucket: string) => T,
+): T[] {
+  const rowMap = new Map<string, T>();
+  for (const row of rows) {
+    const key = new Date(row.bucket).toISOString();
+    rowMap.set(key, row);
+  }
+
+  const result: T[] = [];
+  const end = new Date(to);
+  let cursor = truncateToBucket(new Date(from), granularity);
+
+  while (cursor <= end) {
+    const key = cursor.toISOString();
+    result.push(rowMap.get(key) ?? emptyBucket(key));
+    cursor = stepBucket(cursor, granularity);
+  }
+
+  return result;
+}
+
+async function queryFindingsTrend(
+  granularity: TrendGranularity,
+  from: string,
+  to: string,
+  project: string | undefined,
+  db: import('pg').Pool,
+): Promise<FindingsBucket[]> {
+  type FindingsRow = { bucket: string; severity: string; count: number };
+
+  const conditions: string[] = ['f.created_at BETWEEN $2 AND $3'];
+  const params: unknown[] = [granularity, from, to];
+
+  if (project) {
+    params.push(`${project}%`);
+    conditions.push(`r.issue_id ILIKE $${params.length}`);
+  }
+
+  const where = conditions.join(' AND ');
+  const sql = `SELECT date_trunc($1, f.created_at) AS bucket,
+                      f.severity,
+                      COUNT(*)::int AS count
+               FROM findings f
+               JOIN runs r ON r.id = f.run_id
+               WHERE ${where}
+               GROUP BY bucket, f.severity
+               ORDER BY bucket`;
+
+  const { rows } = await db.query<FindingsRow>(sql, params);
+
+  // Aggregate rows by bucket
+  const bucketMap = new Map<string, FindingsBucket>();
+  for (const row of rows) {
+    const key = new Date(row.bucket).toISOString();
+    if (!bucketMap.has(key)) {
+      bucketMap.set(key, { bucket: key, critical: null, high: null, medium: null, low: null });
+    }
+    const b = bucketMap.get(key)!;
+    const sev = row.severity as 'critical' | 'high' | 'medium' | 'low';
+    b[sev] = row.count;
+  }
+
+  return fillGaps<FindingsBucket>(
+    Array.from(bucketMap.values()),
+    from,
+    to,
+    granularity,
+    (bucket) => ({ bucket, critical: null, high: null, medium: null, low: null }),
+  );
+}
+
+async function queryGateFailRateTrend(
+  granularity: TrendGranularity,
+  from: string,
+  to: string,
+  db: import('pg').Pool,
+): Promise<GateBucket[]> {
+  type GateRow = { bucket: string; decision: string; count: number };
+
+  const { rows } = await db.query<GateRow>(
+    `SELECT date_trunc($1, g.decided_at) AS bucket,
+            g.decision,
+            COUNT(*)::int AS count
+     FROM gate_decisions g
+     WHERE g.decided_at BETWEEN $2 AND $3
+     GROUP BY bucket, g.decision
+     ORDER BY bucket`,
+    [granularity, from, to],
+  );
+
+  const bucketMap = new Map<string, GateBucket>();
+  for (const row of rows) {
+    const key = new Date(row.bucket).toISOString();
+    if (!bucketMap.has(key)) {
+      bucketMap.set(key, { bucket: key, pass: null, warn: null, fail: null });
+    }
+    const b = bucketMap.get(key)!;
+    const dec = row.decision as 'pass' | 'warn' | 'fail';
+    b[dec] = row.count;
+  }
+
+  return fillGaps<GateBucket>(
+    Array.from(bucketMap.values()),
+    from,
+    to,
+    granularity,
+    (bucket) => ({ bucket, pass: null, warn: null, fail: null }),
+  );
+}
+
+async function queryCostTrend(
+  granularity: TrendGranularity,
+  from: string,
+  to: string,
+  db: import('pg').Pool,
+): Promise<CostBucket[]> {
+  type CostRow = { bucket: string; total_cost: string | null };
+
+  const { rows } = await db.query<CostRow>(
+    `SELECT date_trunc($1, c.created_at) AS bucket,
+            SUM(c.cost_usd)::text AS total_cost
+     FROM cost_events c
+     WHERE c.created_at BETWEEN $2 AND $3
+     GROUP BY bucket
+     ORDER BY bucket`,
+    [granularity, from, to],
+  );
+
+  const mapped: CostBucket[] = rows.map((r) => ({
+    bucket: new Date(r.bucket).toISOString(),
+    totalCost: r.total_cost,
+  }));
+
+  return fillGaps<CostBucket>(
+    mapped,
+    from,
+    to,
+    granularity,
+    (bucket) => ({ bucket, totalCost: null }),
+  );
+}
+
+async function queryRunDurationTrend(
+  granularity: TrendGranularity,
+  from: string,
+  to: string,
+  db: import('pg').Pool,
+): Promise<DurationBucket[]> {
+  type DurationRow = { bucket: string; avg_duration_ms: number | null };
+
+  const { rows } = await db.query<DurationRow>(
+    `SELECT date_trunc($1, r.started_at) AS bucket,
+            AVG(EXTRACT(EPOCH FROM (r.finished_at - r.started_at)) * 1000)::int AS avg_duration_ms
+     FROM runs r
+     WHERE r.started_at BETWEEN $2 AND $3
+       AND r.finished_at IS NOT NULL
+     GROUP BY bucket
+     ORDER BY bucket`,
+    [granularity, from, to],
+  );
+
+  const mapped: DurationBucket[] = rows.map((r) => ({
+    bucket: new Date(r.bucket).toISOString(),
+    avgDurationMs: r.avg_duration_ms,
+  }));
+
+  return fillGaps<DurationBucket>(
+    mapped,
+    from,
+    to,
+    granularity,
+    (bucket) => ({ bucket, avgDurationMs: null }),
+  );
+}
+
+const ALLOWED_GRANULARITIES = new Set<TrendGranularity>(['hour', 'day', 'week', 'month']);
+
+export async function getTrend(filters: TrendFilters): Promise<TrendBucket[]> {
+  if (!ALLOWED_GRANULARITIES.has(filters.granularity)) {
+    throw new Error(`invalid granularity: ${filters.granularity}`);
+  }
+
+  const db = await getPool();
+  if (!db) return []; // no JSONL fallback for trend queries
+
+  try {
+    const { metric, granularity, from, to, project } = filters;
+    switch (metric) {
+      case 'findings':
+        return queryFindingsTrend(granularity, from, to, project, db);
+      case 'gate_fail_rate':
+        return queryGateFailRateTrend(granularity, from, to, db);
+      case 'cost':
+        return queryCostTrend(granularity, from, to, db);
+      case 'run_duration':
+        return queryRunDurationTrend(granularity, from, to, db);
+    }
+  } catch (err) {
+    console.error('[forja-store] getTrend DB query failed:', err);
+    return [];
+  }
+}
