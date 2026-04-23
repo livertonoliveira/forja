@@ -9,7 +9,14 @@ import {
   integer,
   jsonb,
   index,
+  customType,
 } from 'drizzle-orm/pg-core';
+
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return 'tsvector';
+  },
+});
 
 export const runStatusEnum = pgEnum('run_status', [
   'init', 'spec', 'dev', 'test', 'perf', 'security', 'review', 'homolog', 'pr', 'done', 'failed',
@@ -31,6 +38,7 @@ export const runs = pgTable('runs', {
   totalCost: numeric('total_cost', { precision: 10, scale: 6 }).notNull().default('0'),
   totalTokens: integer('total_tokens').notNull().default(0),
   schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
+  searchVector: tsvector('search_vector'),
 }, (t) => ({
   issueIdIdx: index('runs_issue_id_idx').on(t.issueId),
   statusIdx: index('runs_status_idx').on(t.status),
