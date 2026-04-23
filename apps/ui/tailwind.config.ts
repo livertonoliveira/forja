@@ -10,7 +10,7 @@ function hexToRgba(hex: string, alpha: number): string {
 
 const config: Config = {
   darkMode: 'class',
-  content: ['./app/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  content: ['./app/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './.storybook/**/*.{ts,tsx}'],
   safelist: [
     'font-display', 'font-sans', 'font-mono',
     'text-6xl', 'text-5xl', 'text-4xl', 'text-3xl', 'text-2xl', 'text-xl', 'text-lg', 'text-base', 'text-sm', 'text-xs', 'text-[10px]',
