@@ -68,7 +68,7 @@ function bucketEnd(date: string, hour: number): string {
 
 export default function HeatmapGrid() {
   const [metric, setMetric] = useState<Metric>('runs');
-  const [project, setProject] = useState('');
+  const [project, _setProject] = useState('');
   const [data, setData] = useState<ApiResponse>({ cells: [], max: 0 });
   const [loading, setLoading] = useState(true);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);

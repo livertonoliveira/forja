@@ -296,9 +296,9 @@ describe('TrendChart — fetch called with correct metric + granularity on mount
     const controller = new AbortController();
 
     // Simulate a pending fetch that checks for abort
-    let resolveFetch!: () => void;
+    let _resolveFetch!: () => void;
     const fetchPromise = new Promise<Response>((resolve, reject) => {
-      resolveFetch = () => resolve({ json: () => Promise.resolve([]) } as Response);
+      _resolveFetch = () => resolve({ json: () => Promise.resolve([]) } as Response);
       controller.signal.addEventListener('abort', () => {
         reject(new DOMException('The operation was aborted.', 'AbortError'));
       });

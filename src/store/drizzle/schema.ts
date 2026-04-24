@@ -85,12 +85,14 @@ export const findings = pgTable('findings', {
   suggestion: text('suggestion'),
   owasp: text('owasp'),
   cwe: text('cwe'),
+  fingerprint: text('fingerprint'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('findings_run_id_idx').on(t.runId),
   phaseIdIdx: index('findings_phase_id_idx').on(t.phaseId),
   runSeverityIdx: index('findings_run_id_severity_idx').on(t.runId, t.severity),
+  fingerprintIdx: index('findings_fingerprint_idx').on(t.fingerprint),
 }));
 
 export const toolCalls = pgTable('tool_calls', {

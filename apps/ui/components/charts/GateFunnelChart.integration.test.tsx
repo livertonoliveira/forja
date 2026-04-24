@@ -13,8 +13,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as React from 'react';
-
 // ---------------------------------------------------------------------------
 // Mocks — declared before any import of the SUT
 // ---------------------------------------------------------------------------
@@ -255,11 +253,11 @@ describe('GateFunnelChart — fetch + AbortController integration', () => {
 
   it('AbortController cancels pending request on granularity change', async () => {
     const controller = new AbortController();
-    let rejectFetch!: (err: Error) => void;
+    let _rejectFetch!: (err: Error) => void;
 
     globalThis.fetch = vi.fn(() => {
       return new Promise<Response>((_, reject) => {
-        rejectFetch = reject;
+        _rejectFetch = reject;
         controller.signal.addEventListener('abort', () => {
           reject(new DOMException('The operation was aborted.', 'AbortError'));
         });

@@ -493,3 +493,200 @@ export async function getTrend(filters: TrendFilters): Promise<TrendBucket[]> {
     return [];
   }
 }
+
+// ─── Run Comparison ───────────────────────────────────────────────────────────
+
+export interface ComparedFinding {
+  fingerprint: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  category: string;
+  title: string;
+  filePath: string | null;
+  line: number | null;
+}
+
+export interface RunMeta {
+  id: string;
+  issueId: string;
+  startedAt: string;
+  finishedAt: string | null;
+  totalCost: string;
+  gate: GateDecision | null;
+  durationMs: number | null;
+}
+
+export interface CompareResult {
+  runs: RunMeta[];
+  new: ComparedFinding[];
+  resolved: ComparedFinding[];
+  persistent: ComparedFinding[];
+  crossProject: boolean;
+  costDiff: number;
+  durationDiff: number | null;
+}
+
+export async function compareRuns(ids: string[]): Promise<CompareResult> {
+  const db = await getPool();
+
+  const empty: CompareResult = {
+    runs: [],
+    new: [],
+    resolved: [],
+    persistent: [],
+    crossProject: false,
+    costDiff: 0,
+    durationDiff: null,
+  };
+
+  // No JSONL fallback — fingerprint-based comparison requires a live DB connection.
+  if (!db) return empty;
+
+  try {
+    // Fetch run metadata + latest gate decision for each run
+    const { rows: runRows } = await db.query<{
+      id: string;
+      issue_id: string;
+      started_at: string;
+      finished_at: string | null;
+      total_cost: string;
+      gate: GateDecision | null;
+    }>(
+      `SELECT r.id, r.issue_id, r.started_at, r.finished_at, r.total_cost,
+              g.decision AS gate
+       FROM runs r
+       LEFT JOIN LATERAL (
+         SELECT decision FROM gate_decisions WHERE run_id = r.id ORDER BY decided_at DESC LIMIT 1
+       ) g ON true
+       WHERE r.id = ANY($1::uuid[])
+       ORDER BY r.started_at`,
+      [ids],
+    );
+
+    if (runRows.length < ids.length) {
+      const foundIds = new Set(runRows.map((r) => r.id));
+      const missing = ids.filter((id) => !foundIds.has(id));
+      throw new Error(`Run(s) not found: ${missing.join(', ')}`);
+    }
+    if (runRows.length === 0) return empty;
+
+    const runs: RunMeta[] = runRows.map((r) => ({
+      id: r.id,
+      issueId: r.issue_id,
+      startedAt: r.started_at,
+      finishedAt: r.finished_at,
+      totalCost: r.total_cost,
+      gate: r.gate,
+      durationMs:
+        r.finished_at
+          ? new Date(r.finished_at).getTime() - new Date(r.started_at).getTime()
+          : null,
+    }));
+
+    // crossProject: runs belong to different issue prefixes (e.g. MOB vs ABC)
+    const projectPrefixes = new Set(runs.map((r) => r.issueId.replace(/-\d+$/, '')));
+    const crossProject = projectPrefixes.size > 1;
+
+    // Fetch all findings for these runs. Order in application code using runOrder
+    // (avoids joining runs table just for ORDER BY).
+    const { rows: findingRows } = await db.query<{
+      run_id: string;
+      fingerprint: string; // COALESCE below guarantees non-null
+      severity: 'critical' | 'high' | 'medium' | 'low';
+      category: string;
+      title: string;
+      file_path: string | null;
+      line: number | null;
+    }>(
+      `SELECT f.run_id,
+              COALESCE(f.fingerprint, md5(f.category || ':' || COALESCE(f.file_path, '') || ':' || COALESCE(f.line::text, '') || ':' || f.title)) AS fingerprint,
+              f.severity, f.category, f.title, f.file_path, f.line
+       FROM findings f
+       WHERE f.run_id = ANY($1::uuid[])
+       LIMIT 1000`,
+      [ids],
+    );
+
+    // Group fingerprints by run (runOrder preserves chronological order from first query)
+    const runOrder = runRows.map((r) => r.id);
+    const fingerprintsByRun = new Map<string, Map<string, typeof findingRows[0]>>();
+    for (const runId of runOrder) {
+      fingerprintsByRun.set(runId, new Map());
+    }
+    for (const row of findingRows) {
+      const fp = row.fingerprint;
+      fingerprintsByRun.get(row.run_id)?.set(fp, row);
+    }
+
+    // oldest = first run, newest = last run
+    const oldestId = runOrder[0];
+    const newestId = runOrder[runOrder.length - 1];
+    const oldestMap = fingerprintsByRun.get(oldestId)!;
+    const newestMap = fingerprintsByRun.get(newestId)!;
+
+    // For 5-run progressive intersection: persistent = fingerprints present in ALL runs
+    const allMaps = runOrder.map((id) => fingerprintsByRun.get(id)!);
+    const persistentFps = new Set(
+      Array.from(allMaps[0].keys()).filter((fp) => allMaps.every((m) => m.has(fp))),
+    );
+
+    const newFindings: ComparedFinding[] = [];
+    const resolvedFindings: ComparedFinding[] = [];
+    const persistentFindings: ComparedFinding[] = [];
+
+    // New: in newest but not in oldest
+    Array.from(newestMap).forEach(([fp, row]) => {
+      if (persistentFps.has(fp)) {
+        persistentFindings.push(toComparedFinding(fp, row));
+      } else if (!oldestMap.has(fp)) {
+        newFindings.push(toComparedFinding(fp, row));
+      }
+    });
+
+    // Resolved: in oldest but not in newest
+    Array.from(oldestMap).forEach(([fp, row]) => {
+      if (!newestMap.has(fp) && !persistentFps.has(fp)) {
+        resolvedFindings.push(toComparedFinding(fp, row));
+      }
+    });
+
+    // Cost diff: newest - oldest
+    const oldestCost = parseFloat(runRows[0].total_cost ?? '0');
+    const newestCost = parseFloat(runRows[runRows.length - 1].total_cost ?? '0');
+    const costDiff = newestCost - oldestCost;
+
+    // Duration diff: newest duration - oldest duration
+    const oldestRun = runs[0];
+    const newestRun = runs[runs.length - 1];
+    const durationDiff =
+      oldestRun.durationMs !== null && newestRun.durationMs !== null
+        ? newestRun.durationMs - oldestRun.durationMs
+        : null;
+
+    return {
+      runs,
+      new: newFindings,
+      resolved: resolvedFindings,
+      persistent: persistentFindings,
+      crossProject,
+      costDiff,
+      durationDiff,
+    };
+  } catch (err) {
+    console.error('[forja-store] compareRuns DB query failed:', err);
+    return empty;
+  }
+}
+
+function toComparedFinding(
+  fingerprint: string,
+  row: { severity: 'critical' | 'high' | 'medium' | 'low'; category: string; title: string; file_path: string | null; line: number | null },
+): ComparedFinding {
+  return {
+    fingerprint,
+    severity: row.severity,
+    category: row.category,
+    title: row.title,
+    filePath: row.file_path,
+    line: row.line,
+  };
+}

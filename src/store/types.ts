@@ -61,6 +61,7 @@ export interface Finding {
   suggestion: string | null;
   owasp: string | null;
   cwe: string | null;
+  fingerprint: string | null;
   createdAt: string;
   schemaVersion: string;
 }

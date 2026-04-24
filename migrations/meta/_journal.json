@@ -36,6 +36,34 @@
       "when": 1745280000000,
       "tag": "0004_schema_versioning",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1776973153000,
+      "tag": "0005_search_vector",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1776976358000,
+      "tag": "0006_filter_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1776978967000,
+      "tag": "0007_trend_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1745453200000,
+      "tag": "0008_fingerprint",
+      "breakpoints": true
     }
   ]
 }

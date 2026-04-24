@@ -85,6 +85,7 @@ export class DualWriter {
         suggestion: finding.suggestion ?? null,
         owasp: finding.owasp ?? null,
         cwe: finding.cwe ?? null,
+        fingerprint: finding.fingerprint ?? null,
         createdAt: toDbDate(finding.createdAt) as unknown as string,
       }),
     );
