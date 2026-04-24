@@ -71,7 +71,7 @@ export default async function RunDetailPage({ params, searchParams }: Props) {
       </div>
 
       <h2 className="text-base font-semibold text-forja-text-primary mb-4">Fases</h2>
-      <RunGantt phases={phases} />
+      <RunGantt phases={phases} runStart={run.startedAt} runEnd={run.finishedAt} />
 
       <div className="mt-8">
         <FindingsRunSection
