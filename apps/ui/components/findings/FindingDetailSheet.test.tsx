@@ -12,7 +12,7 @@
  *   node_modules/.bin/vitest run --pool=threads apps/ui/components/findings/FindingDetailSheet.test.tsx
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import * as React from 'react';
 
 // ---------------------------------------------------------------------------

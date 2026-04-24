@@ -826,3 +826,106 @@ export async function getFindingHistory(findingId: string): Promise<FindingHisto
     return [];
   }
 }
+
+// ─── Cost Breakdown & Heatmap ─────────────────────────────────────────────────
+
+export interface BreakdownRow {
+  project: string;
+  totalCost: number;
+  /** Always 0 — cost_events schema has no per-category cost columns. Reserved for future schema extension. */
+  inputCost: number;
+  /** Always 0 — cost_events schema has no per-category cost columns. Reserved for future schema extension. */
+  outputCost: number;
+  /** Always 0 — cost_events schema has no per-category cost columns. Reserved for future schema extension. */
+  cacheCost: number;
+  runCount: number;
+}
+
+export interface HeatmapCell {
+  dow: number;
+  hour: number;
+  avgCost: number;
+  count: number;
+}
+
+export interface CostBreakdownFilters {
+  from?: string;
+  to?: string;
+  limit?: number;
+}
+
+export async function getCostBreakdownByProject(
+  filters: CostBreakdownFilters = {},
+): Promise<BreakdownRow[]> {
+  const db = await getPool();
+  if (!db) return [];
+
+  const from = filters.from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const to = filters.to ?? new Date().toISOString();
+  const limit = filters.limit ?? 50;
+
+  try {
+    type Row = { project: string; total_cost: string; run_count: string };
+
+    const { rows } = await db.query<Row>(
+      `SELECT SPLIT_PART(r.issue_id, '-', 1) AS project,
+              SUM(c.cost_usd)::text AS total_cost,
+              COUNT(DISTINCT c.run_id)::text AS run_count
+       FROM cost_events c
+       JOIN runs r ON c.run_id = r.id
+       WHERE c.created_at BETWEEN $1 AND $2
+       GROUP BY project
+       ORDER BY SUM(c.cost_usd) DESC
+       LIMIT $3`,
+      [from, to, limit],
+    );
+
+    return rows.map((r) => ({
+      project: r.project,
+      totalCost: parseFloat(r.total_cost) || 0,
+      inputCost: 0,
+      outputCost: 0,
+      cacheCost: 0,
+      runCount: parseInt(r.run_count, 10) || 0,
+    }));
+  } catch (err) {
+    console.error('[forja-store] getCostBreakdownByProject failed:', err);
+    return [];
+  }
+}
+
+export async function getCostHeatmapByDowHour(
+  filters: CostBreakdownFilters = {},
+): Promise<HeatmapCell[]> {
+  const db = await getPool();
+  if (!db) return [];
+
+  const from = filters.from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const to = filters.to ?? new Date().toISOString();
+
+  try {
+    type Row = { dow: string; hour: string; avg_cost: string; count: string };
+
+    const { rows } = await db.query<Row>(
+      `SELECT EXTRACT(dow FROM c.created_at)::int::text AS dow,
+              EXTRACT(hour FROM c.created_at)::int::text AS hour,
+              AVG(c.cost_usd)::text AS avg_cost,
+              COUNT(*)::text AS count
+       FROM cost_events c
+       WHERE c.created_at BETWEEN $1 AND $2
+       GROUP BY dow, hour
+       ORDER BY dow, hour`,
+      [from, to],
+    );
+
+    return rows.map((r) => ({
+      dow: parseInt(r.dow, 10),
+      hour: parseInt(r.hour, 10),
+      avgCost: parseFloat(r.avg_cost) || 0,
+      count: parseInt(r.count, 10) || 0,
+    }));
+  } catch (err) {
+    console.error('[forja-store] getCostHeatmapByDowHour failed:', err);
+    return [];
+  }
+}
