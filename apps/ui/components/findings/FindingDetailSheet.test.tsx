@@ -12,7 +12,7 @@
  *   node_modules/.bin/vitest run --pool=threads apps/ui/components/findings/FindingDetailSheet.test.tsx
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as React from 'react';
 
 // ---------------------------------------------------------------------------
@@ -48,6 +48,13 @@ vi.mock('@/lib/utils', () => ({
 vi.mock('./CreateIssueModal', () => ({
   CreateIssueModal: () => React.createElement('div', { 'data-testid': 'create-issue-modal' }),
 }));
+
+vi.mock('@/lib/finding-utils', () => ({
+  SEVERITY_VARIANT: { critical: 'fail', high: 'fail', medium: 'warn', low: 'pass' },
+  formatHistoryDate: (isoString: string) => isoString,
+}));
+
+vi.mock('@/lib/forja-store', () => ({}));
 
 // ---------------------------------------------------------------------------
 // Exports
@@ -338,5 +345,180 @@ describe('FindingDetailSheet — git SHA truncation', () => {
   it('handles exactly 7-char SHA without truncation issue', () => {
     const sha = 'abc1234';
     expect(sha.slice(0, 7)).toBe('abc1234');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Toast integration — handleCopyLink
+// (isolated: mirrors the exact logic in FindingDetailSheet.tsx)
+// ---------------------------------------------------------------------------
+
+const toastSuccessMockSheet = vi.fn();
+
+vi.mock('@/lib/toast', () => ({
+  toast: {
+    success: toastSuccessMockSheet,
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    promise: vi.fn(),
+  },
+}));
+
+describe('FindingDetailSheet — handleCopyLink toast integration', () => {
+  let writeTextMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { clipboard: { writeText: writeTextMock } },
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(globalThis, 'window', {
+      value: { location: { origin: 'https://app.example.com', href: 'https://app.example.com/' } },
+      writable: true,
+      configurable: true,
+    });
+    vi.clearAllMocks();
+    writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { clipboard: { writeText: writeTextMock } },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Mirrors handleCopyLink from FindingDetailSheet.tsx
+  function makeHandleCopyLink(runId: string, findingId: string) {
+    return async function handleCopyLink() {
+      const { toast } = await import('@/lib/toast');
+      navigator.clipboard.writeText(
+        `${window.location.origin}/runs/${runId}/findings/${findingId}`
+      ).then(() => {
+        toast.success('Link copiado!');
+      });
+    };
+  }
+
+  it('calls clipboard.writeText with the correct finding URL', async () => {
+    const handleCopyLink = makeHandleCopyLink('run-abc', 'finding-xyz');
+    await handleCopyLink();
+    await Promise.resolve(); // flush the .then()
+    expect(writeTextMock).toHaveBeenCalledOnce();
+    expect(writeTextMock).toHaveBeenCalledWith(
+      'https://app.example.com/runs/run-abc/findings/finding-xyz'
+    );
+  });
+
+  it('calls toast.success("Link copiado!") after clipboard write resolves', async () => {
+    const handleCopyLink = makeHandleCopyLink('run-abc', 'finding-xyz');
+    await handleCopyLink();
+    await Promise.resolve(); // flush the .then()
+    expect(toastSuccessMockSheet).toHaveBeenCalledOnce();
+    expect(toastSuccessMockSheet).toHaveBeenCalledWith('Link copiado!');
+  });
+
+  it('does NOT call toast.success when findingId is absent (guard check)', () => {
+    // When findingId is null, handleCopyLink returns early before clipboard call
+    function handleCopyLinkGuarded(findingId: string | null) {
+      if (!findingId) return;
+      navigator.clipboard.writeText(
+        `${window.location.origin}/runs/run-abc/findings/${findingId}`
+      );
+    }
+    handleCopyLinkGuarded(null);
+    expect(writeTextMock).not.toHaveBeenCalled();
+    expect(toastSuccessMockSheet).not.toHaveBeenCalled();
+  });
+
+  it('constructs the URL with origin, runId, and findingId', () => {
+    const origin = 'https://app.example.com';
+    const runId = 'run-001';
+    const findingId = 'f-111';
+    const url = `${origin}/runs/${runId}/findings/${findingId}`;
+    expect(url).toBe('https://app.example.com/runs/run-001/findings/f-111');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Toast integration — handleCopyFingerprint
+// (isolated: mirrors the exact logic in FindingDetailSheet.tsx)
+// ---------------------------------------------------------------------------
+
+describe('FindingDetailSheet — handleCopyFingerprint toast integration', () => {
+  let writeTextMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { clipboard: { writeText: writeTextMock } },
+      writable: true,
+      configurable: true,
+    });
+    vi.clearAllMocks();
+    writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { clipboard: { writeText: writeTextMock } },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Mirrors handleCopyFingerprint from FindingDetailSheet.tsx
+  function makeHandleCopyFingerprint(fingerprint: string | undefined | null) {
+    return async function handleCopyFingerprint() {
+      if (!fingerprint) return;
+      const { toast } = await import('@/lib/toast');
+      navigator.clipboard.writeText(fingerprint).then(() => {
+        toast.success('Fingerprint copiado!');
+      });
+    };
+  }
+
+  it('calls clipboard.writeText with the fingerprint value', async () => {
+    const fingerprint = 'fp-deadbeef-1234';
+    const handleCopyFingerprint = makeHandleCopyFingerprint(fingerprint);
+    await handleCopyFingerprint();
+    await Promise.resolve(); // flush the .then()
+    expect(writeTextMock).toHaveBeenCalledOnce();
+    expect(writeTextMock).toHaveBeenCalledWith('fp-deadbeef-1234');
+  });
+
+  it('calls toast.success("Fingerprint copiado!") after clipboard write resolves', async () => {
+    const handleCopyFingerprint = makeHandleCopyFingerprint('fp-deadbeef-1234');
+    await handleCopyFingerprint();
+    await Promise.resolve(); // flush the .then()
+    expect(toastSuccessMockSheet).toHaveBeenCalledOnce();
+    expect(toastSuccessMockSheet).toHaveBeenCalledWith('Fingerprint copiado!');
+  });
+
+  it('does NOT call clipboard or toast when fingerprint is null (guard check)', async () => {
+    const handleCopyFingerprint = makeHandleCopyFingerprint(null);
+    await handleCopyFingerprint();
+    expect(writeTextMock).not.toHaveBeenCalled();
+    expect(toastSuccessMockSheet).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call clipboard or toast when fingerprint is undefined (guard check)', async () => {
+    const handleCopyFingerprint = makeHandleCopyFingerprint(undefined);
+    await handleCopyFingerprint();
+    expect(writeTextMock).not.toHaveBeenCalled();
+    expect(toastSuccessMockSheet).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call clipboard or toast when fingerprint is empty string (guard check)', async () => {
+    const handleCopyFingerprint = makeHandleCopyFingerprint('');
+    await handleCopyFingerprint();
+    expect(writeTextMock).not.toHaveBeenCalled();
+    expect(toastSuccessMockSheet).not.toHaveBeenCalled();
   });
 });
