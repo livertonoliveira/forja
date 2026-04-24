@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
+import { toast } from '@/lib/toast';
 
 interface CreateIssueModalProps {
   open: boolean;
@@ -15,10 +16,6 @@ interface CreateIssueModalProps {
 
 type Provider = 'linear' | 'jira' | 'gitlab';
 
-interface SuccessState {
-  issueUrl: string;
-}
-
 export function CreateIssueModal({
   open,
   onOpenChange,
@@ -30,15 +27,6 @@ export function CreateIssueModal({
   const [description, setDescription] = useState(defaultDescription);
   const [provider, setProvider] = useState<Provider>('linear');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<SuccessState | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    };
-  }, []);
 
   function isSafeUrl(url: string): boolean {
     try {
@@ -51,7 +39,6 @@ export function CreateIssueModal({
 
   async function handleCreate() {
     setLoading(true);
-    setErrorMsg(null);
 
     try {
       const res = await fetch('/api/issues/create', {
@@ -66,9 +53,15 @@ export function CreateIssueModal({
       }
 
       const data = (await res.json()) as { url?: string; issueUrl?: string };
-      setSuccess({ issueUrl: data.url ?? data.issueUrl ?? '' });
+      const issueUrl = data.url ?? data.issueUrl ?? '';
+      toast.success('Issue criado com sucesso', {
+        action: isSafeUrl(issueUrl)
+          ? { label: 'Ver', onClick: () => window.open(issueUrl, '_blank') }
+          : undefined,
+      });
+      onOpenChange(false);
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Erro desconhecido');
+      toast.error(err instanceof Error ? err.message : 'Erro desconhecido');
     } finally {
       setLoading(false);
     }
@@ -76,11 +69,6 @@ export function CreateIssueModal({
 
   function handleClose() {
     onOpenChange(false);
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = setTimeout(() => {
-      setSuccess(null);
-      setErrorMsg(null);
-    }, 200);
   }
 
   const inputClass = cn(
@@ -108,31 +96,7 @@ export function CreateIssueModal({
             Criar Issue
           </DialogPrimitive.Title>
 
-          {success ? (
-            <div className="space-y-4">
-              <p className="text-sm text-forja-text-primary">Issue criada com sucesso.</p>
-              {success.issueUrl && isSafeUrl(success.issueUrl) && (
-                <a
-                  href={success.issueUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-sm text-forja-text-gold hover:underline break-all"
-                >
-                  {success.issueUrl}
-                </a>
-              )}
-              {success.issueUrl && !isSafeUrl(success.issueUrl) && (
-                <p className="text-sm font-mono text-forja-text-secondary break-all">{success.issueUrl}</p>
-              )}
-              <button
-                onClick={handleClose}
-                className="mt-2 w-full rounded-md border border-forja-border-subtle bg-transparent text-forja-text-secondary text-sm h-9 px-4 hover:border-forja-border-gold hover:text-forja-text-gold transition-colors"
-              >
-                Fechar
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
+          <div className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs text-forja-text-muted" htmlFor="issue-title">
                   Título
@@ -175,10 +139,6 @@ export function CreateIssueModal({
                 </select>
               </div>
 
-              {errorMsg && (
-                <p className="text-sm text-red-400">{errorMsg}</p>
-              )}
-
               <div className="flex items-center gap-3 pt-1">
                 <button
                   onClick={handleCreate}
@@ -196,7 +156,6 @@ export function CreateIssueModal({
                 </button>
               </div>
             </div>
-          )}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

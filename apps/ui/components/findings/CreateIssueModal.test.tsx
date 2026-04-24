@@ -32,6 +32,16 @@ vi.mock('@/lib/utils', () => ({
   cn: (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' '),
 }));
 
+vi.mock('@/lib/toast', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    promise: vi.fn(),
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
@@ -243,5 +253,179 @@ describe('CreateIssueModal — button disabled during loading', () => {
     const loading = false;
     const label = loading ? 'Criando…' : 'Criar';
     expect(label).toBe('Criar');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Integration — toast.success / toast.error via handleCreate logic
+//
+// Strategy: replicate handleCreate exactly as it appears in the component and
+// inject mocked dependencies (fetch + toast) so we can assert on side-effects
+// without a DOM or React renderer.
+// ---------------------------------------------------------------------------
+
+import { toast } from '@/lib/toast';
+
+/** Mirrors the isSafeUrl helper in the component. */
+function isSafeUrl(url: string): boolean {
+  try {
+    const { protocol } = new URL(url);
+    return protocol === 'https:' || protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+/** Mirrors handleCreate from the component with injected dependencies. */
+async function handleCreate(opts: {
+  provider: string;
+  title: string;
+  description: string;
+  findingId: string;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { provider, title, description, findingId, onOpenChange } = opts;
+  try {
+    const res = await fetch('/api/issues/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, title, description, findingId }),
+    });
+
+    if (!res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(data.error ?? `Erro ${res.status}`);
+    }
+
+    const data = (await res.json()) as { url?: string; issueUrl?: string };
+    const issueUrl = data.url ?? data.issueUrl ?? '';
+    toast.success('Issue criado com sucesso', {
+      action: isSafeUrl(issueUrl)
+        ? { label: 'Ver', onClick: () => window.open(issueUrl, '_blank') }
+        : undefined,
+    });
+    onOpenChange(false);
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : 'Erro desconhecido');
+  }
+}
+
+describe('CreateIssueModal — toast integration (handleCreate)', () => {
+  const baseOpts = {
+    provider: 'linear' as const,
+    title: '[HIGH] SQL Injection',
+    description: '**Finding:** SQL Injection',
+    findingId: '11111111-1111-1111-1111-111111111111',
+  };
+
+  beforeEach(() => {
+    vi.mocked(toast.success).mockClear();
+    vi.mocked(toast.error).mockClear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('calls toast.success with "Issue criado com sucesso" when fetch succeeds', async () => {
+    const onOpenChange = vi.fn();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ url: 'https://linear.app/issue/MOB-1234' }),
+    } as unknown as Response);
+
+    await handleCreate({ ...baseOpts, onOpenChange });
+
+    expect(toast.success).toHaveBeenCalledOnce();
+    expect(vi.mocked(toast.success).mock.calls[0][0]).toBe('Issue criado com sucesso');
+  });
+
+  it('calls toast.success with an action button labeled "Ver" when fetch succeeds with a url', async () => {
+    const onOpenChange = vi.fn();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ url: 'https://linear.app/issue/MOB-1234' }),
+    } as unknown as Response);
+
+    await handleCreate({ ...baseOpts, onOpenChange });
+
+    const opts = vi.mocked(toast.success).mock.calls[0][1];
+    expect(opts?.action?.label).toBe('Ver');
+  });
+
+  it('calls onOpenChange(false) after a successful fetch', async () => {
+    const onOpenChange = vi.fn();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ url: 'https://linear.app/issue/MOB-1234' }),
+    } as unknown as Response);
+
+    await handleCreate({ ...baseOpts, onOpenChange });
+
+    expect(onOpenChange).toHaveBeenCalledOnce();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('calls toast.error with the server error message when fetch returns non-ok', async () => {
+    const onOpenChange = vi.fn();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({ error: 'findingId not found' }),
+    } as unknown as Response);
+
+    await handleCreate({ ...baseOpts, onOpenChange });
+
+    expect(toast.error).toHaveBeenCalledOnce();
+    expect(vi.mocked(toast.error).mock.calls[0][0]).toBe('findingId not found');
+  });
+
+  it('does NOT call onOpenChange when fetch returns non-ok (modal stays open)', async () => {
+    const onOpenChange = vi.fn();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'Internal Server Error' }),
+    } as unknown as Response);
+
+    await handleCreate({ ...baseOpts, onOpenChange });
+
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('calls toast.error with fallback status message when non-ok response has no error field', async () => {
+    const onOpenChange = vi.fn();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: async () => ({}),
+    } as unknown as Response);
+
+    await handleCreate({ ...baseOpts, onOpenChange });
+
+    expect(toast.error).toHaveBeenCalledWith('Erro 503');
+  });
+
+  it('calls toast.error with "Erro desconhecido" when fetch rejects', async () => {
+    const onOpenChange = vi.fn();
+    global.fetch = vi.fn().mockRejectedValue('network failure');
+
+    await handleCreate({ ...baseOpts, onOpenChange });
+
+    expect(toast.error).toHaveBeenCalledWith('Erro desconhecido');
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call toast.success when fetch fails', async () => {
+    const onOpenChange = vi.fn();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'bad request' }),
+    } as unknown as Response);
+
+    await handleCreate({ ...baseOpts, onOpenChange });
+
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { toast } from '@/lib/toast';
 import {
   Sheet,
   SheetContent,
@@ -69,8 +70,6 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
   const [history, setHistory] = useState<FindingHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedFingerprint, setCopiedFingerprint] = useState(false);
   const [createIssueOpen, setCreateIssueOpen] = useState(false);
   const cacheRef = useRef<Map<string, { finding: FindingDetail | null; history: FindingHistoryEntry[] }>>(new Map());
 
@@ -108,16 +107,14 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
     navigator.clipboard.writeText(
       `${window.location.origin}/runs/${runId}/findings/${findingId}`
     ).then(() => {
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
+      toast.success('Link copiado!');
     });
   }
 
   function handleCopyFingerprint() {
     if (!finding?.fingerprint) return;
     navigator.clipboard.writeText(finding.fingerprint).then(() => {
-      setCopiedFingerprint(true);
-      setTimeout(() => setCopiedFingerprint(false), 2000);
+      toast.success('Fingerprint copiado!');
     });
   }
 
@@ -153,7 +150,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                   onClick={handleCopyLink}
                   className="text-xs text-forja-text-secondary hover:text-forja-text-gold border border-forja-border-subtle hover:border-forja-border-gold rounded px-2 py-1 transition-colors"
                 >
-                  <span aria-live="polite">{copiedLink ? 'Copiado!' : 'Copiar link'}</span>
+                  Copiar link
                 </button>
                 <SheetClose className="text-forja-text-muted hover:text-forja-text-primary transition-colors">
                   <span className="sr-only">Fechar</span>
@@ -204,7 +201,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                         onClick={handleCopyFingerprint}
                         className="block w-full text-left font-mono text-xs text-forja-text-secondary bg-forja-bg-surface border border-forja-border-subtle rounded px-3 py-2 hover:border-forja-border-gold hover:text-forja-text-gold transition-colors truncate"
                       >
-                        <span aria-live="polite">{copiedFingerprint ? 'Copiado!' : finding.fingerprint}</span>
+                        {finding.fingerprint}
                       </button>
                     </div>
                   )}
