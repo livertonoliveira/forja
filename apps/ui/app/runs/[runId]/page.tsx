@@ -4,14 +4,17 @@ import { listRunIds, readRunEvents, buildRunFromEvents, buildPhasesFromEvents } 
 import { statusColors, gateTextColors } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
 import RunGantt from '@/components/RunGantt';
+import { parseFindings } from '@/lib/findings-parser';
+import { FindingsRunSection } from '@/components/findings/FindingsRunSection';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: { runId: string };
+  searchParams: { findingId?: string };
 }
 
-export default async function RunDetailPage({ params }: Props) {
+export default async function RunDetailPage({ params, searchParams }: Props) {
   const { runId } = params;
   const allIds = await listRunIds();
   if (!allIds.includes(runId)) notFound();
@@ -19,6 +22,8 @@ export default async function RunDetailPage({ params }: Props) {
   const events = await readRunEvents(runId);
   const run = buildRunFromEvents(runId, events);
   const phases = buildPhasesFromEvents(events);
+  const findings = parseFindings(runId, events);
+  const initialFindingId = searchParams.findingId;
 
   return (
     <div>
@@ -67,6 +72,14 @@ export default async function RunDetailPage({ params }: Props) {
 
       <h2 className="text-base font-semibold text-forja-text-primary mb-4">Fases</h2>
       <RunGantt phases={phases} />
+
+      <div className="mt-8">
+        <FindingsRunSection
+          findings={findings}
+          runId={runId}
+          initialFindingId={initialFindingId}
+        />
+      </div>
     </div>
   );
 }
