@@ -690,3 +690,139 @@ function toComparedFinding(
     line: row.line,
   };
 }
+
+// ─── Finding Detail & History ─────────────────────────────────────────────────
+
+export interface FindingDetail {
+  id: string;
+  fingerprint: string | null;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  category: string;
+  title: string;
+  message: string;
+  filePath: string | null;
+  line: number | null;
+  runId: string;
+  run: {
+    issueId: string;
+    gitBranch: string | null;
+    gitSha: string | null;
+    createdAt: string;
+  };
+}
+
+export interface FindingHistoryEntry {
+  runId: string;
+  issueId: string;
+  createdAt: string;
+  gateDecision: GateDecision | null;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+}
+
+export async function getFinding(findingId: string): Promise<FindingDetail | null> {
+  const db = await getPool();
+  if (!db) return null;
+
+  try {
+    const { rows } = await db.query<{
+      id: string;
+      fingerprint: string | null;
+      severity: 'critical' | 'high' | 'medium' | 'low';
+      category: string;
+      title: string;
+      description: string;
+      file_path: string | null;
+      line: number | null;
+      run_id: string;
+      issue_id: string;
+      git_branch: string | null;
+      git_sha: string | null;
+      started_at: string;
+    }>(
+      `SELECT f.id, f.fingerprint, f.severity, f.category, f.title, f.description,
+              f.file_path, f.line, f.run_id,
+              r.issue_id, r.git_branch, r.git_sha, r.started_at
+       FROM findings f
+       JOIN runs r ON r.id = f.run_id
+       WHERE f.id = $1`,
+      [findingId],
+    );
+
+    if (rows.length === 0) return null;
+    const r = rows[0];
+    return {
+      id: r.id,
+      fingerprint: r.fingerprint,
+      severity: r.severity,
+      category: r.category,
+      title: r.title,
+      message: r.description,
+      filePath: r.file_path,
+      line: r.line,
+      runId: r.run_id,
+      run: {
+        issueId: r.issue_id,
+        gitBranch: r.git_branch,
+        gitSha: r.git_sha,
+        createdAt: r.started_at,
+      },
+    };
+  } catch (err) {
+    console.error('[forja-store] getFinding DB query failed:', err);
+    return null;
+  }
+}
+
+export async function getFindingHistory(findingId: string): Promise<FindingHistoryEntry[]> {
+  const db = await getPool();
+  if (!db) return [];
+
+  try {
+    const { rows: base } = await db.query<{
+      fingerprint: string | null;
+      started_at: string;
+    }>(
+      `SELECT f.fingerprint, r.started_at
+       FROM findings f
+       JOIN runs r ON r.id = f.run_id
+       WHERE f.id = $1`,
+      [findingId],
+    );
+
+    if (base.length === 0 || !base[0].fingerprint) return [];
+
+    const { fingerprint, started_at } = base[0];
+
+    const { rows } = await db.query<{
+      run_id: string;
+      issue_id: string;
+      started_at: string;
+      gate_decision: GateDecision | null;
+      severity: 'critical' | 'high' | 'medium' | 'low';
+    }>(
+      `SELECT f.run_id, r.issue_id, r.started_at, g.decision AS gate_decision, f.severity
+       FROM findings f
+       JOIN runs r ON r.id = f.run_id
+       LEFT JOIN LATERAL (
+         SELECT decision FROM gate_decisions WHERE run_id = r.id ORDER BY decided_at DESC LIMIT 1
+       ) g ON true
+       WHERE f.fingerprint = $1
+         -- excludes the anchor run's started_at
+         AND r.started_at < $2
+       ORDER BY r.started_at DESC
+       LIMIT 20`,
+      [fingerprint, started_at],
+    );
+
+    return rows.map((row) => ({
+      runId: row.run_id,
+      issueId: row.issue_id,
+      createdAt: row.started_at,
+      gateDecision: row.gate_decision,
+      severity: row.severity,
+    }));
+  } catch (err) {
+    console.error('[forja-store] getFindingHistory DB query failed:', err);
+    return [];
+  }
+}
