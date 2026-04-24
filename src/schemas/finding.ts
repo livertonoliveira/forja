@@ -16,6 +16,7 @@ export const FindingSchema = z.object({
   suggestion: z.string().optional(),
   owasp: z.string().optional(),
   cwe: z.string().optional(),
+  fingerprint: z.string().optional(),
   createdAt: z.string().datetime(),
 });
 
