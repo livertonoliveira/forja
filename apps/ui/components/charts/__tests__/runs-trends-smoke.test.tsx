@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck — complex React hook mocking pattern; runtime verified by vitest
 /**
  * Unit smoke tests — Tendências section components (MOB-1068)
