@@ -145,6 +145,7 @@ export class HookRunner {
         suggestion: null,
         owasp: null,
         cwe: null,
+        fingerprint: null,
         createdAt,
       });
     }
