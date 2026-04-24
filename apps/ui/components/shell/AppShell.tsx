@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { CommandPalette } from './CommandPalette';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
+import { Toaster } from 'sonner';
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { open, openPalette, closePalette } = useCommandPalette();
@@ -25,6 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <CommandPalette open={open} onClose={closePalette} />
+      <Toaster position="top-right" closeButton duration={4000} />
     </>
   );
 }
