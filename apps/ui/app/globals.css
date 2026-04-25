@@ -64,3 +64,16 @@
 [data-sonner-toast] [data-button]:hover {
   opacity: 0.85;
 }
+
+/* ── Reduced motion ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .animate-shimmer {
+    animation: none !important;
+    background-image: none !important;
+  }
+}
