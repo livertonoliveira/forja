@@ -18,3 +18,4 @@ import './commands/schedule.js';
 import './commands/setup.js';
 import './commands/trace.js';
 import './commands/ui.js';
+import './commands/completion.js';
