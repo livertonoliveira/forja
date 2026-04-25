@@ -62,16 +62,17 @@ export function RunsTableWithSelection({ runs }: { runs: RunSummary[] }) {
             </tr>
           </thead>
           <tbody>
-            {runs.map((run) => {
+            {runs.map((run, index) => {
               const gd = run.gate ? gateDisplay[run.gate] : null;
               const isSelected = selected.has(run.id);
               const isDisabled = !isSelected && selected.size >= MAX_SELECTION;
               return (
                 <tr
                   key={run.id}
-                  className={`border-b border-forja-border-subtle transition-colors ${
+                  className={`border-b border-forja-border-subtle transition-colors animate-fade-in-up ${
                     isSelected ? 'bg-forja-bg-overlay' : 'hover:bg-forja-bg-surface'
                   }`}
+                  style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
                 >
                   <td className="py-3 pr-4">
                     <input
