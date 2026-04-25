@@ -16,6 +16,7 @@ import { pluginsCommand } from './commands/plugins.js';
 import { policiesCommand } from './commands/policies.js';
 import { migrateCommand } from './commands/migrate.js';
 import { helpCommand } from './commands/help.js';
+import { completionCommand } from './commands/completion.js';
 import { commandRegistry } from './help/command-registry.js';
 import { formatCommandHelp } from './format.js';
 
@@ -51,6 +52,7 @@ program
   .addCommand(pluginsCommand)
   .addCommand(policiesCommand)
   .addCommand(migrateCommand)
-  .addCommand(helpCommand);
+  .addCommand(helpCommand)
+  .addCommand(completionCommand);
 
 program.parse();
