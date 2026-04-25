@@ -30,6 +30,9 @@ storybook-static/
 # Forja local config (may contain sensitive credentials)
 forja/.forja-config.json
 
+# Forja alerts store (contains Slack webhook URLs — never commit)
+forja/alerts.json
+
 # Forja pipeline quality findings (generated artifacts, not source)
 forja/changes/**/*-findings.md
 forja/*-findings-*.md
