@@ -2,13 +2,15 @@ import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
 import { Command } from 'commander';
 import { createStoreFromConfig } from '../../store/factory.js';
+import { loadConfig } from '../../config/loader.js';
 import { PipelineFSM, InvalidTransitionError, type PipelineState } from '../../engine/fsm.js';
 import { CheckpointManager } from '../../engine/checkpoint.js';
 import { PhaseIdempotencyGuard, cleanPhaseData } from '../../engine/idempotency.js';
 import { DualWriter } from '../../trace/dual-writer.js';
 import { TraceWriter } from '../../trace/writer.js';
 import { setPhaseTimeout } from '../../engine/timeout.js';
-import { PhaseTimeoutsSchema } from '../../schemas/config.js';
+import { PhaseTimeoutsSchema, SUPPORTED_ARTIFACT_LANGUAGES, type ArtifactLanguage } from '../../schemas/config.js';
+import { buildLanguageInstruction } from '../../config/i18n.js';
 import { loadModelsPolicy, getModelForPhase, type ModelsPolicy } from '../../policy/models-policy.js';
 import { isProjectCapped, evaluate } from '../../cost/alerts-evaluator.js';
 
@@ -67,6 +69,16 @@ export const runCommand = new Command('run')
     } catch {
       console.warn('[forja] could not load models policy — FORJA_MODEL will not be set per phase');
     }
+
+    const loadedConfig = await loadConfig();
+    const rawArtifactLanguage = loadedConfig.artifactLanguage ?? 'en';
+    const isValidLang = (SUPPORTED_ARTIFACT_LANGUAGES as readonly string[]).includes(rawArtifactLanguage);
+    if (!isValidLang) {
+      console.warn(`[forja] Unsupported artifact_language "${rawArtifactLanguage}". Supported: ${SUPPORTED_ARTIFACT_LANGUAGES.join(', ')}. Falling back to "en".`);
+    }
+    const artifactLanguage: ArtifactLanguage = isValidLang ? (rawArtifactLanguage as ArtifactLanguage) : 'en';
+    process.env.FORJA_ARTIFACT_LANGUAGE = artifactLanguage;
+    process.env.FORJA_LANGUAGE_INSTRUCTION = buildLanguageInstruction(artifactLanguage);
 
     const store = await createStoreFromConfig();
 
