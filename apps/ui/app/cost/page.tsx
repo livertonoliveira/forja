@@ -1,4 +1,5 @@
 import { listRunIds, readRunEventsAll } from '@/lib/jsonl-reader';
+import { EmptyState } from '@/components/shell/EmptyState';
 
 export const dynamic = 'force-dynamic';
 
@@ -100,12 +101,15 @@ export default async function CostPage() {
 
   return (
     <div className="space-y-10">
-      <div>
+      <div className="animate-fade-in-up" style={{ animationFillMode: 'both' }}>
         <h1 className="text-xl font-semibold text-forja-text-primary mb-2">Custo</h1>
         <p className="text-forja-text-secondary text-sm">Custo acumulado em todas as execuções Forja</p>
       </div>
 
-      <div className="bg-forja-bg-surface border border-forja-border-default rounded-lg px-6 py-5 inline-block">
+      <div
+        className="bg-forja-bg-surface border border-forja-border-default rounded-lg px-6 py-5 inline-block animate-fade-in-up"
+        style={{ animationDelay: '50ms', animationFillMode: 'both' }}
+      >
         <p className="text-forja-text-muted text-xs uppercase tracking-wide mb-1">Custo Total Acumulado</p>
         <p className="text-3xl font-mono font-semibold text-green-600">
           ${totalRaw.toFixed(4)}
@@ -113,10 +117,10 @@ export default async function CostPage() {
         <p className="text-forja-text-muted text-xs mt-1">{runRows.length} execuç{runRows.length !== 1 ? 'ões' : 'ão'} rastreada{runRows.length !== 1 ? 's' : ''}</p>
       </div>
 
-      <div>
+      <div className="animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
         <h2 className="text-base font-medium text-forja-text-primary mb-4">Top 10 Execuções Mais Caras</h2>
         {topRuns.length === 0 ? (
-          <p className="text-forja-text-secondary text-sm">Nenhuma execução encontrada.</p>
+          <EmptyState title="Nenhuma execução" description="Execute um pipeline para ver o ranking de custo." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -130,8 +134,12 @@ export default async function CostPage() {
                 </tr>
               </thead>
               <tbody>
-                {topRuns.map((run) => (
-                  <tr key={run.id} className="border-b border-forja-border-subtle hover:bg-forja-bg-surface transition-colors">
+                {topRuns.map((run, index) => (
+                  <tr
+                    key={run.id}
+                    className="border-b border-forja-border-subtle hover:bg-forja-bg-surface transition-colors animate-fade-in-up"
+                    style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+                  >
                     <td className="py-3 pr-6 font-mono text-forja-text-muted text-xs">
                       {run.id.slice(0, 8)}&hellip;
                     </td>
@@ -149,19 +157,19 @@ export default async function CostPage() {
         )}
       </div>
 
-      <div>
+      <div className="animate-fade-in-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
         <h2 className="text-base font-medium text-forja-text-primary mb-4">Custo por Modelo</h2>
         {modelEntries.length === 0 ? (
-          <p className="text-forja-text-secondary text-sm">Sem dados de custo por modelo.</p>
+          <EmptyState title="Sem dados de modelo" description="Nenhum custo por modelo registrado ainda." />
         ) : (
           <BarChart entries={modelEntries} max={maxModel} />
         )}
       </div>
 
-      <div>
+      <div className="animate-fade-in-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
         <h2 className="text-base font-medium text-forja-text-primary mb-4">Custo por Fase</h2>
         {phaseEntries.length === 0 ? (
-          <p className="text-forja-text-secondary text-sm">Sem dados de custo por fase.</p>
+          <EmptyState title="Sem dados de fase" description="Nenhum custo por fase registrado ainda." />
         ) : (
           <BarChart entries={phaseEntries} max={maxPhase} />
         )}

@@ -35,11 +35,16 @@ const config: Config = {
       },
       animation: {
         shimmer: 'shimmer 2s linear infinite',
+        'fade-in-up': 'fade-in-up 300ms ease-out',
       },
       keyframes: {
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
+        },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(4px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },
       fontFamily: {

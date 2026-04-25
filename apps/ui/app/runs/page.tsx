@@ -3,6 +3,8 @@ import { listRuns, type RunFilters } from '@/lib/forja-store';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RunsTableWithSelection } from '@/components/runs/RunsTableWithSelection';
+import { EmptyRuns, EmptyFilters, EmptySearch } from '@/components/shell/EmptyState';
+import { StaggeredReveal } from '@/components/shell/StaggeredReveal';
 
 const TrendChart = lazyLoad(() => import('@/components/charts/TrendChart').then(m => m.TrendChart), {
   ssr: false,
@@ -55,6 +57,7 @@ export default async function RunsPage({ searchParams }: RunsPageProps) {
   }
 
   const runs = await listRuns(filters);
+  const hasFilters = Boolean(filters.q || filters.from || filters.to || filters.gate?.length);
 
   return (
     <div>
@@ -63,25 +66,30 @@ export default async function RunsPage({ searchParams }: RunsPageProps) {
       <section className="mb-8">
         <h2 className="text-sm font-semibold text-forja-text-secondary uppercase tracking-wider mb-4">Tendências</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
-            <TrendChart
-              metric="findings"
-              lines={FINDINGS_LINES}
-              title="Findings por Severidade"
-            />
-          </div>
-          <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
-            <GateFunnelChart title="Taxa de Gate" />
-          </div>
+          <StaggeredReveal>
+            <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
+              <TrendChart
+                metric="findings"
+                lines={FINDINGS_LINES}
+                title="Findings por Severidade"
+              />
+            </div>
+            <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
+              <GateFunnelChart title="Taxa de Gate" />
+            </div>
+          </StaggeredReveal>
         </div>
       </section>
 
       <FilterBar />
       {runs.length === 0 ? (
-        <p className="text-forja-text-secondary text-sm">
-          Nenhuma execução encontrada. Inicie um pipeline com{' '}
-          <code className="text-forja-text-primary font-mono">forja run</code>.
-        </p>
+        filters.q ? (
+          <EmptySearch query={String(filters.q)} />
+        ) : hasFilters ? (
+          <EmptyFilters clearHref="/runs" />
+        ) : (
+          <EmptyRuns />
+        )
       ) : (
         <RunsTableWithSelection runs={runs} />
       )}

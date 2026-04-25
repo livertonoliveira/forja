@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { statusColors, gateDisplay } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
 import type { Run } from '@/lib/types';
+import { EmptyDLQ } from '@/components/shell/EmptyState';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,9 +31,7 @@ export default async function DLQPage() {
       </div>
 
       {runs.length === 0 ? (
-        <p className="text-forja-text-secondary text-sm">
-          Nenhuma execução com falha. Todos os pipelines estão saudáveis.
-        </p>
+        <EmptyDLQ />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
