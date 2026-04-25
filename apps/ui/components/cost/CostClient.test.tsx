@@ -327,7 +327,6 @@ describe('CostClient — total cost card', () => {
 
   it('contains the $ symbol before the total cost', () => {
     const el = renderClient();
-    const texts = collectTexts(el);
     // Find the p element containing the total — its children include '$' and the number
     const totalP = findElement(el, (e) => {
       if (e.type !== 'p') return false;
