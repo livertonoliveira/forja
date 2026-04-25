@@ -18,6 +18,7 @@ import { policiesCommand } from './commands/policies.js';
 import { migrateCommand } from './commands/migrate.js';
 import { helpCommand } from './commands/help.js';
 import { completionCommand } from './commands/completion.js';
+import { doctorCommand } from './commands/doctor.js';
 import { commandRegistry } from './help/command-registry.js';
 import { formatCommandHelp } from './format.js';
 
@@ -54,7 +55,8 @@ program
   .addCommand(policiesCommand)
   .addCommand(migrateCommand)
   .addCommand(helpCommand)
-  .addCommand(completionCommand);
+  .addCommand(completionCommand)
+  .addCommand(doctorCommand);
 
 program.option('-n, --dry-run', 'Simula execução sem efeitos colaterais');
 program.hook('preAction', (thisCommand) => {
