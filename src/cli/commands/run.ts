@@ -10,6 +10,7 @@ import { TraceWriter } from '../../trace/writer.js';
 import { setPhaseTimeout } from '../../engine/timeout.js';
 import { PhaseTimeoutsSchema } from '../../schemas/config.js';
 import { loadModelsPolicy, getModelForPhase, type ModelsPolicy } from '../../policy/models-policy.js';
+import { isProjectCapped, evaluate } from '../../cost/alerts-evaluator.js';
 
 const MODELS_POLICY_PATH = join(dirname(fileURLToPath(import.meta.url)), '../../../policies/models.yaml');
 
@@ -50,6 +51,13 @@ export const runCommand = new Command('run')
     // Resolve effective timeouts (defaults from schema, overridden by CLI flag)
     const defaultTimeouts = PhaseTimeoutsSchema.parse({});
     const effectiveTimeouts: Record<string, number> = { ...defaultTimeouts, ...timeoutOverrides };
+
+    const projectPrefix = issueId.replace(/-\d+$/, '');
+    const capCheck = await isProjectCapped(projectPrefix).catch(() => ({ capped: false, currentCost: 0, limit: 0 }));
+    if (capCheck.capped) {
+      console.error(`[forja] Budget cap reached for project ${projectPrefix}. Current cost: $${capCheck.currentCost.toFixed(4)}, limit: $${capCheck.limit}`);
+      process.exit(2);
+    }
 
     console.log(`[forja] starting run for issue ${issueId}`);
 
@@ -125,6 +133,12 @@ export const runCommand = new Command('run')
         }
 
         if (options.dryRun) break;
+      }
+
+      try {
+        await evaluate();
+      } catch (err) {
+        console.warn('[forja] alerts evaluator failed:', err instanceof Error ? err.message : String(err));
       }
     } catch (err) {
       if (err instanceof InvalidTransitionError) {
