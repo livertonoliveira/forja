@@ -1,4 +1,4 @@
-import { Command } from 'commander';
+import { Command, Help } from 'commander';
 import { runCommand } from './commands/run.js';
 import { gateCommand } from './commands/gate.js';
 import { traceCommand } from './commands/trace.js';
@@ -15,10 +15,21 @@ import { setupCommand } from './commands/setup.js';
 import { pluginsCommand } from './commands/plugins.js';
 import { policiesCommand } from './commands/policies.js';
 import { migrateCommand } from './commands/migrate.js';
+import { helpCommand } from './commands/help.js';
+import { commandRegistry } from './help/command-registry.js';
+import { formatCommandHelp } from './format.js';
 
 declare const __FORJA_VERSION__: string;
 
 const program = new Command();
+
+program.configureHelp({
+  formatHelp(cmd: Command, helper: Help): string {
+    const entry = commandRegistry.get(cmd.name());
+    if (entry) return formatCommandHelp(entry);
+    return Help.prototype.formatHelp.call(helper, cmd, helper);
+  },
+});
 
 program
   .name('forja')
@@ -39,6 +50,7 @@ program
   .addCommand(setupCommand)
   .addCommand(pluginsCommand)
   .addCommand(policiesCommand)
-  .addCommand(migrateCommand);
+  .addCommand(migrateCommand)
+  .addCommand(helpCommand);
 
 program.parse();
