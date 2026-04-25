@@ -39,3 +39,4 @@ forja/*-findings-*.md
 
 # Forja temporary findings and pipeline artifacts
 forja/tmp/
+forja/.tmp/

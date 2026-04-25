@@ -1,4 +1,5 @@
 import { Command, Help } from 'commander';
+import { DryRunInterceptor } from './middleware/dry-run.js';
 import { runCommand } from './commands/run.js';
 import { gateCommand } from './commands/gate.js';
 import { traceCommand } from './commands/trace.js';
@@ -54,5 +55,13 @@ program
   .addCommand(migrateCommand)
   .addCommand(helpCommand)
   .addCommand(completionCommand);
+
+program.option('-n, --dry-run', 'Simula execução sem efeitos colaterais');
+program.hook('preAction', (thisCommand) => {
+  if (thisCommand.opts().dryRun) DryRunInterceptor.enable();
+});
+program.hook('postAction', () => {
+  DryRunInterceptor.reset();
+});
 
 program.parse();

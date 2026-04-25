@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { CostEventSchema, CostEvent } from '../schemas/index.js';
+import { DryRunInterceptor, DRY_RUN_ACTIONS } from '../cli/middleware/dry-run.js';
 import { TraceWriter } from '../trace/writer.js';
 import { readActiveRun } from '../trace/active-run.js';
 import { DualWriter } from '../trace/dual-writer.js';
@@ -114,17 +115,19 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
   const store = await getStore();
   const dualWriter = store ? new DualWriter(writer, store, runId) : null;
 
-  await Promise.allSettled([
-    dualWriter
-      ? dualWriter.writeCostEvent(event)
-      : writer.write({
-          runId,
-          eventType: 'cost',
-          phaseId,
-          agentId,
-          spanId,
-          payload: { costEventId: event.id, phase, model, tokensIn, tokensOut, costUsd },
-        }),
-    accumulator.record(event),
-  ]);
+  await DryRunInterceptor.intercept(DRY_RUN_ACTIONS.COST_WRITE_EVENT, async () => {
+    await Promise.allSettled([
+      dualWriter
+        ? dualWriter.writeCostEvent(event)
+        : writer.write({
+            runId,
+            eventType: 'cost',
+            phaseId,
+            agentId,
+            spanId,
+            payload: { costEventId: event.id, phase, model, tokensIn, tokensOut, costUsd },
+          }),
+      accumulator.record(event),
+    ]);
+  });
 }
