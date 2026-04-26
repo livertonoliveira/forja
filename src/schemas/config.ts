@@ -44,6 +44,14 @@ export const DatadogConfigSchema = z.object({
 
 export type DatadogConfig = z.infer<typeof DatadogConfigSchema>
 
+export const OTelConfigSchema = z.object({
+  enabled: z.boolean().default(false),
+  endpoint: z.string().default('http://localhost:4317'),
+  protocol: z.enum(['grpc', 'http']).default('grpc'),
+})
+
+export type OTelConfig = z.infer<typeof OTelConfigSchema>
+
 export type JiraConfig = z.infer<typeof JiraConfigSchema>
 export type GitLabConfig = z.infer<typeof GitLabConfigSchema>
 export type AzureDevOpsConfig = z.infer<typeof AzureDevOpsConfigSchema>
@@ -71,6 +79,7 @@ export const ConfigSchema = z.object({
   azure: AzureDevOpsConfigSchema.optional(),
   bitbucket: BitbucketConfigSchema.optional(),
   datadog: DatadogConfigSchema.optional(),
+  otel: OTelConfigSchema.optional(),
   timeouts: PhaseTimeoutsSchema.default({}),
   pluginHookTimeoutMs: z.number().int().positive().default(5000),
   artifact_language: z.enum(SUPPORTED_ARTIFACT_LANGUAGES).default('en'),
