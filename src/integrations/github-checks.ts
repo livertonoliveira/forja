@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { loadConfig } from '../config/loader.js';
 import { DryRunInterceptor, DRY_RUN_ACTIONS } from '../cli/middleware/dry-run.js';
+import { withRetry, HttpError } from '../hooks/retry.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -64,25 +65,29 @@ export async function createCheck(options: {
     }
 
     const url = `https://api.github.com/repos/${owner}/${repo}/check-runs`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
+    await withRetry(
+      async () => {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+          },
+          body: JSON.stringify({
+            name,
+            head_sha: sha,
+            status: 'completed',
+            conclusion,
+            output: { title, summary },
+            details_url: detailsUrl,
+          }),
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!response.ok) throw new HttpError(response.status, response.headers.get('Retry-After'));
       },
-      body: JSON.stringify({
-        name,
-        head_sha: sha,
-        status: 'completed',
-        conclusion,
-        output: { title, summary },
-        details_url: detailsUrl,
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (!response.ok) {
-      console.warn(`[forja] GitHub check creation failed: ${response.status} ${response.statusText}`);
-    }
+      undefined,
+      async (err) => console.warn('[forja] GitHub check failed after retries:', err.message),
+      'github-checks'
+    );
   });
 }
