@@ -8,6 +8,65 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ## [Unreleased]
 
 ### Adicionado
+
+#### Dashboard
+
+- Design system completo em paleta black/white/gold (tokens em `apps/ui/lib/tokens.ts`) com componentes shadcn/ui customizados — Card, Button, Badge, Sheet, Skeleton, Table, FilterBar
+- Tipografia hierárquica com Fraunces (display serif), Inter (sans) e JetBrains Mono carregadas via `next/font`
+- Layout shell com sidebar refinada, top bar com busca global, breadcrumbs dinâmicos e empty states contextuais
+- Storybook gallery em `apps/ui/.storybook/` cobrindo todos os componentes — `npm --prefix apps/ui run storybook`
+- Filtros do dashboard de runs persistidos via URL query params (`q`, `from`, `to`, `gate`) com validação ISO-8601 server-side
+- Busca full-text em runs com índice tsvector + GIN (migration `0005_search_vector.sql`)
+- Gráficos de tendência temporal com Recharts (TrendChart, GateFunnelChart), lazy-loaded via `next/dynamic`
+- Heatmap anual de atividade (365 × 24) em `/heatmap`
+- Comparação lado a lado em `/runs/compare?ids=a,b,c` para 2–5 runs, com diff de findings categorizado por fingerprint (new / resolved / persistent), delta de custo/duração e aviso cross-project
+- Drill-down de findings via `FindingDetailSheet` com OWASP/CWE, histórico de ocorrências por fingerprint e botão "Criar issue" via IntegrationProvider
+- Página `/cost` com top 10 projetos, stacked chart por modelo/fase e mini-heatmap 7×24 dia × hora
+- Sistema de alertas e budget caps de custo com CRUD em `/api/cost/alerts` (persistido em `forja/alerts.json`), notify via Slack/email
+- Gantt chart de pipeline em `/runs/[runId]` com timestamps reais, sobreposições para fases paralelas e marcadores de gate
+- Toast notifications via Sonner em `apps/ui/lib/toast.ts` com variants success/error/warning/info
+- Empty states e loading choreography com staggered reveals
+- Command Palette ⌘K via `cmdk` com navegação fuzzy de runs/issues e ações rápidas
+
+#### CLI
+
+- `forja help <cmd>` contextual gerado a partir de metadados em `src/cli/help/command-registry.ts` — adapta à largura do terminal, respeita `NO_COLOR`
+- Shell completions bash/zsh/fish via `forja completion <shell>`
+- Flag global `--dry-run` (alias `-n`) via middleware de interceptação — cobre GitHub Check, Slack notify, webhook, cost write
+- `forja doctor` com diagnóstico extensível (Node, disco, Postgres, migrations, tokens Anthropic/GitHub/Linear, i18n config, circuit breakers) — exit `0=pass 1=warn 2=fail`
+- `forja config migrate` para adicionar `artifact_language` em configs antigas sem sobrescrever campos existentes
+
+#### Internacionalização
+
+- Separação entre `artifact_language` (configurável: `pt-BR`, `en`, etc.) e `prompt_language` (sempre `en`, fixo)
+- Setup `next-intl` na UI (`apps/ui/middleware.ts`) com catálogos completos de mensagens em `apps/ui/messages/{en,pt-BR}.json`
+- Endpoint `GET /api/config/locale` para sincronização de idioma com a config do projeto
+
+#### Integrações
+
+- Interface `IntegrationProvider` em `src/integrations/base.ts` (createIssue/updateIssue/closeIssue/createPR/addComment/healthCheck) e factory plugável em `src/integrations/factory.ts`
+- `JiraProvider`: auth Basic/Bearer, transitions dinâmicas com fallback (Done/Closed/Resolved/Completed), formatação ADF, mapeamento de severity → priority
+- `GitLabProvider`: Merge Requests, issues com labels/milestones, suporte a Cloud e self-managed
+- `AzureDevOpsProvider`: work items, PRs no Azure Repos, detecção automática de process template (Agile/Scrum/CMMI), hierarquia Epic/Feature/Story
+- `BitbucketProvider`: PRs + comentários, Issues com fallback gracioso para PR comment, build status (INPROGRESS/SUCCESSFUL/FAILED)
+- `DatadogProvider`: métricas customizadas (`forja.run.duration`, `forja.run.cost`, `forja.findings.count`), Event Stream, logs estruturados, batching em janelas de 10s
+
+#### Observabilidade
+
+- OpenTelemetry tracing nativo com `@opentelemetry/sdk-node` — spans hierárquicos run → phase → tool call
+- Exportadores configuráveis: OTLP gRPC, OTLP HTTP, console
+- Variáveis de ambiente: `FORJA_OTEL_ENABLED`, `FORJA_OTEL_ENDPOINT`, `FORJA_OTEL_PROTOCOL`
+- Propagação W3C TraceContext para correlação com serviços externos
+
+#### Resiliência de hooks
+
+- `RetryEngine` em `src/hooks/retry.ts` com exponential backoff, jitter e suporte a `Retry-After` (`maxRetries=5`, `baseDelay=500ms`, `maxDelay=30s`)
+- Dead-Letter Queue persistida em Postgres — tabela `hook_dlq` com colunas `hook_type`, `payload`, `error_message`, `attempts`, `status` (`dead` / `reprocessed` / `ignored`) via migration `0010_dlq_schema.sql`
+- Página `/dlq` com tabela filtrável, payload preview com syntax highlight e ações de reprocessar/ignorar (acesso restrito a `forja-role=admin`)
+- Circuit breaker por endpoint com estados closed/open/half-open (`failureThreshold=5`, `cooldownMs=60s`, `successThreshold=2`); transitions emitidas como spans OTel
+
+#### Estabilidade & versionamento
+
 - `SEMVER.md` declarando a superfície pública do Forja e o contrato SemVer 1.0
 - `DEPRECATIONS.md` com guia de depreciações e helper `warnDeprecated` no runtime
 - Script `scripts/generate-changelog.ts` para geração automática do CHANGELOG a partir de conventional commits

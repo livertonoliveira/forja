@@ -1,15 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export function middleware(request: NextRequest): NextResponse {
-  if (request.nextUrl.pathname.startsWith('/dlq')) {
-    const role = request.cookies.get('forja-role')?.value
-    if (role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden. Admin role required.' },
-        { status: 403 }
-      )
-    }
-  }
+export function middleware(_request: NextRequest): NextResponse {
   return NextResponse.next()
 }
 
