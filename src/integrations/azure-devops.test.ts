@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { AzureDevOpsProvider, NotImplementedError, createAzureDevOpsProvider } from './azure-devops.js'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { AzureDevOpsProvider, createAzureDevOpsProvider } from './azure-devops.js'
 import type { AzureDevOpsConfig } from '../schemas/config.js'
 
 const BASE_CONFIG: AzureDevOpsConfig = {
@@ -45,6 +45,18 @@ function makeWorkItemResponse(id = 123) {
       _links: { html: { href: `https://dev.azure.com/myorg/myproject/_workitems/edit/${id}` } },
     },
   }
+}
+
+function makeReposResponse(repos: Array<{ id: string; name: string }> = [{ id: 'repo-id-1', name: 'myrepo' }]) {
+  return { status: 200, body: { value: repos } }
+}
+
+function makePRResponse(id = 42) {
+  return { status: 200, body: { pullRequestId: id } }
+}
+
+function makeSingleRepoResponse(id = 'repo-id-1', name = 'myrepo') {
+  return { status: 200, body: { id, name } }
 }
 
 afterEach(() => {
@@ -163,29 +175,187 @@ describe('AzureDevOpsProvider — healthCheck', () => {
   })
 })
 
-describe('AzureDevOpsProvider — unimplemented methods', () => {
-  let provider: AzureDevOpsProvider
+describe('AzureDevOpsProvider — createPR', () => {
+  it('uses first repository when none configured', async () => {
+    const fetchSpy = mockFetch([makeReposResponse(), makePRResponse(42)])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
 
-  beforeEach(() => {
-    provider = new AzureDevOpsProvider(BASE_CONFIG)
+    const result = await provider.createPR({ title: 'My PR', body: 'report', branch: 'feat', base: 'main' })
+
+    expect(result.id).toBe('42')
+    expect(result.url).toBe('https://dev.azure.com/myorg/_git/myrepo/pullrequest/42')
+    expect(result.provider).toBe('azure-devops')
+
+    const [reposUrl] = fetchSpy.mock.calls[0] as [string]
+    expect(reposUrl).toContain('git/repositories')
+    expect(reposUrl).toContain('api-version=7.1')
   })
 
-  it('createPR throws NotImplementedError', async () => {
-    await expect(
-      provider.createPR({ title: 'PR', body: 'body', branch: 'feature', base: 'main' })
-    ).rejects.toBeInstanceOf(NotImplementedError)
+  it('sends correct PR payload', async () => {
+    const fetchSpy = mockFetch([makeReposResponse(), makePRResponse(10)])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.createPR({ title: 'Fix bug', body: 'quality report', branch: 'fix/bug', base: 'develop' })
+
+    const [, init] = fetchSpy.mock.calls[1] as [string, RequestInit]
+    const body = JSON.parse(init.body as string) as Record<string, string>
+    expect(body.sourceRefName).toBe('refs/heads/fix/bug')
+    expect(body.targetRefName).toBe('refs/heads/develop')
+    expect(body.title).toBe('Fix bug')
+    expect(body.description).toBe('quality report')
   })
 
-  it('updateIssue throws NotImplementedError', async () => {
-    await expect(
-      provider.updateIssue('1', { title: 'Updated' })
-    ).rejects.toBeInstanceOf(NotImplementedError)
+  it('matches repository by name when configured', async () => {
+    const fetchSpy = mockFetch([
+      { status: 200, body: { id: 'id-b', name: 'specific-repo' } },
+      makePRResponse(7),
+    ])
+    const provider = new AzureDevOpsProvider({ ...BASE_CONFIG, repository: 'specific-repo' })
+
+    const result = await provider.createPR({ title: 'PR', body: '', branch: 'feat', base: 'main' })
+
+    expect(result.url).toContain('specific-repo')
+    expect(result.url).toContain('/pullrequest/7')
+    const [prUrl] = fetchSpy.mock.calls[1] as [string]
+    expect(prUrl).toContain('id-b')
   })
 
-  it('closeIssue throws NotImplementedError', async () => {
+  it('throws when configured repository is not found', async () => {
+    mockFetch([{ status: 404, body: {} }])
+    const provider = new AzureDevOpsProvider({ ...BASE_CONFIG, repository: 'missing-repo' })
+
     await expect(
-      provider.closeIssue('1')
-    ).rejects.toBeInstanceOf(NotImplementedError)
+      provider.createPR({ title: 'PR', body: '', branch: 'feat', base: 'main' })
+    ).rejects.toThrow(/missing-repo/)
+  })
+})
+
+describe('AzureDevOpsProvider — _resolveRepository caching', () => {
+  it('does not re-fetch repository on second createPR call', async () => {
+    const fetchSpy = mockFetch([
+      makeReposResponse(),
+      makePRResponse(1),
+      makePRResponse(2),
+    ])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.createPR({ title: 'PR 1', body: '', branch: 'feat', base: 'main' })
+    await provider.createPR({ title: 'PR 2', body: '', branch: 'feat', base: 'main' })
+
+    const urls = fetchSpy.mock.calls.map(([url]) => url as string)
+    const repoFetches = urls.filter(u => u.includes('git/repositories') && !u.includes('pullrequests'))
+    expect(repoFetches).toHaveLength(1)
+  })
+})
+
+describe('AzureDevOpsProvider — numeric ID validation', () => {
+  it('updateIssue throws on non-numeric id', async () => {
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+    await expect(provider.updateIssue('abc', { title: 'x' })).rejects.toThrow(/numeric/)
+  })
+
+  it('closeIssue throws on non-numeric id', async () => {
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+    await expect(provider.closeIssue('abc')).rejects.toThrow(/numeric/)
+  })
+
+  it('createIssue throws on non-numeric parentId', async () => {
+    mockFetch([makeTemplateResponse('Agile')])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+    await expect(
+      provider.createIssue({ title: 'x', description: 'd', severity: 'low', parentId: 'not-a-number' })
+    ).rejects.toThrow(/numeric/)
+  })
+})
+
+describe('AzureDevOpsProvider — createIssue with parentId', () => {
+  it('adds Hierarchy-Reverse relation when parentId is provided', async () => {
+    const fetchSpy = mockFetch([makeTemplateResponse('Agile'), makeWorkItemResponse(200)])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.createIssue({ title: 'Child story', description: 'desc', severity: 'low', parentId: '100' })
+
+    const [, init] = fetchSpy.mock.calls[1] as [string, RequestInit]
+    const body = JSON.parse(init.body as string) as Array<{ op: string; path: string; value: unknown }>
+    const relationOp = body.find(op => op.path === '/relations/-')
+    expect(relationOp).toBeDefined()
+    const value = relationOp!.value as { rel: string; url: string }
+    expect(value.rel).toBe('System.LinkTypes.Hierarchy-Reverse')
+    expect(value.url).toContain('/workItems/100')
+  })
+
+  it('does not add relation when parentId is absent', async () => {
+    const fetchSpy = mockFetch([makeTemplateResponse('Agile'), makeWorkItemResponse(201)])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.createIssue({ title: 'Standalone', description: 'desc', severity: 'low' })
+
+    const [, init] = fetchSpy.mock.calls[1] as [string, RequestInit]
+    const body = JSON.parse(init.body as string) as Array<{ path: string }>
+    expect(body.find(op => op.path === '/relations/-')).toBeUndefined()
+  })
+})
+
+describe('AzureDevOpsProvider — updateIssue', () => {
+  it('sends replace ops for provided fields', async () => {
+    const fetchSpy = mockFetch([{ status: 200, body: {} }])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.updateIssue('55', { title: 'New title', severity: 'high' })
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit]
+    expect(url).toContain('workitems/55')
+    expect(url).toContain('api-version=7.1')
+
+    const ops = JSON.parse(init.body as string) as Array<{ op: string; path: string; value: unknown }>
+    expect(ops).toContainEqual({ op: 'replace', path: '/fields/System.Title', value: 'New title' })
+    expect(ops).toContainEqual({ op: 'replace', path: '/fields/Microsoft.VSTS.Common.Priority', value: 2 })
+    expect(ops.find(o => o.path.includes('Description'))).toBeUndefined()
+  })
+
+  it('makes no request when patch is empty', async () => {
+    const fetchSpy = mockFetch([])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.updateIssue('55', {})
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('AzureDevOpsProvider — closeIssue', () => {
+  it('sets System.State to Closed for Agile template', async () => {
+    const fetchSpy = mockFetch([makeTemplateResponse('Agile'), { status: 200, body: {} }])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.closeIssue('10')
+
+    const [, init] = fetchSpy.mock.calls[1] as [string, RequestInit]
+    const ops = JSON.parse(init.body as string) as Array<{ op: string; path: string; value: string }>
+    expect(ops[0]).toEqual({ op: 'replace', path: '/fields/System.State', value: 'Closed' })
+  })
+
+  it('sets System.State to Done for Scrum template', async () => {
+    const fetchSpy = mockFetch([makeTemplateResponse('Scrum'), { status: 200, body: {} }])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.closeIssue('20')
+
+    const [, init] = fetchSpy.mock.calls[1] as [string, RequestInit]
+    const ops = JSON.parse(init.body as string) as Array<{ op: string; path: string; value: string }>
+    expect(ops[0]).toEqual({ op: 'replace', path: '/fields/System.State', value: 'Done' })
+  })
+
+  it('sets System.State to Closed for CMMI template', async () => {
+    const fetchSpy = mockFetch([makeTemplateResponse('CMMI'), { status: 200, body: {} }])
+    const provider = new AzureDevOpsProvider(BASE_CONFIG)
+
+    await provider.closeIssue('30')
+
+    const [, init] = fetchSpy.mock.calls[1] as [string, RequestInit]
+    const ops = JSON.parse(init.body as string) as Array<{ op: string; path: string; value: string }>
+    expect(ops[0]).toEqual({ op: 'replace', path: '/fields/System.State', value: 'Closed' })
   })
 })
 
