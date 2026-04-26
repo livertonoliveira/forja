@@ -28,7 +28,8 @@
 - on_warn: fix
 
 ## Conventions
-- Artifacts language: pt-BR (specs, issues, docs, milestones, reports, PR descriptions)
+- Artifact language: pt-BR (specs, issues, docs, milestones, reports, PR descriptions, Linear comments)
+- Prompt language: en (LLM system prompts — hardcoded, not configurable)
 - Code language: English (code, variable names, commits, branch names)
 - Commit style: Conventional Commits (feat:, fix:, refactor:, test:, chore:)
 - Branch naming: <type>/<issue-id>-<short-description>

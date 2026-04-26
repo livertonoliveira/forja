@@ -53,21 +53,6 @@ function expand(node: React.ReactNode, depth = 0): React.ReactNode {
   return el;
 }
 
-function findElement(node: React.ReactNode, pred: ElementPredicate): React.ReactElement | null {
-  if (!node || typeof node !== 'object') return null;
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      const found = findElement(child, pred);
-      if (found) return found;
-    }
-    return null;
-  }
-  const el = node as React.ReactElement;
-  if (pred(el)) return el;
-  if (el.props?.children) return findElement(el.props.children, pred);
-  return null;
-}
-
 function findAllElements(node: React.ReactNode, pred: ElementPredicate): React.ReactElement[] {
   const results: React.ReactElement[] = [];
   if (!node || typeof node !== 'object') return results;

@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+export const SUPPORTED_ARTIFACT_LANGUAGES = ['en', 'pt-BR', 'es', 'fr', 'de', 'ja', 'zh-CN'] as const;
+
+export type ArtifactLanguage = (typeof SUPPORTED_ARTIFACT_LANGUAGES)[number];
+
 export const PhaseTimeoutsSchema = z.object({
   dev: z.number().int().positive().default(600),
   test: z.number().int().positive().default(300),
@@ -19,6 +23,7 @@ export const ConfigSchema = z.object({
   linearToken: z.string().optional(),
   timeouts: PhaseTimeoutsSchema.default({}),
   pluginHookTimeoutMs: z.number().int().positive().default(5000),
+  artifact_language: z.enum(SUPPORTED_ARTIFACT_LANGUAGES).default('en'),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

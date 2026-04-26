@@ -37,11 +37,6 @@ vi.mock('next/server', () => ({
 
 const ALERTS_PATH = path.resolve(process.cwd(), '..', '..', 'forja', 'alerts.json');
 
-async function readAlertsFile(): Promise<{ alerts: unknown[] }> {
-  const raw = await fs.readFile(ALERTS_PATH, 'utf8');
-  return JSON.parse(raw) as { alerts: unknown[] };
-}
-
 async function writeAlertsFile(data: { alerts: unknown[] }): Promise<void> {
   await fs.mkdir(path.dirname(ALERTS_PATH), { recursive: true });
   await fs.writeFile(ALERTS_PATH, JSON.stringify(data, null, 2), 'utf8');
