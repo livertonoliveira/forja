@@ -26,6 +26,8 @@ export const severityEnum = pgEnum('severity', ['critical', 'high', 'medium', 'l
 
 export const gateDecisionEnum = pgEnum('gate_decision', ['pass', 'warn', 'fail']);
 
+export const dlqStatusEnum = pgEnum('dlq_status', ['dead', 'reprocessed', 'ignored']);
+
 export const runs = pgTable('runs', {
   id: uuid('id').primaryKey().defaultRandom(),
   issueId: text('issue_id').notNull(),
@@ -161,4 +163,18 @@ export const issueLinks = pgTable('issue_links', {
   schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('issue_links_run_id_idx').on(t.runId),
+}));
+
+export const hookDlq = pgTable('hook_dlq', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  hookType: text('hook_type').notNull(),
+  payload: jsonb('payload').notNull(),
+  errorMessage: text('error_message'),
+  attempts: integer('attempts').default(0),
+  lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  status: dlqStatusEnum('status').default('dead').notNull(),
+}, (t) => ({
+  statusIdx: index('hook_dlq_status_idx').on(t.status),
+  createdAtIdx: index('hook_dlq_created_at_idx').on(t.createdAt),
 }));

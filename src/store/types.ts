@@ -139,3 +139,24 @@ export interface CostSummary {
   totalCacheCreationTokens: number;
   totalCacheReadTokens: number;
 }
+
+export type DLQStatus = 'dead' | 'reprocessed' | 'ignored';
+
+export interface DLQEntry {
+  id: string;
+  hookType: string;
+  payload: unknown;
+  errorMessage: string | null;
+  attempts: number;
+  lastAttemptAt: string | null;
+  createdAt: string;
+  status: DLQStatus;
+}
+
+export interface NewDLQEntry {
+  hookType: string;
+  payload: unknown;
+  errorMessage?: string | null;
+  attempts?: number;
+  lastAttemptAt?: string | null;
+}
