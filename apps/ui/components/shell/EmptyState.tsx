@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -55,39 +56,43 @@ export function EmptyState({ title, description, action, icon, className }: Empt
 }
 
 export function EmptyRuns({ onRun }: { onRun?: () => void } = {}) {
+  const t = useTranslations('runs');
   return (
     <EmptyState
-      title="Nenhum run ainda"
-      description="Inicie um pipeline com forja run para ver os resultados aqui."
-      action={onRun ? { label: 'Executar forja run', onClick: onRun } : undefined}
+      title={t('empty')}
+      description={t('start_prompt')}
+      action={onRun ? { label: t('run_action'), onClick: onRun } : undefined}
     />
   );
 }
 
 export function EmptyFilters({ onClear, clearHref }: { onClear?: () => void; clearHref?: string } = {}) {
+  const t = useTranslations('runs');
   return (
     <EmptyState
-      title="Nenhum resultado"
-      description="Nenhuma execução corresponde aos filtros aplicados."
-      action={{ label: 'Limpar filtros', onClick: onClear, href: clearHref }}
+      title={t('no_results')}
+      description={t('no_results_desc')}
+      action={{ label: t('clear_filters'), onClick: onClear, href: clearHref }}
     />
   );
 }
 
 export function EmptyDLQ() {
+  const t = useTranslations('dlq');
   return (
     <EmptyState
-      title="Nenhum evento morto"
-      description="Tudo funcionando bem. Nenhum pipeline com falha pendente."
+      title={t('no_events')}
+      description={t('no_events_desc')}
     />
   );
 }
 
 export function EmptyComparison() {
+  const t = useTranslations('runs.compare');
   return (
     <EmptyState
-      title="Selecione runs para comparar"
-      description="Selecione 2 ou mais runs na lista de execuções para iniciar a comparação."
+      title={t('select_to_compare')}
+      description={t('select_desc')}
     />
   );
 }

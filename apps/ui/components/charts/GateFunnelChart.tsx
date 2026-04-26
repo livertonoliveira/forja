@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   BarChart,
   Bar,
@@ -25,6 +26,7 @@ export function GateFunnelChart({ title, className }: GateFunnelChartProps) {
   const [data, setData] = useState<GateBucket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const t = useTranslations('charts');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -68,11 +70,11 @@ export function GateFunnelChart({ title, className }: GateFunnelChartProps) {
         <Skeleton className="h-[300px] w-full" />
       ) : error ? (
         <div className="h-[300px] flex items-center justify-center text-forja-text-muted text-sm">
-          Falha ao carregar dados.
+          {t('load_error')}
         </div>
       ) : formatted.length === 0 ? (
         <div className="h-[300px] flex items-center justify-center text-forja-text-muted text-sm">
-          Sem dados para o período selecionado.
+          {t('no_data')}
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>

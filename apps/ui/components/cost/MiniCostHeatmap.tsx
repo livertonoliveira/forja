@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import type { HeatmapCell } from '@/lib/forja-store';
+import { useTranslations } from 'next-intl';
 
-const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const CELL_W = 22;
 const CELL_H = 9;
 const CELL_GAP = 1;
@@ -32,6 +33,8 @@ interface MiniCostHeatmapProps {
 }
 
 export function MiniCostHeatmap({ data }: MiniCostHeatmapProps) {
+  const tDays = useTranslations('heatmapDays');
+  const DAYS = DAY_KEYS.map((k) => tDays(k));
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
   const cellMap = useMemo(() => {
@@ -139,7 +142,7 @@ export function MiniCostHeatmap({ data }: MiniCostHeatmapProps) {
           </div>
           <div className="font-mono">avg ${tooltip.avgCost.toFixed(4)}</div>
           <div style={{ color: '#888' }}>
-            {tooltip.count} evento{tooltip.count !== 1 ? 's' : ''}
+            {tooltip.count}
           </div>
         </div>
       )}

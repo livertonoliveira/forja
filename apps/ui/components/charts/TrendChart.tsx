@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   LineChart,
   Line,
@@ -124,6 +125,7 @@ export function TrendChart({ metric, lines, title, className }: TrendChartProps)
   const [data, setData] = useState<TrendBucket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const t = useTranslations('charts');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -182,7 +184,7 @@ export function TrendChart({ metric, lines, title, className }: TrendChartProps)
             onClick={() => exportCSV(data, lines, granularity)}
             className="px-2.5 py-1 text-xs border border-forja-border-subtle text-forja-text-muted rounded hover:border-forja-border-gold transition-colors"
           >
-            Exportar CSV
+            {t('export_csv')}
           </button>
         </div>
       </div>
@@ -191,11 +193,11 @@ export function TrendChart({ metric, lines, title, className }: TrendChartProps)
         <Skeleton className="h-[300px] w-full" />
       ) : error ? (
         <div className="h-[300px] flex items-center justify-center text-forja-text-muted text-sm">
-          Falha ao carregar dados.
+          {t('load_error')}
         </div>
       ) : formattedData.length === 0 ? (
         <div className="h-[300px] flex items-center justify-center text-forja-text-muted text-sm">
-          Sem dados para o período selecionado.
+          {t('no_data')}
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>

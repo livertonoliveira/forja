@@ -1,15 +1,17 @@
 'use client';
 
 import type { TrendGranularity } from '@/lib/forja-store';
-
-export const GRANULARITY_LABELS: Record<TrendGranularity, string> = {
-  hour: 'hora',
-  day: 'dia',
-  week: 'semana',
-  month: 'mês',
-};
+import { useTranslations } from 'next-intl';
 
 export const GRANULARITIES: TrendGranularity[] = ['hour', 'day', 'week', 'month'];
+
+/** Static English labels — kept for backward compatibility with tests and non-i18n contexts. */
+export const GRANULARITY_LABELS: Record<TrendGranularity, string> = {
+  hour: 'hour',
+  day: 'day',
+  week: 'week',
+  month: 'month',
+};
 
 export function formatBucket(bucket: string, granularity: TrendGranularity): string {
   const d = new Date(bucket);
@@ -25,6 +27,7 @@ interface GranularityToggleProps {
 }
 
 export function GranularityToggle({ value, onChange }: GranularityToggleProps) {
+  const t = useTranslations('gantt.granularity');
   return (
     <div className="flex gap-1">
       {GRANULARITIES.map((g) => (
@@ -38,7 +41,7 @@ export function GranularityToggle({ value, onChange }: GranularityToggleProps) {
               : 'border-forja-border-subtle text-forja-text-muted hover:border-forja-border-gold',
           ].join(' ')}
         >
-          {GRANULARITY_LABELS[g]}
+          {t(g)}
         </button>
       ))}
     </div>

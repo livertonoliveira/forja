@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,6 +35,7 @@ function startOfDay(date: Date): Date {
 
 export function FilterBar() {
   const { q, setQ, from, setFrom, to, setTo, gate, setGate } = useParsedFilters()
+  const t = useTranslations('filters')
 
   const [localQ, setLocalQ] = React.useState(q)
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -113,14 +115,14 @@ export function FilterBar() {
       <div className="flex items-center gap-2 flex-wrap">
         <input
           type="text"
-          placeholder="Buscar por issue ID..."
+          placeholder={t('search_placeholder')}
           value={localQ}
           onChange={handleSearchChange}
           className={cn(inputBase, 'w-64')}
         />
 
         <button onClick={applyToday} className={presetBase}>
-          Hoje
+          {t('today')}
         </button>
         <button onClick={applyLast7Days} className={presetBase}>
           7d
@@ -168,7 +170,7 @@ export function FilterBar() {
 
         {hasAnyFilter && (
           <Button variant="ghost" size="sm" onClick={resetAll}>
-            Reset
+            {t('reset')}
           </Button>
         )}
       </div>

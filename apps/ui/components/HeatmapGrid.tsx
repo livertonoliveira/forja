@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 
 type Metric = 'runs' | 'critical_findings' | 'cost';
 
@@ -31,14 +32,6 @@ const COLOR_EMPTY = '#0A0A0A';
 const COLOR_MAX_R = 226; // #E2C97E
 const COLOR_MAX_G = 201;
 const COLOR_MAX_B = 126;
-
-const METRIC_LABELS: Record<Metric, string> = {
-  runs: 'Runs',
-  critical_findings: 'Findings Críticos',
-  cost: 'Custo (USD)',
-};
-
-const MONTH_ABBR = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 function intensityToColor(value: number, max: number): string {
   if (max === 0) return COLOR_EMPTY;
@@ -72,6 +65,19 @@ export default function HeatmapGrid() {
   const [data, setData] = useState<ApiResponse>({ cells: [], max: 0 });
   const [loading, setLoading] = useState(true);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const t = useTranslations('heatmap');
+
+  const METRIC_LABELS = useMemo((): Record<Metric, string> => ({
+    runs: t('metrics.runs'),
+    critical_findings: t('metrics.critical_findings'),
+    cost: t('metrics.cost_usd'),
+  }), [t]);
+
+  const MONTH_ABBR = useMemo(() => [
+    t('months.jan'), t('months.feb'), t('months.mar'), t('months.apr'),
+    t('months.may'), t('months.jun'), t('months.jul'), t('months.aug'),
+    t('months.sep'), t('months.oct'), t('months.nov'), t('months.dec'),
+  ], [t]);
 
   useEffect(() => {
     setLoading(true);
@@ -124,7 +130,7 @@ export default function HeatmapGrid() {
       }
     }
     return labels;
-  }, [dates]);
+  }, [dates, MONTH_ABBR]);
 
   const handleGridMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -208,12 +214,12 @@ export default function HeatmapGrid() {
           onClick={exportPNG}
           className="px-3 py-1.5 rounded text-sm bg-gray-800 text-gray-400 hover:text-gray-200"
         >
-          Exportar PNG
+          {t('export_png')}
         </button>
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-500 py-8 text-center">Carregando...</div>
+        <div className="text-sm text-gray-500 py-8 text-center">{t('loading')}</div>
       ) : (
         <div className="overflow-x-auto">
           <div className="ml-10 mb-1 relative h-4">
@@ -277,11 +283,11 @@ export default function HeatmapGrid() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Ver runs
+                {t('view_runs')}
               </a>
             </>
           ) : (
-            <div className="text-gray-600">Sem atividade</div>
+            <div className="text-gray-600">{t('no_activity')}</div>
           )}
         </div>
       )}

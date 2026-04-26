@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import type { FindingDetail, FindingHistoryEntry } from '@/lib/forja-store';
 import { CreateIssueModal } from './CreateIssueModal';
 import { SEVERITY_VARIANT, formatHistoryDate } from '@/lib/finding-utils';
+import { useTranslations } from 'next-intl';
 
 interface FindingDetailSheetProps {
   findingId: string | null;
@@ -66,6 +67,7 @@ export function FindingDetailSkeleton() {
 }
 
 export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: FindingDetailSheetProps) {
+  const t = useTranslations('findings.detail');
   const [finding, setFinding] = useState<FindingDetail | null>(null);
   const [history, setHistory] = useState<FindingHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -150,10 +152,10 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                   onClick={handleCopyLink}
                   className="text-xs text-forja-text-secondary hover:text-forja-text-gold border border-forja-border-subtle hover:border-forja-border-gold rounded px-2 py-1 transition-colors"
                 >
-                  Copiar link
+                  {t('copy_link')}
                 </button>
                 <SheetClose className="text-forja-text-muted hover:text-forja-text-primary transition-colors">
-                  <span className="sr-only">Fechar</span>
+                  <span className="sr-only">{t('close')}</span>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                     <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
@@ -167,7 +169,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
 
             {(error || isNotFound) && !loading && (
               <p className="text-sm text-forja-text-muted">
-                Finding não encontrado ou banco de dados indisponível.
+                {t('not_found')}
               </p>
             )}
 
@@ -175,18 +177,18 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
               <>
                 <section className="space-y-3">
                   <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-forja-text-muted">
-                    Detalhe
+                    {t('section_detail')}
                   </h3>
                   <p className="text-sm text-forja-text-primary leading-relaxed">
                     {finding.message}
                   </p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <span className="text-xs text-forja-text-muted">Categoria</span>
+                      <span className="text-xs text-forja-text-muted">{t('category_label')}</span>
                       <p className="text-sm text-forja-text-secondary font-mono">{finding.category}</p>
                     </div>
                     <div className="space-y-1">
-                      <span className="text-xs text-forja-text-muted">Arquivo</span>
+                      <span className="text-xs text-forja-text-muted">{t('file_label')}</span>
                       <p className="text-sm text-forja-text-secondary font-mono truncate">
                         {finding.filePath
                           ? `${finding.filePath}${finding.line != null ? `:${finding.line}` : ''}`
@@ -196,7 +198,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                   </div>
                   {finding.fingerprint && (
                     <div className="space-y-1">
-                      <span className="text-xs text-forja-text-muted">Fingerprint</span>
+                      <span className="text-xs text-forja-text-muted">{t('fingerprint_label')}</span>
                       <button
                         onClick={handleCopyFingerprint}
                         className="block w-full text-left font-mono text-xs text-forja-text-secondary bg-forja-bg-surface border border-forja-border-subtle rounded px-3 py-2 hover:border-forja-border-gold hover:text-forja-text-gold transition-colors truncate"
@@ -209,7 +211,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
 
                 <section className="space-y-3">
                   <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-forja-text-muted">
-                    Origem
+                    {t('section_origin')}
                   </h3>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -247,13 +249,13 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
 
                 <section className="space-y-3">
                   <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-forja-text-muted">
-                    Histórico
+                    {t('section_history')}
                     <span className="ml-2 font-mono normal-case tracking-normal text-forja-text-primary">
                       ({history.length})
                     </span>
                   </h3>
                   {history.length === 0 ? (
-                    <p className="text-sm text-forja-text-muted">Nenhuma ocorrência anterior.</p>
+                    <p className="text-sm text-forja-text-muted">{t('no_history')}</p>
                   ) : (
                     <ul className="space-y-2">
                       {history.map((entry) => (
@@ -296,7 +298,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                     onClick={() => setCreateIssueOpen(true)}
                     className="w-full bg-gold-gradient text-forja-bg-base font-semibold text-sm rounded-md h-10 px-4 hover:shadow-gold-glow-strong transition-all duration-200 active:scale-[0.98]"
                   >
-                    Criar Issue
+                    {t('create_issue')}
                   </button>
                 </section>
               </>
