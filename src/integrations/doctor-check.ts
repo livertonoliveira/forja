@@ -66,7 +66,13 @@ function buildIntegrationConfigFromEnv() {
           token: process.env.AZURE_DEVOPS_TOKEN,
         }
       : undefined,
-    bitbucket: process.env.BITBUCKET_APP_PASSWORD
+    bitbucket: process.env.BITBUCKET_ACCESS_TOKEN
+      ? {
+          workspace: process.env.BITBUCKET_WORKSPACE ?? '',
+          repoSlug: process.env.BITBUCKET_REPO_SLUG ?? '',
+          accessToken: process.env.BITBUCKET_ACCESS_TOKEN,
+        }
+      : process.env.BITBUCKET_APP_PASSWORD
       ? {
           workspace: process.env.BITBUCKET_WORKSPACE ?? '',
           repoSlug: process.env.BITBUCKET_REPO_SLUG ?? '',
