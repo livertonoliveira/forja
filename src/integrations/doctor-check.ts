@@ -23,6 +23,7 @@ registerCheck({
           }
     } catch (err) {
       const raw = err instanceof Error ? err.message : String(err)
+      // eslint-disable-next-line no-control-regex
       const safe = raw.replace(/[\x00-\x1f\x7f]/g, ' ').slice(0, 200)
       return {
         status: 'fail',

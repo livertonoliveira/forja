@@ -10,7 +10,6 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { IntegrationProvider, IssueInput, IssueOutput, PRInput, PROutput } from '../base.js';
 import {
   registerProviderFactory,
   getIntegrationProvider,

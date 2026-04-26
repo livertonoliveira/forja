@@ -386,6 +386,7 @@ describe('CircuitBreaker — OTel spans on state transitions', () => {
   it('sets endpoint and state attributes on the transition span', async () => {
     const mockSpan = { setAttribute: vi.fn(), end: vi.fn() };
     vi.spyOn(tracer, 'startActiveSpan').mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ((_name: string, fn: (span: any) => any) => fn(mockSpan)) as any,
     );
 
@@ -399,6 +400,7 @@ describe('CircuitBreaker — OTel spans on state transitions', () => {
   it('ends the span after the transition', async () => {
     const mockSpan = { setAttribute: vi.fn(), end: vi.fn() };
     vi.spyOn(tracer, 'startActiveSpan').mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ((_name: string, fn: (span: any) => any) => fn(mockSpan)) as any,
     );
 
@@ -417,6 +419,7 @@ describe('CircuitBreaker — OTel spans on state transitions', () => {
       end: vi.fn(),
     };
     vi.spyOn(tracer, 'startActiveSpan').mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ((_name: string, fn: (span: any) => any) => fn(mockSpan)) as any,
     );
 
@@ -436,6 +439,7 @@ describe('CircuitBreaker — OTel spans on state transitions', () => {
   it('emits a span when transitioning from half-open to closed', async () => {
     const mockSpan = { setAttribute: vi.fn(), end: vi.fn() };
     vi.spyOn(tracer, 'startActiveSpan').mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ((_name: string, fn: (span: any) => any) => fn(mockSpan)) as any,
     );
 

@@ -55,9 +55,6 @@ function makePRResponse(id = 42) {
   return { status: 200, body: { pullRequestId: id } }
 }
 
-function makeSingleRepoResponse(id = 'repo-id-1', name = 'myrepo') {
-  return { status: 200, body: { id, name } }
-}
 
 afterEach(() => {
   vi.restoreAllMocks()

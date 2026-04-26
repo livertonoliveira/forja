@@ -15,9 +15,9 @@ test('forja doctor --json outputs valid JSON array', () => {
       env: { ...process.env, FORJA_STORE_URL: 'postgresql://forja:forja@localhost:5432/forja' },
       timeout: 15000,
     }).toString()
-  } catch (err: any) {
+  } catch (err) {
     // process.exit non-zero — capture stdout from the error
-    output = err.stdout?.toString() ?? ''
+    output = (err as { stdout?: Buffer }).stdout?.toString() ?? ''
   }
 
   const parsed = JSON.parse(output)
@@ -39,8 +39,8 @@ test('forja doctor outputs checklist with icons', () => {
       cwd: PROJECT_ROOT,
       timeout: 15000,
     }).toString()
-  } catch (err: any) {
-    output = err.stdout?.toString() ?? ''
+  } catch (err) {
+    output = (err as { stdout?: Buffer }).stdout?.toString() ?? ''
   }
 
   // Should contain at least one of the icons
@@ -59,8 +59,8 @@ test('forja doctor exits with code 0, 1, or 2', () => {
       timeout: 15000,
     })
     code = 0
-  } catch (err: any) {
-    code = err.status ?? 1
+  } catch (err) {
+    code = (err as { status?: number }).status ?? 1
   }
 
   expect([0, 1, 2]).toContain(code)

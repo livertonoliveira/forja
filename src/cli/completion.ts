@@ -5,7 +5,7 @@ export function generateBashCompletion(): string {
   return `_forja_completion() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
   local commands="${names}"
-  COMPREPLY=(\$(compgen -W "\${commands}" -- "\${cur}"))
+  COMPREPLY=($(compgen -W "\${commands}" -- "\${cur}"))
 }
 complete -F _forja_completion forja
 `;

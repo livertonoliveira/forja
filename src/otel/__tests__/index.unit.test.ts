@@ -13,7 +13,7 @@
  *  - shutdownOTel() without prior initOTel resolves without throwing
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readOTelConfig, initOTel, shutdownOTel } from '../index.js';
 
 // ---------------------------------------------------------------------------
