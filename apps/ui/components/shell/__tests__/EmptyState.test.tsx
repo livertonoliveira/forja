@@ -43,6 +43,30 @@ vi.mock('@/components/ui/button', () => {
   return { Button };
 });
 
+vi.mock('next-intl', () => {
+  const msgs: Record<string, Record<string, string>> = {
+    'runs': {
+      empty: 'Nenhum run ainda',
+      start_prompt: 'Inicie um pipeline com forja run para ver os resultados aqui.',
+      run_action: 'Executar forja run',
+      no_results: 'Nenhum resultado',
+      no_results_desc: 'Nenhuma execução corresponde aos filtros aplicados.',
+      clear_filters: 'Limpar filtros',
+    },
+    'runs.compare': {
+      select_to_compare: 'Selecione runs para comparar',
+      select_desc: 'Selecione 2 ou mais runs na lista de execuções para iniciar a comparação.',
+    },
+    'dlq': {
+      no_events: 'Nenhum evento morto',
+      no_events_desc: 'Tudo funcionando bem. Nenhum pipeline com falha pendente.',
+    },
+  };
+  return {
+    useTranslations: (ns: string) => (key: string) => msgs[ns]?.[key] ?? key,
+  };
+});
+
 // ---------------------------------------------------------------------------
 // Import component AFTER mocks
 // ---------------------------------------------------------------------------

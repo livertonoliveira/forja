@@ -1,9 +1,13 @@
+'use client';
+
 import { Badge } from "@/components/ui/badge"
+import { useTranslations } from 'next-intl';
 
 export default function RegressionBadge() {
+  const t = useTranslations('regression');
   return (
-    <Badge variant="fail" title="Gate piorou em relação ao run anterior">
-      Regressão
+    <Badge variant="fail" title={t('title')}>
+      {t('label')}
     </Badge>
   )
 }

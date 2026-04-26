@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import type { RunSummary } from '@/lib/forja-store';
 import { statusColors, gateDisplay } from '@/lib/ui-constants';
@@ -13,6 +14,7 @@ const MAX_SELECTION = 5;
 export function RunsTableWithSelection({ runs }: { runs: RunSummary[] }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const router = useRouter();
+  const t = useTranslations('runs');
 
   function toggle(id: string) {
     setSelected(prev => {
@@ -35,12 +37,12 @@ export function RunsTableWithSelection({ runs }: { runs: RunSummary[] }) {
       <div className="flex items-center justify-between mb-4 min-h-[36px]">
         <span className="text-sm text-forja-text-muted">
           {selected.size > 0
-            ? `${selected.size} de ${MAX_SELECTION} selecionados`
-            : 'Selecione até 5 runs para comparar'}
+            ? t('compare.selected', { count: selected.size, max: MAX_SELECTION })
+            : t('compare.select_up_to')}
         </span>
         {selected.size >= 2 && (
           <Button size="sm" onClick={handleCompare}>
-            Comparar ({selected.size})
+            {t('compare.compare_button', { count: selected.size })}
           </Button>
         )}
       </div>
@@ -50,15 +52,15 @@ export function RunsTableWithSelection({ runs }: { runs: RunSummary[] }) {
           <thead>
             <tr className="text-left text-forja-text-secondary border-b border-forja-border-default">
               <th className="pb-3 pr-4 font-medium w-10">
-                <span className="sr-only">Selecionar</span>
+                <span className="sr-only">{t('columns.select')}</span>
               </th>
-              <th className="pb-3 pr-6 font-medium">Run ID</th>
-              <th className="pb-3 pr-6 font-medium">Tarefa</th>
-              <th className="pb-3 pr-6 font-medium">Status</th>
-              <th className="pb-3 pr-6 font-medium">Início</th>
-              <th className="pb-3 pr-6 font-medium">Duração</th>
-              <th className="pb-3 pr-6 font-medium">Custo</th>
-              <th className="pb-3 font-medium">Gate</th>
+              <th className="pb-3 pr-6 font-medium">{t('columns.run_id')}</th>
+              <th className="pb-3 pr-6 font-medium">{t('columns.issue')}</th>
+              <th className="pb-3 pr-6 font-medium">{t('columns.status')}</th>
+              <th className="pb-3 pr-6 font-medium">{t('columns.start')}</th>
+              <th className="pb-3 pr-6 font-medium">{t('columns.duration')}</th>
+              <th className="pb-3 pr-6 font-medium">{t('columns.cost')}</th>
+              <th className="pb-3 font-medium">{t('columns.gate')}</th>
             </tr>
           </thead>
           <tbody>
@@ -80,7 +82,7 @@ export function RunsTableWithSelection({ runs }: { runs: RunSummary[] }) {
                       checked={isSelected}
                       disabled={isDisabled}
                       onChange={() => toggle(run.id)}
-                      aria-label={`Selecionar run ${run.id.slice(0, 8)}`}
+                      aria-label={t('select_run', { id: run.id.slice(0, 8) })}
                       className="w-4 h-4 cursor-pointer disabled:opacity-40"
                     />
                   </td>
@@ -101,7 +103,7 @@ export function RunsTableWithSelection({ runs }: { runs: RunSummary[] }) {
                     </span>
                   </td>
                   <td className="py-3 pr-6 text-forja-text-muted text-xs">
-                    {new Date(run.startedAt).toLocaleString('pt-BR')}
+                    {new Date(run.startedAt).toLocaleString()}
                   </td>
                   <td className="py-3 pr-6 text-forja-text-secondary">
                     {formatDuration(run.startedAt, run.finishedAt)}

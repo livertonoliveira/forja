@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import type { Finding } from '@/lib/types';
 import {
   Table,
@@ -26,6 +27,7 @@ export function FindingsRunSection({ findings, runId, initialFindingId }: Findin
   const router = useRouter();
   const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const t = useTranslations('findings');
 
   useEffect(() => {
     if (initialFindingId && UUID_RE.test(initialFindingId)) {
@@ -51,24 +53,24 @@ export function FindingsRunSection({ findings, runId, initialFindingId }: Findin
 
   if (findings.length === 0) {
     return (
-      <p className="text-sm text-forja-text-muted py-4">Nenhum finding registrado neste run.</p>
+      <p className="text-sm text-forja-text-muted py-4">{t('none')}</p>
     );
   }
 
   return (
     <>
       <h2 className="text-base font-semibold text-forja-text-primary mb-4">
-        Findings ({findings.length})
+        {t('title', { count: findings.length })}
       </h2>
       <div className="rounded-lg border border-forja-border-subtle overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-forja-border-default">
-              <TableHead>Severidade</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Mensagem</TableHead>
-              <TableHead>Arquivo</TableHead>
-              <TableHead>Fase</TableHead>
+              <TableHead>{t('columns.severity')}</TableHead>
+              <TableHead>{t('columns.category')}</TableHead>
+              <TableHead>{t('columns.message')}</TableHead>
+              <TableHead>{t('columns.file')}</TableHead>
+              <TableHead>{t('columns.phase')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

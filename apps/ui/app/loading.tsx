@@ -8,7 +8,7 @@ export default function Loading() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-forja-border-default">
-              {['Tarefa', 'Status', 'Duração', 'Custo', 'Gate', 'Início'].map((col) => (
+              {Array.from({ length: 6 }, (_, i) => i).map((col) => (
                 <th key={col} className="pb-3 pr-6 text-left">
                   <Skeleton className="h-4 w-16" />
                 </th>

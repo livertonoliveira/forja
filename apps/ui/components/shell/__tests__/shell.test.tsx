@@ -83,6 +83,19 @@ vi.mock('lucide-react', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Mock next-intl — Breadcrumbs uses useTranslations('breadcrumbs')
+// ---------------------------------------------------------------------------
+
+vi.mock('next-intl', () => ({
+  useTranslations: (ns: string) => (key: string) => {
+    const msgs: Record<string, Record<string, string>> = {
+      breadcrumbs: { home: 'Home' },
+    };
+    return msgs[ns]?.[key] ?? key;
+  },
+}));
+
+// ---------------------------------------------------------------------------
 // Mock React — intercept useState so hooks work outside renderer context
 // ---------------------------------------------------------------------------
 

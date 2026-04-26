@@ -38,6 +38,16 @@ vi.mock('@/lib/forja-store', () => ({
   // Re-export only what is used as type imports — runtime needs nothing here
 }));
 
+vi.mock('next-intl', () => {
+  const msgs: Record<string, Record<string, string>> = {
+    'gantt.granularity': { hour: 'hora', day: 'dia', week: 'semana', month: 'mês' },
+    'charts': { load_error: 'Falha ao carregar dados.', no_data: 'Sem dados para o período selecionado.', export_csv: 'Exportar CSV' },
+  };
+  return {
+    useTranslations: (ns: string) => (key: string) => msgs[ns]?.[key] ?? key,
+  };
+});
+
 // ---------------------------------------------------------------------------
 // csvEscape logic — extracted inline for pure-function testing
 // (mirrors the implementation in TrendChart.tsx)

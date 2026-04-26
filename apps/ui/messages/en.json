@@ -1,5 +1,302 @@
 {
+  "nav": {
+    "runs": "Runs",
+    "cost": "Cost",
+    "heatmap": "Heatmap",
+    "issues": "Issues",
+    "dlq": "DLQ",
+    "pipeline": "Pipeline",
+    "observability": "Observability"
+  },
+  "runs": {
+    "title": "Runs",
+    "recent": "Recent Runs",
+    "trends": "Trends",
+    "findings_by_severity": "Findings by Severity",
+    "gate_rate": "Gate Rate",
+    "empty": "No runs yet",
+    "start_prompt": "Start a pipeline with forja run to see results here.",
+    "run_action": "Run forja run",
+    "no_results": "No results",
+    "no_results_desc": "No runs match the applied filters.",
+    "clear_filters": "Clear filters",
+    "back": "← Runs",
+    "phases": "Phases",
+    "in_progress": "In progress",
+    "compare": {
+      "title": "Run Comparison",
+      "description": "{count} runs compared",
+      "cross_project_warning": "These runs belong to different projects. Comparison proceeds normally, but results may reflect context differences between projects.",
+      "cost_variation": "Cost Variation",
+      "duration_variation": "Duration Variation",
+      "gate_older": "Gate (older)",
+      "gate_newer": "Gate (newer)",
+      "runs_compared": "Runs compared",
+      "new": "New",
+      "resolved": "Resolved",
+      "persistent": "Persistent",
+      "select_to_compare": "Select runs to compare",
+      "select_desc": "Select 2 or more runs from the runs list to start comparing.",
+      "selected": "{count} of {max} selected",
+      "select_up_to": "Select up to 5 runs to compare",
+      "compare_button": "Compare ({count})"
+    },
+    "select_run": "Select run {id}",
+    "columns": {
+      "run_id": "Run ID",
+      "issue": "Issue",
+      "status": "Status",
+      "duration": "Duration",
+      "cost": "Cost",
+      "gate": "Gate",
+      "start": "Start",
+      "regression": "Regression",
+      "number": "#",
+      "select": "Select"
+    },
+    "detail": {
+      "task": "Task",
+      "status": "Status",
+      "duration": "Duration",
+      "final_gate": "Final Gate",
+      "total_cost": "Total Cost",
+      "total_tokens": "Total Tokens",
+      "start": "Start"
+    }
+  },
+  "gantt": {
+    "no_phases": "No phases recorded.",
+    "tokens_in": "Tokens in",
+    "tokens_out": "Tokens out",
+    "zoom": "Zoom",
+    "reset": "Reset",
+    "start": "Start",
+    "end": "End",
+    "duration": "Duration",
+    "gate": "Gate",
+    "granularity": {
+      "hour": "hour",
+      "day": "day",
+      "week": "week",
+      "month": "month"
+    }
+  },
+  "issues": {
+    "title": "Issues",
+    "back": "← Issues",
+    "empty": "No issues found.",
+    "no_runs": "No runs found for this issue.",
+    "columns": {
+      "issue": "Issue",
+      "runs": "Runs",
+      "last_gate": "Last Gate",
+      "last_run": "Last Run"
+    }
+  },
+  "cost": {
+    "title": "Cost",
+    "total": "Total",
+    "input": "Input",
+    "output": "Output",
+    "cache": "Cache",
+    "total_accumulated": "Total Accumulated Cost",
+    "last_30_days": "last 30 days",
+    "top_10_projects": "Top 10 Projects by Cost",
+    "no_projects": "No projects",
+    "no_cost_desc": "No costs recorded for the selected period.",
+    "cost_by_project": "Cost by Project — Stacked Breakdown",
+    "no_data": "No data",
+    "no_project_cost": "No projects with costs for the period.",
+    "cost_heatmap": "Cost Heatmap — 7×24",
+    "cost_heatmap_desc": "Average cost by day of week × hour of day",
+    "alerts": "Alerts",
+    "add_alert": "Add alert",
+    "no_alerts": "No alerts configured",
+    "no_alerts_desc": "Configure cost alerts to receive notifications when thresholds are exceeded.",
+    "triggered": "Triggered",
+    "active": "Active",
+    "budget_cap": "Budget Cap",
+    "new_alert": "New Alert",
+    "project_label": "Project",
+    "threshold_label": "Threshold (USD)",
+    "period_label": "Period",
+    "monthly": "Monthly",
+    "weekly": "Weekly",
+    "daily": "Daily",
+    "channels": "Channels",
+    "budget_cap_desc": "Budget Cap (blocks new runs when exceeded)",
+    "creating": "Creating...",
+    "create_alert": "Create Alert",
+    "cancel": "Cancel",
+    "export_csv": "Export CSV",
+    "csv_success": "CSV exported successfully",
+    "csv_projects": "{count} project(s) exported",
+    "alert_created": "Alert created",
+    "alert_created_desc": "Threshold {threshold} for {project}",
+    "alert_error": "Error creating alert",
+    "alert_removed": "Alert removed",
+    "alert_removed_desc": "Alert for {project} removed",
+    "remove_alert": "Remove alert",
+    "usd": "USD",
+    "columns": {
+      "number": "#",
+      "project": "Project",
+      "total": "Total",
+      "input": "Input",
+      "output": "Output",
+      "cache": "Cache",
+      "runs": "Runs"
+    }
+  },
+  "heatmap": {
+    "title": "Activity Heatmap",
+    "desc": "Activity intensity by day and time — last 365 days",
+    "export_png": "Export PNG",
+    "loading": "Loading...",
+    "no_activity": "No activity",
+    "view_runs": "View runs",
+    "metrics": {
+      "runs": "Runs",
+      "critical_findings": "Critical Findings",
+      "cost_usd": "Cost (USD)"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
+  },
+  "dlq": {
+    "title": "Dead Letter Queue",
+    "desc": "Runs that failed and need attention",
+    "pending_one": "pending",
+    "pending_other": "pending",
+    "no_events": "No dead events",
+    "no_events_desc": "Everything working fine. No failed pipelines pending.",
+    "columns": {
+      "run_id": "Run ID",
+      "issue": "Issue",
+      "status": "Status",
+      "start": "Start",
+      "duration": "Duration",
+      "cost": "Cost",
+      "gate": "Gate"
+    }
+  },
+  "findings": {
+    "none": "No findings recorded in this run.",
+    "title": "Findings ({count})",
+    "columns": {
+      "severity": "Severity",
+      "category": "Category",
+      "message": "Message",
+      "file": "File",
+      "phase": "Phase"
+    },
+    "create_issue": "Create Issue",
+    "issue_title_label": "Title",
+    "issue_desc_label": "Description",
+    "provider_label": "Provider",
+    "creating": "Creating...",
+    "create": "Create",
+    "cancel": "Cancel",
+    "issue_created": "Issue created successfully",
+    "error_title": "Error {status}",
+    "error_desc": "Could not create issue. Try again.",
+    "view": "View",
+    "detail": {
+      "not_found": "Finding not found or database unavailable.",
+      "section_detail": "Detail",
+      "section_origin": "Origin",
+      "section_history": "History",
+      "no_history": "No previous occurrences.",
+      "category_label": "Category",
+      "file_label": "File",
+      "fingerprint_label": "Fingerprint",
+      "copy_link": "Copy link",
+      "close": "Close",
+      "create_issue": "Create Issue"
+    }
+  },
+  "regression": {
+    "label": "Regression",
+    "title": "Gate degraded compared to previous run"
+  },
+  "commandPalette": {
+    "placeholder": "Search commands, runs, findings…",
+    "noResults": "No results for",
+    "tryDifferentTerm": "Try a different term",
+    "groups": {
+      "navigation": "Navigation",
+      "recentRuns": "Recent Runs",
+      "findings": "Findings",
+      "actions": "Actions",
+      "help": "Help"
+    },
+    "footer": {
+      "navigate": "navigate",
+      "select": "select",
+      "close": "close"
+    },
+    "nav": {
+      "runs_desc": "Recent runs",
+      "cost_desc": "Cost analysis",
+      "heatmap_desc": "Findings map",
+      "issues_desc": "Tasks and issues",
+      "dlq_desc": "Dead Letter Queue"
+    },
+    "actions": {
+      "copy_link": "Copy page link",
+      "toggle_theme": "Toggle theme"
+    },
+    "help": {
+      "shortcuts": "View shortcuts",
+      "docs": "Documentation",
+      "bug": "Report bug"
+    }
+  },
+  "heatmapDays": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  },
+  "filters": {
+    "search_placeholder": "Search by issue ID...",
+    "today": "Today",
+    "reset": "Reset"
+  },
+  "charts": {
+    "load_error": "Failed to load data.",
+    "no_data": "No data for the selected period.",
+    "export_csv": "Export CSV"
+  },
+  "breadcrumbs": {
+    "home": "Home"
+  },
   "common": {
-    "loading": "Loading"
+    "loading": "Loading…",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "settings": "Settings",
+    "lang": "EN",
+    "lang_full": "English",
+    "expand_sidebar": "Expand sidebar",
+    "collapse_sidebar": "Collapse sidebar",
+    "unknown_error": "Unknown error"
   }
 }

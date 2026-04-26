@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { toast } from '@/lib/toast';
@@ -27,6 +28,7 @@ export function CreateIssueModal({
   const [description, setDescription] = useState(defaultDescription);
   const [provider, setProvider] = useState<Provider>('linear');
   const [loading, setLoading] = useState(false);
+  const t = useTranslations('findings');
 
   function isSafeUrl(url: string): boolean {
     try {
@@ -48,20 +50,20 @@ export function CreateIssueModal({
       });
 
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error ?? `Erro ${res.status}`);
+        toast.error(t('error_title', { status: res.status }), { description: t('error_desc') });
+        return;
       }
 
       const data = (await res.json()) as { url?: string; issueUrl?: string };
       const issueUrl = data.url ?? data.issueUrl ?? '';
-      toast.success('Issue criado com sucesso', {
+      toast.success(t('issue_created'), {
         action: isSafeUrl(issueUrl)
-          ? { label: 'Ver', onClick: () => window.open(issueUrl, '_blank') }
+          ? { label: t('view'), onClick: () => window.open(issueUrl, '_blank') }
           : undefined,
       });
       onOpenChange(false);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erro desconhecido');
+    } catch {
+      toast.error(t('error_title', { status: 0 }), { description: t('error_desc') });
     } finally {
       setLoading(false);
     }
@@ -93,13 +95,13 @@ export function CreateIssueModal({
           )}
         >
           <DialogPrimitive.Title className="text-base font-semibold text-forja-text-gold mb-5">
-            Criar Issue
+            {t('create_issue')}
           </DialogPrimitive.Title>
 
           <div className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs text-forja-text-muted" htmlFor="issue-title">
-                  Título
+                  {t('issue_title_label')}
                 </label>
                 <input
                   id="issue-title"
@@ -112,7 +114,7 @@ export function CreateIssueModal({
 
               <div className="space-y-1.5">
                 <label className="text-xs text-forja-text-muted" htmlFor="issue-description">
-                  Descrição
+                  {t('issue_desc_label')}
                 </label>
                 <textarea
                   id="issue-description"
@@ -125,7 +127,7 @@ export function CreateIssueModal({
 
               <div className="space-y-1.5">
                 <label className="text-xs text-forja-text-muted" htmlFor="issue-provider">
-                  Provider
+                  {t('provider_label')}
                 </label>
                 <select
                   id="issue-provider"
@@ -145,14 +147,14 @@ export function CreateIssueModal({
                   disabled={loading}
                   className="flex-1 bg-gold-gradient text-forja-bg-base font-semibold text-sm rounded-md h-10 px-4 hover:shadow-gold-glow-strong transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  {loading ? 'Criando…' : 'Criar'}
+                  {loading ? t('creating') : t('create')}
                 </button>
                 <button
                   onClick={handleClose}
                   disabled={loading}
                   className="flex-1 rounded-md border border-forja-border-subtle bg-transparent text-forja-text-secondary text-sm h-10 px-4 hover:border-forja-border-gold hover:text-forja-text-gold transition-colors disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
               </div>
             </div>

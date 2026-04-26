@@ -17,7 +17,7 @@ import {
   AlertTriangle,
   type LucideIcon,
 } from 'lucide-react';
-import { useI18n } from '@/lib/i18n-context';
+import { useTranslations } from 'next-intl';
 import type { Run, Finding } from '@/lib/types';
 
 type CommandPaletteProps = {
@@ -54,19 +54,6 @@ const GROUP_HEADING_CLASS =
 const ITEM_CLASS =
   'flex items-center gap-3 px-3 py-2 cursor-pointer rounded-sm mx-1 data-[selected=true]:bg-forja-bg-overlay data-[selected=true]:border-l-2 data-[selected=true]:border-forja-border-gold';
 
-const NAV_ITEMS: NavItem[] = [
-  { id: 'nav-runs', icon: Play, label: 'Runs', description: 'Execuções recentes', href: '/runs', shortcut: 'G R' },
-  { id: 'nav-cost', icon: DollarSign, label: 'Cost', description: 'Análise de custo', href: '/cost', shortcut: 'G C' },
-  { id: 'nav-heatmap', icon: LayoutGrid, label: 'Heatmap', description: 'Mapa de achados', href: '/heatmap', shortcut: 'G H' },
-  { id: 'nav-issues', icon: AlertCircle, label: 'Issues', description: 'Tarefas e issues', href: '/issues' },
-  { id: 'nav-dlq', icon: Inbox, label: 'DLQ', description: 'Dead Letter Queue', href: '/dlq' },
-];
-
-const HELP_ITEMS: HelpItem[] = [
-  { id: 'help-shortcuts', icon: Keyboard, label: 'Ver atalhos', description: '⌘K, G+R, G+C, G+H' },
-  { id: 'help-docs', icon: BookOpen, label: 'Documentação' },
-  { id: 'help-bug', icon: Bug, label: 'Reportar bug' },
-];
 
 function ShortcutBadge({ shortcut }: { shortcut: string }) {
   return (
@@ -84,8 +71,24 @@ function ShortcutBadge({ shortcut }: { shortcut: string }) {
 }
 
 export function CommandPalette({ open, onClose }: CommandPaletteProps) {
-  const { t } = useI18n();
+  const tCp = useTranslations('commandPalette');
   const router = useRouter();
+
+  const NAV_ITEMS: NavItem[] = useMemo(() => [
+    { id: 'nav-runs', icon: Play, label: 'Runs', description: tCp('nav.runs_desc'), href: '/runs', shortcut: 'G R' },
+    { id: 'nav-cost', icon: DollarSign, label: 'Cost', description: tCp('nav.cost_desc'), href: '/cost', shortcut: 'G C' },
+    { id: 'nav-heatmap', icon: LayoutGrid, label: 'Heatmap', description: tCp('nav.heatmap_desc'), href: '/heatmap', shortcut: 'G H' },
+    { id: 'nav-issues', icon: AlertCircle, label: 'Issues', description: tCp('nav.issues_desc'), href: '/issues' },
+    { id: 'nav-dlq', icon: Inbox, label: 'DLQ', description: tCp('nav.dlq_desc'), href: '/dlq' },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [tCp]);
+
+  const HELP_ITEMS: HelpItem[] = useMemo(() => [
+    { id: 'help-shortcuts', icon: Keyboard, label: tCp('help.shortcuts'), description: '⌘K, G+R, G+C, G+H' },
+    { id: 'help-docs', icon: BookOpen, label: tCp('help.docs') },
+    { id: 'help-bug', icon: Bug, label: tCp('help.bug') },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [tCp]);
   const [query, setQuery] = useState('');
   const [mounted, setMounted] = useState(false);
   const [runs, setRuns] = useState<Run[]>([]);
@@ -156,7 +159,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     {
       id: 'action-copy-link',
       icon: Copy,
-      label: 'Copiar link da página',
+      label: tCp('actions.copy_link'),
       action: () => {
         void navigator.clipboard.writeText(window.location.href);
         onClose();
@@ -165,17 +168,16 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     {
       id: 'action-toggle-theme',
       icon: Sun,
-      label: 'Toggle tema',
+      label: tCp('actions.toggle_theme'),
       action: () => {
         document.documentElement.classList.toggle('dark');
         onClose();
       },
     },
-  ], [onClose]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [onClose, tCp]);
 
   if (!open) return null;
-
-  const cp = t.commandPalette;
 
   return (
     <div
@@ -205,7 +207,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               <Command.Input
                 value={query}
                 onValueChange={setQuery}
-                placeholder={cp.placeholder}
+                placeholder={tCp('placeholder')}
                 autoFocus
                 className="flex-1 py-3 bg-transparent text-sm text-forja-text-primary placeholder:text-forja-text-muted outline-none font-sans"
               />
@@ -214,12 +216,12 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             {/* Results list */}
             <Command.List className="max-h-[400px] overflow-y-auto py-1.5">
               <Command.Empty className="px-4 py-6 text-center text-sm text-forja-text-muted">
-                {cp.noResults} &ldquo;{query}&rdquo;
-                <p className="mt-1 text-xs text-forja-text-muted/60">{cp.tryDifferentTerm}</p>
+                {tCp('noResults')} &ldquo;{query}&rdquo;
+                <p className="mt-1 text-xs text-forja-text-muted/60">{tCp('tryDifferentTerm')}</p>
               </Command.Empty>
 
               {/* Navigation */}
-              <Command.Group heading={cp.groups.navigation} className={GROUP_HEADING_CLASS}>
+              <Command.Group heading={tCp('groups.navigation')} className={GROUP_HEADING_CLASS}>
                 {NAV_ITEMS.map(item => (
                   <Command.Item
                     key={item.id}
@@ -241,7 +243,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
               {/* Recent Runs */}
               {runs.length > 0 && (
-                <Command.Group heading={cp.groups.recentRuns} className={GROUP_HEADING_CLASS}>
+                <Command.Group heading={tCp('groups.recentRuns')} className={GROUP_HEADING_CLASS}>
                   {runs.map(run => (
                     <Command.Item
                       key={run.id}
@@ -266,7 +268,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
               {/* Findings */}
               {findings.length > 0 && (
-                <Command.Group heading={cp.groups.findings} className={GROUP_HEADING_CLASS}>
+                <Command.Group heading={tCp('groups.findings')} className={GROUP_HEADING_CLASS}>
                   {findings.map(finding => (
                     <Command.Item
                       key={finding.id}
@@ -292,7 +294,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               )}
 
               {/* Actions */}
-              <Command.Group heading={cp.groups.actions} className={GROUP_HEADING_CLASS}>
+              <Command.Group heading={tCp('groups.actions')} className={GROUP_HEADING_CLASS}>
                 {ACTION_ITEMS.map(item => (
                   <Command.Item
                     key={item.id}
@@ -307,7 +309,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               </Command.Group>
 
               {/* Help */}
-              <Command.Group heading={cp.groups.help} className={GROUP_HEADING_CLASS}>
+              <Command.Group heading={tCp('groups.help')} className={GROUP_HEADING_CLASS}>
                 {HELP_ITEMS.map(item => (
                   <Command.Item
                     key={item.id}
@@ -331,7 +333,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             <div className="border-t border-forja-border-subtle px-3 py-1.5 flex items-center justify-between">
               <span className="font-display text-[10px] text-forja-text-gold/30">Forja</span>
               <span className="text-[10px] text-forja-text-muted/60">
-                ↑↓ {cp.footer.navigate} · ↵ {cp.footer.select} · Esc {cp.footer.close}
+                ↑↓ {tCp('footer.navigate')} · ↵ {tCp('footer.select')} · Esc {tCp('footer.close')}
               </span>
             </div>
           </Command>

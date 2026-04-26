@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { RunPhase } from '@/lib/types';
 import { formatMs } from '@/lib/format';
 import { gateDarkBgColors } from '@/lib/ui-constants';
@@ -48,6 +49,7 @@ function formatRelMs(ms: number): string {
 export default function RunGantt({ phases, runStart, runEnd }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
+  const t = useTranslations('gantt');
 
   const runStartMs = useMemo(() => new Date(runStart).getTime(), [runStart]);
 
@@ -72,13 +74,13 @@ export default function RunGantt({ phases, runStart, runEnd }: Props) {
   }, [totalMs]);
 
   if (phases.length === 0) {
-    return <p className="text-forja-text-muted text-sm">Sem fases registradas.</p>;
+    return <p className="text-forja-text-muted text-sm">{t('no_phases')}</p>;
   }
 
   return (
     <div className="rounded-lg border border-forja-border-subtle bg-[#0A0A0A] p-4">
       <div className="flex items-center justify-end gap-2 mb-4">
-        <span className="text-[10px] text-forja-text-muted">Zoom</span>
+        <span className="text-[10px] text-forja-text-muted">{t('zoom')}</span>
         <button
           onClick={() => setScale((s) => Math.min(s * 1.5, 8))}
           className="w-6 h-6 flex items-center justify-center border border-forja-border-default rounded text-xs text-forja-text-secondary hover:border-forja-border-gold hover:text-forja-text-gold transition-colors"
@@ -98,7 +100,7 @@ export default function RunGantt({ phases, runStart, runEnd }: Props) {
           onClick={() => setScale(1)}
           className="px-2 h-6 border border-forja-border-default rounded text-[10px] text-forja-text-muted hover:text-forja-text-secondary transition-colors"
         >
-          Reset
+          {t('reset')}
         </button>
       </div>
 
@@ -183,26 +185,26 @@ export default function RunGantt({ phases, runStart, runEnd }: Props) {
                         </p>
                         <dl className="space-y-1">
                           <div className="flex justify-between gap-4">
-                            <dt className="text-forja-text-muted">Início</dt>
+                            <dt className="text-forja-text-muted">{t('start')}</dt>
                             <dd className="text-forja-text-secondary font-mono">
                               {formatRelMs(startOffMs)}
                             </dd>
                           </div>
                           <div className="flex justify-between gap-4">
-                            <dt className="text-forja-text-muted">Fim</dt>
+                            <dt className="text-forja-text-muted">{t('end')}</dt>
                             <dd className="text-forja-text-secondary font-mono">
                               {formatRelMs(endOffMs)}
                             </dd>
                           </div>
                           <div className="flex justify-between gap-4">
-                            <dt className="text-forja-text-muted">Duração</dt>
+                            <dt className="text-forja-text-muted">{t('duration')}</dt>
                             <dd className="text-forja-text-secondary font-mono">
                               {formatMs(durMs)}
                             </dd>
                           </div>
                           {gateColor && phase.gate && (
                             <div className="flex justify-between gap-4">
-                              <dt className="text-forja-text-muted">Gate</dt>
+                              <dt className="text-forja-text-muted">{t('gate')}</dt>
                               <dd className="font-semibold" style={{ color: gateColor }}>
                                 {phase.gate}
                               </dd>

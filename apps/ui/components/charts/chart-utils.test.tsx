@@ -10,6 +10,17 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import * as React from 'react';
+
+// Mock next-intl before importing chart-utils so GranularityToggle can use useTranslations
+vi.mock('next-intl', () => {
+  const msgs: Record<string, Record<string, string>> = {
+    'gantt.granularity': { hour: 'hora', day: 'dia', week: 'semana', month: 'mês' },
+  };
+  return {
+    useTranslations: (ns: string) => (key: string) => msgs[ns]?.[key] ?? key,
+  };
+});
+
 import {
   formatBucket,
   GRANULARITY_LABELS,
@@ -151,13 +162,21 @@ describe('GranularityToggle — button count', () => {
   });
 });
 
+// Translated labels returned by the next-intl mock
+const MOCK_LABELS: Record<string, string> = {
+  hour: 'hora',
+  day: 'dia',
+  week: 'semana',
+  month: 'mês',
+};
+
 describe('GranularityToggle — active button highlight', () => {
   it('active button has border-forja-border-gold class', () => {
     const el = renderToggle('week', () => {});
     const buttons = collectElements(el, (e) => e.type === 'button');
 
-    // The button with label matching GRANULARITY_LABELS['week']
-    const activeLabel = GRANULARITY_LABELS['week'];
+    // Find the active button by its translated label (from i18n mock)
+    const activeLabel = MOCK_LABELS['week'];
     const activeButton = buttons.find((b) => {
       const children = b.props.children as React.ReactNode;
       return String(children) === activeLabel;
@@ -172,7 +191,7 @@ describe('GranularityToggle — active button highlight', () => {
     const el = renderToggle('hour', () => {});
     const buttons = collectElements(el, (e) => e.type === 'button');
 
-    const activeLabel = GRANULARITY_LABELS['hour'];
+    const activeLabel = MOCK_LABELS['hour'];
     const inactiveButtons = buttons.filter((b) => {
       const children = b.props.children as React.ReactNode;
       return String(children) !== activeLabel;

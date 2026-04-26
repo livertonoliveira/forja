@@ -1,4 +1,5 @@
 import lazyLoad from 'next/dynamic';
+import { getTranslations } from 'next-intl/server';
 import { listRuns, type RunFilters } from '@/lib/forja-store';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,14 +17,14 @@ const GateFunnelChart = lazyLoad(() => import('@/components/charts/GateFunnelCha
   loading: () => <Skeleton className="h-[300px] w-full" />,
 });
 
+export const dynamic = 'force-dynamic';
+
 const FINDINGS_LINES = [
   { dataKey: 'critical', stroke: '#DC2626', name: 'Critical' },
   { dataKey: 'high', stroke: '#F97316', name: 'High' },
   { dataKey: 'medium', stroke: '#EAB308', name: 'Medium' },
   { dataKey: 'low', stroke: '#22C55E', name: 'Low' },
 ];
-
-export const dynamic = 'force-dynamic';
 
 const MAX_Q_LEN = 200;
 const VALID_GATES = new Set(['pass', 'warn', 'fail']);
@@ -34,6 +35,8 @@ interface RunsPageProps {
 }
 
 export default async function RunsPage({ searchParams }: RunsPageProps) {
+  const t = await getTranslations('runs');
+
   const filters: RunFilters = {};
 
   if (searchParams.q) {
@@ -61,21 +64,21 @@ export default async function RunsPage({ searchParams }: RunsPageProps) {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-forja-text-primary mb-6">Execuções</h1>
+      <h1 className="text-xl font-semibold text-forja-text-primary mb-6">{t('title')}</h1>
 
       <section className="mb-8">
-        <h2 className="text-sm font-semibold text-forja-text-secondary uppercase tracking-wider mb-4">Tendências</h2>
+        <h2 className="text-sm font-semibold text-forja-text-secondary uppercase tracking-wider mb-4">{t('trends')}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <StaggeredReveal>
             <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
               <TrendChart
                 metric="findings"
                 lines={FINDINGS_LINES}
-                title="Findings por Severidade"
+                title={t('findings_by_severity')}
               />
             </div>
             <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
-              <GateFunnelChart title="Taxa de Gate" />
+              <GateFunnelChart title={t('gate_rate')} />
             </div>
           </StaggeredReveal>
         </div>

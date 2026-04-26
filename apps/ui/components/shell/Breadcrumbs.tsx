@@ -1,6 +1,7 @@
 'use client';
 
 import { useSelectedLayoutSegments } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 function capitalize(s: string): string {
@@ -9,17 +10,18 @@ function capitalize(s: string): string {
 
 export function Breadcrumbs() {
   const segments = useSelectedLayoutSegments();
+  const t = useTranslations('breadcrumbs');
 
   if (segments.length === 0) {
     return (
-      <span className="text-sm text-forja-text-primary font-medium">Home</span>
+      <span className="text-sm text-forja-text-primary font-medium">{t('home')}</span>
     );
   }
 
   return (
     <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm">
       <Link href="/" className="text-forja-text-secondary hover:text-forja-text-primary transition-colors">
-        Home
+        {t('home')}
       </Link>
       {segments.map((segment, index) => {
         const href = '/' + segments.slice(0, index + 1).join('/');
