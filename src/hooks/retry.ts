@@ -1,4 +1,5 @@
 import { enqueueDLQ } from '../store/dlq.js';
+import { getCircuitBreaker, CircuitOpenError } from './circuit-breaker.js';
 
 export class HttpError extends Error {
   constructor(
@@ -33,6 +34,7 @@ function calcBackoff(attempt: number, config: RetryConfig): number {
 }
 
 function isNonRetryable(err: unknown): boolean {
+  if (err instanceof CircuitOpenError) return true;
   if (err instanceof HttpError) {
     return err.status >= 400 && err.status < 500 && err.status !== 429;
   }
@@ -47,6 +49,18 @@ function getRetryAfterMs(err: unknown): number | null {
   return null;
 }
 
+async function maybeDLQ(hookType: string | undefined, dlqPayload: unknown, error: Error, attempts: number): Promise<void> {
+  if (hookType !== undefined && dlqPayload !== undefined) {
+    await enqueueDLQ({
+      hookType,
+      payload: dlqPayload,
+      errorMessage: error.message,
+      attempts,
+      lastAttemptAt: new Date().toISOString(),
+    }).catch((e: unknown) => console.warn('[forja] enqueueDLQ failed:', e instanceof Error ? e.message : String(e)));
+  }
+}
+
 export async function withRetry<T>(
   fn: () => Promise<T>,
   config: RetryConfig = defaults,
@@ -54,37 +68,24 @@ export async function withRetry<T>(
   hookType?: string,
   dlqPayload?: unknown
 ): Promise<T | void> {
+  const cb = hookType !== undefined ? getCircuitBreaker(hookType) : undefined
+  const callFn = cb !== undefined ? () => cb.call(fn) : fn
+
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     try {
-      return await fn();
+      return await callFn();
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
 
       if (isNonRetryable(err)) {
         await onExhausted(error);
-        if (hookType !== undefined && dlqPayload !== undefined) {
-          await enqueueDLQ({
-            hookType,
-            payload: dlqPayload,
-            errorMessage: error.message,
-            attempts: attempt + 1,
-            lastAttemptAt: new Date().toISOString(),
-          }).catch((e: unknown) => console.warn('[forja] enqueueDLQ failed:', e instanceof Error ? e.message : String(e)));
-        }
+        await maybeDLQ(hookType, dlqPayload, error, attempt + 1);
         return;
       }
 
       if (attempt === config.maxRetries) {
         await onExhausted(error);
-        if (hookType !== undefined && dlqPayload !== undefined) {
-          await enqueueDLQ({
-            hookType,
-            payload: dlqPayload,
-            errorMessage: error.message,
-            attempts: attempt + 1,
-            lastAttemptAt: new Date().toISOString(),
-          }).catch((e: unknown) => console.warn('[forja] enqueueDLQ failed:', e instanceof Error ? e.message : String(e)));
-        }
+        await maybeDLQ(hookType, dlqPayload, error, attempt + 1);
         return;
       }
 
