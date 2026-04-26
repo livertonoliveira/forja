@@ -1,6 +1,7 @@
 import type { JiraConfig } from '../schemas/config.js'
 import type { IntegrationProvider, IssueInput, IssueOutput, PRInput, PROutput } from './base.js'
 import { registerProviderFactory } from './factory.js'
+import { withRetry, HttpError } from '../hooks/retry.js'
 
 // NotImplementedError class (exported for tests)
 export class NotImplementedError extends Error {
@@ -37,10 +38,6 @@ function adf(text: string) {
   }
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 const ISSUE_ID_RE = /^[A-Z][A-Z0-9_]+-\d+$/
 
 export class JiraProvider implements IntegrationProvider {
@@ -60,24 +57,28 @@ export class JiraProvider implements IntegrationProvider {
     }
   }
 
-  // Rate limited: max 10 req/s (100ms between calls)
   private async _request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    await sleep(100)
-    const res = await fetch(`${this._config.baseUrl}${path}`, {
-      method,
-      headers: this._headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(10_000),
-    })
-    if (res.status === 401) {
-      throw new Error(
-        'Token Jira inválido ou expirado. Gere novo em: https://id.atlassian.com/manage-profile/security/api-tokens',
-      )
-    }
-    if (!res.ok) {
-      throw new Error(`[forja] Jira API error: ${res.status} ${method} ${path}`)
-    }
-    return res.json() as Promise<T>
+    const result = await withRetry(
+      async () => {
+        const r = await fetch(`${this._config.baseUrl}${path}`, {
+          method,
+          headers: this._headers,
+          body: body !== undefined ? JSON.stringify(body) : undefined,
+          signal: AbortSignal.timeout(10_000),
+        })
+        if (r.status === 401) {
+          throw new Error(
+            'Token Jira inválido ou expirado. Gere novo em: https://id.atlassian.com/manage-profile/security/api-tokens',
+          )
+        }
+        if (!r.ok) throw new HttpError(r.status, r.headers.get('Retry-After'))
+        return r
+      },
+      undefined,
+      async (err) => { throw err },
+      'jira',
+    ) as Response
+    return result.json() as Promise<T>
   }
 
   private async _getTransitions(issueId: string): Promise<JiraTransition[]> {

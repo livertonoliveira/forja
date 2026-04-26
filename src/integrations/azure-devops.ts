@@ -1,6 +1,7 @@
 import type { AzureDevOpsConfig } from '../schemas/config.js'
 import type { IntegrationProvider, IssueInput, IssueOutput, PRInput, PROutput } from './base.js'
 import { registerProviderFactory } from './factory.js'
+import { withRetry, HttpError } from '../hooks/retry.js'
 
 export type ProcessTemplate = 'Agile' | 'Scrum' | 'CMMI'
 
@@ -57,9 +58,16 @@ export class AzureDevOpsProvider implements IntegrationProvider {
     errorLabel: string,
     timeoutMs = 10_000,
   ): Promise<Response> {
-    const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
-    if (!res.ok) throw new Error(`[forja] AzureDevOps: ${errorLabel} (${res.status})`)
-    return res
+    return await withRetry(
+      async () => {
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
+        if (!r.ok) throw new HttpError(r.status, r.headers.get('Retry-After'))
+        return r
+      },
+      undefined,
+      async (err) => { throw err },
+      'azure-devops',
+    ) as Response
   }
 
   private async detectTemplate(): Promise<ProcessTemplate> {
@@ -101,9 +109,7 @@ export class AzureDevOpsProvider implements IntegrationProvider {
 
     if (repository) {
       const url = `${orgUrl}/${project}/_apis/git/repositories/${encodeURIComponent(repository)}?api-version=7.1`
-      const res = await fetch(url, { headers: this._headers(), signal: AbortSignal.timeout(10_000) })
-      if (res.status === 404) throw new Error(`[forja] AzureDevOps: repository '${repository}' not found`)
-      if (!res.ok) throw new Error(`[forja] AzureDevOps: failed to get repository (${res.status})`)
+      const res = await this._request(url, { headers: this._headers() }, `repository '${repository}' not found`)
       const data = (await res.json()) as { id: string; name: string }
       this._repoCache = { id: data.id, name: data.name }
       return this._repoCache
