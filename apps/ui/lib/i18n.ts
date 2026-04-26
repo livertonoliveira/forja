@@ -48,8 +48,39 @@ export const translations = {
     },
     dlq: {
       title: 'Fila Morta',
-      empty: 'Nenhuma execução com falha.',
-      description: 'Execuções que falharam e precisam de atenção.',
+      desc: 'Eventos webhook mortos — {count} total',
+      no_events: 'Nenhum evento morto',
+      no_events_desc: 'Todos os webhooks estão saudáveis.',
+      load_more: 'Carregar mais',
+      columns: {
+        type: 'Tipo',
+        status: 'Status',
+        attempts: 'Tentativas',
+        last_error: 'Último Erro',
+        date: 'Data',
+        actions: 'Ações',
+      },
+      status: {
+        dead: 'morto',
+        reprocessed: 'reprocessado',
+        ignored: 'ignorado',
+      },
+      actions: {
+        reprocess: 'Reprocessar',
+        ignore: 'Ignorar',
+        copy: 'Copiar JSON',
+        close: 'Fechar',
+        reprocessing: 'Reprocessando…',
+        ignoring: 'Ignorando…',
+        copied: 'Copiado!',
+      },
+      modal: {
+        title: 'Payload do Evento',
+      },
+      filters: {
+        all_statuses: 'Todos os status',
+        all_types: 'Todos os tipos',
+      },
     },
     common: {
       settings: 'Configurações',
@@ -121,8 +152,39 @@ export const translations = {
     },
     dlq: {
       title: 'Dead Letter Queue',
-      empty: 'No failed runs.',
-      description: 'Runs that failed and need attention.',
+      desc: 'Dead webhook events — {count} total',
+      no_events: 'No dead events',
+      no_events_desc: 'All webhooks are healthy.',
+      load_more: 'Load more',
+      columns: {
+        type: 'Type',
+        status: 'Status',
+        attempts: 'Attempts',
+        last_error: 'Last Error',
+        date: 'Date',
+        actions: 'Actions',
+      },
+      status: {
+        dead: 'dead',
+        reprocessed: 'reprocessed',
+        ignored: 'ignored',
+      },
+      actions: {
+        reprocess: 'Reprocess',
+        ignore: 'Ignore',
+        copy: 'Copy JSON',
+        close: 'Close',
+        reprocessing: 'Reprocessing…',
+        ignoring: 'Ignoring…',
+        copied: 'Copied!',
+      },
+      modal: {
+        title: 'Event Payload',
+      },
+      filters: {
+        all_statuses: 'All statuses',
+        all_types: 'All types',
+      },
     },
     common: {
       settings: 'Settings',

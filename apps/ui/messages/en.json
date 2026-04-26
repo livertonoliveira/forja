@@ -177,19 +177,21 @@
   },
   "dlq": {
     "title": "Dead Letter Queue",
-    "desc": "Runs that failed and need attention",
-    "pending_one": "pending",
-    "pending_other": "pending",
+    "desc": "Dead webhook events — {count} total",
     "no_events": "No dead events",
-    "no_events_desc": "Everything working fine. No failed pipelines pending.",
+    "no_events_desc": "All webhooks are healthy.",
+    "load_more": "Load more",
     "columns": {
-      "run_id": "Run ID",
-      "issue": "Issue",
+      "type": "Type",
       "status": "Status",
-      "start": "Start",
-      "duration": "Duration",
-      "cost": "Cost",
-      "gate": "Gate"
+      "attempts": "Attempts",
+      "last_error": "Last Error",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "filters": {
+      "all_statuses": "All statuses",
+      "all_types": "All types"
     }
   },
   "findings": {
