@@ -25,12 +25,22 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
     }
 
+    const hookType = searchParams.get('hookType');
+    if (hookType && (hookType.length > 100 || !/^[\w\-.]+$/.test(hookType))) {
+      return NextResponse.json({ error: 'Invalid hookType value' }, { status: 400 });
+    }
+
     const params: unknown[] = [];
-    let whereClause = '';
+    const conditions: string[] = [];
     if (status) {
       params.push(status);
-      whereClause = `WHERE status = $${params.length}`;
+      conditions.push(`status = $${params.length}`);
     }
+    if (hookType) {
+      params.push(hookType);
+      conditions.push(`hook_type = $${params.length}`);
+    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const [eventsResult, countResult] = await Promise.all([
       pool.query(
