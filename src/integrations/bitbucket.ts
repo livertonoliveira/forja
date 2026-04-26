@@ -1,6 +1,7 @@
 import type { BitbucketConfig } from '../schemas/config.js'
 import type { IntegrationProvider, IssueInput, IssueOutput, PRInput, PROutput } from './base.js'
 import { registerProviderFactory } from './factory.js'
+import { withRetry, HttpError } from '../hooks/retry.js'
 
 const BASE_URL = 'https://api.bitbucket.org'
 const SHA_RE = /^[0-9a-f]{7,40}$/i
@@ -51,19 +52,25 @@ export class BitbucketProvider implements IntegrationProvider {
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json'
     }
-    const res = await fetch(url, {
-      method,
-      headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(timeoutMs),
-    })
-    if (!res.ok) {
-      const raw = await res.text().catch(() => '')
-      const safe = raw.replace(/[\x00-\x1f\x7f]/g, ' ').slice(0, 200)
-      throw new Error(`[bitbucket] ${method} ${url} → ${res.status}: ${safe}`)
-    }
-    if (res.status === 204) return undefined as T
-    return res.json() as Promise<T>
+    const result = await withRetry(
+      async () => {
+        const r = await fetch(url, {
+          method,
+          headers,
+          body: body !== undefined ? JSON.stringify(body) : undefined,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!r.ok) {
+          throw new HttpError(r.status, r.headers.get('Retry-After'))
+        }
+        return r
+      },
+      undefined,
+      async (err) => { throw err },
+      'bitbucket',
+    ) as Response
+    if (result.status === 204) return undefined as T
+    return result.json() as Promise<T>
   }
 
   private async _checkHasIssues(): Promise<boolean> {

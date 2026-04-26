@@ -1,6 +1,7 @@
 import type { GitLabConfig } from '../schemas/config.js'
 import type { IntegrationProvider, IssueInput, IssueOutput, PRInput, PROutput } from './base.js'
 import { registerProviderFactory } from './factory.js'
+import { withRetry, HttpError } from '../hooks/retry.js'
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: '#FF0000',
@@ -35,41 +36,64 @@ export class GitLabProvider implements IntegrationProvider {
   }
 
   private async _get<T>(url: string, timeoutMs = 10_000): Promise<T> {
-    const res = await fetch(url, {
-      headers: this._headers,
-      signal: AbortSignal.timeout(timeoutMs),
-    })
-    if (!res.ok) throw new Error(`[forja] GitLab GET → ${res.status}`)
+    const result = await withRetry(
+      async () => {
+        const r = await fetch(url, {
+          headers: this._headers,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!r.ok) throw new HttpError(r.status, r.headers.get('Retry-After'))
+        return r
+      },
+      undefined,
+      async (err) => { throw err },
+      'gitlab',
+    ) as Response
     try {
-      return await res.json() as T
+      return await result.json() as T
     } catch {
-      throw new Error(`[forja] GitLab GET → invalid JSON response (${res.status})`)
+      throw new Error(`[forja] GitLab GET → invalid JSON response`)
     }
   }
 
   private async _post<T>(url: string, body: unknown, timeoutMs = 10_000): Promise<T> {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: this._headers,
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(timeoutMs),
-    })
-    if (!res.ok) throw new Error(`[forja] GitLab POST → ${res.status}`)
+    const result = await withRetry(
+      async () => {
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: this._headers,
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!r.ok) throw new HttpError(r.status, r.headers.get('Retry-After'))
+        return r
+      },
+      undefined,
+      async (err) => { throw err },
+      'gitlab',
+    ) as Response
     try {
-      return await res.json() as T
+      return await result.json() as T
     } catch {
-      throw new Error(`[forja] GitLab POST → invalid JSON response (${res.status})`)
+      throw new Error(`[forja] GitLab POST → invalid JSON response`)
     }
   }
 
   private async _put(url: string, body: unknown, timeoutMs = 10_000): Promise<void> {
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: this._headers,
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(timeoutMs),
-    })
-    if (!res.ok) throw new Error(`[forja] GitLab PUT ${url} → ${res.status}`)
+    await withRetry(
+      async () => {
+        const r = await fetch(url, {
+          method: 'PUT',
+          headers: this._headers,
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!r.ok) throw new HttpError(r.status, r.headers.get('Retry-After'))
+      },
+      undefined,
+      async (err) => { throw err },
+      'gitlab',
+    )
   }
 
   private async _detectVersion(): Promise<string> {
