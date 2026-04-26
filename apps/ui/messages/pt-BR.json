@@ -1,5 +1,302 @@
 {
+  "nav": {
+    "runs": "Runs",
+    "cost": "Custo",
+    "heatmap": "Heatmap",
+    "issues": "Tarefas",
+    "dlq": "Fila Morta",
+    "pipeline": "Pipeline",
+    "observability": "Observabilidade"
+  },
+  "runs": {
+    "title": "Execuções",
+    "recent": "Execuções Recentes",
+    "trends": "Tendências",
+    "findings_by_severity": "Findings por Severidade",
+    "gate_rate": "Taxa de Gate",
+    "empty": "Nenhum run ainda",
+    "start_prompt": "Inicie um pipeline com forja run para ver os resultados aqui.",
+    "run_action": "Executar forja run",
+    "no_results": "Nenhum resultado",
+    "no_results_desc": "Nenhuma execução corresponde aos filtros aplicados.",
+    "clear_filters": "Limpar filtros",
+    "back": "← Execuções",
+    "phases": "Fases",
+    "in_progress": "Em andamento",
+    "compare": {
+      "title": "Comparação de Runs",
+      "description": "{count} runs comparados",
+      "cross_project_warning": "Estes runs pertencem a projetos diferentes. A comparação prossegue normalmente, mas os resultados podem refletir diferenças de contexto entre projetos.",
+      "cost_variation": "Variação de Custo",
+      "duration_variation": "Variação de Duração",
+      "gate_older": "Gate (mais antigo)",
+      "gate_newer": "Gate (mais novo)",
+      "runs_compared": "Runs comparados",
+      "new": "Novos",
+      "resolved": "Resolvidos",
+      "persistent": "Persistentes",
+      "select_to_compare": "Selecione runs para comparar",
+      "select_desc": "Selecione 2 ou mais runs na lista de execuções para iniciar a comparação.",
+      "selected": "{count} de {max} selecionados",
+      "select_up_to": "Selecione até 5 runs para comparar",
+      "compare_button": "Comparar ({count})"
+    },
+    "select_run": "Selecionar run {id}",
+    "columns": {
+      "run_id": "Run ID",
+      "issue": "Tarefa",
+      "status": "Status",
+      "duration": "Duração",
+      "cost": "Custo",
+      "gate": "Gate",
+      "start": "Início",
+      "regression": "Regressão",
+      "number": "#",
+      "select": "Selecionar"
+    },
+    "detail": {
+      "task": "Tarefa",
+      "status": "Status",
+      "duration": "Duração",
+      "final_gate": "Gate Final",
+      "total_cost": "Custo Total",
+      "total_tokens": "Tokens Totais",
+      "start": "Início"
+    }
+  },
+  "gantt": {
+    "no_phases": "Sem fases registradas.",
+    "tokens_in": "Tokens de entrada",
+    "tokens_out": "Tokens de saída",
+    "zoom": "Zoom",
+    "reset": "Resetar",
+    "start": "Início",
+    "end": "Fim",
+    "duration": "Duração",
+    "gate": "Gate",
+    "granularity": {
+      "hour": "hora",
+      "day": "dia",
+      "week": "semana",
+      "month": "mês"
+    }
+  },
+  "issues": {
+    "title": "Tarefas",
+    "back": "← Tarefas",
+    "empty": "Nenhuma tarefa encontrada.",
+    "no_runs": "Nenhuma execução encontrada para esta tarefa.",
+    "columns": {
+      "issue": "Tarefa",
+      "runs": "Execuções",
+      "last_gate": "Último Gate",
+      "last_run": "Última Execução"
+    }
+  },
+  "cost": {
+    "title": "Custo",
+    "total": "Total",
+    "input": "Entrada",
+    "output": "Saída",
+    "cache": "Cache",
+    "total_accumulated": "Custo Total Acumulado",
+    "last_30_days": "últimos 30 dias",
+    "top_10_projects": "Top 10 Projetos por Custo",
+    "no_projects": "Nenhum projeto",
+    "no_cost_desc": "Nenhum custo registrado no período selecionado.",
+    "cost_by_project": "Custo por Projeto — Breakdown Empilhado",
+    "no_data": "Sem dados",
+    "no_project_cost": "Nenhum projeto com custo no período.",
+    "cost_heatmap": "Heatmap de Custo — 7×24",
+    "cost_heatmap_desc": "Custo médio por dia da semana × hora do dia",
+    "alerts": "Alertas",
+    "add_alert": "Adicionar alerta",
+    "no_alerts": "Nenhum alerta configurado",
+    "no_alerts_desc": "Configure alertas de custo para receber notificações quando thresholds forem ultrapassados.",
+    "triggered": "Disparado",
+    "active": "Ativo",
+    "budget_cap": "Budget Cap",
+    "new_alert": "Novo Alerta",
+    "project_label": "Projeto",
+    "threshold_label": "Threshold (USD)",
+    "period_label": "Período",
+    "monthly": "Mensal",
+    "weekly": "Semanal",
+    "daily": "Diário",
+    "channels": "Canais",
+    "budget_cap_desc": "Budget Cap (bloqueia novos runs ao ultrapassar)",
+    "creating": "Criando...",
+    "create_alert": "Criar Alerta",
+    "cancel": "Cancelar",
+    "export_csv": "Exportar CSV",
+    "csv_success": "CSV exportado com sucesso",
+    "csv_projects": "{count} projeto(s) exportado(s)",
+    "alert_created": "Alerta criado",
+    "alert_created_desc": "Threshold {threshold} para {project}",
+    "alert_error": "Erro ao criar alerta",
+    "alert_removed": "Alerta removido",
+    "alert_removed_desc": "Alerta de {project} removido",
+    "remove_alert": "Remover alerta",
+    "usd": "USD",
+    "columns": {
+      "number": "#",
+      "project": "Projeto",
+      "total": "Total",
+      "input": "Entrada",
+      "output": "Saída",
+      "cache": "Cache",
+      "runs": "Execuções"
+    }
+  },
+  "heatmap": {
+    "title": "Heatmap de Atividade",
+    "desc": "Intensidade de atividade por dia e hora — últimos 365 dias",
+    "export_png": "Exportar PNG",
+    "loading": "Carregando...",
+    "no_activity": "Sem atividade",
+    "view_runs": "Ver runs",
+    "metrics": {
+      "runs": "Runs",
+      "critical_findings": "Findings Críticos",
+      "cost_usd": "Custo (USD)"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Fev",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Set",
+      "oct": "Out",
+      "nov": "Nov",
+      "dec": "Dez"
+    }
+  },
+  "dlq": {
+    "title": "Fila Morta",
+    "desc": "Runs com falha que precisam de atenção",
+    "pending_one": "pendente",
+    "pending_other": "pendentes",
+    "no_events": "Nenhum evento morto",
+    "no_events_desc": "Tudo funcionando bem. Nenhum pipeline com falha pendente.",
+    "columns": {
+      "run_id": "Run ID",
+      "issue": "Tarefa",
+      "status": "Status",
+      "start": "Início",
+      "duration": "Duração",
+      "cost": "Custo",
+      "gate": "Gate"
+    }
+  },
+  "findings": {
+    "none": "Nenhum finding registrado neste run.",
+    "title": "Findings ({count})",
+    "columns": {
+      "severity": "Severidade",
+      "category": "Categoria",
+      "message": "Mensagem",
+      "file": "Arquivo",
+      "phase": "Fase"
+    },
+    "create_issue": "Criar Issue",
+    "issue_title_label": "Título",
+    "issue_desc_label": "Descrição",
+    "provider_label": "Provider",
+    "creating": "Criando...",
+    "create": "Criar",
+    "cancel": "Cancelar",
+    "issue_created": "Issue criado com sucesso",
+    "error_title": "Erro {status}",
+    "error_desc": "Não foi possível criar o issue. Tente novamente.",
+    "view": "Ver",
+    "detail": {
+      "not_found": "Finding não encontrado ou banco de dados indisponível.",
+      "section_detail": "Detalhe",
+      "section_origin": "Origem",
+      "section_history": "Histórico",
+      "no_history": "Nenhuma ocorrência anterior.",
+      "category_label": "Categoria",
+      "file_label": "Arquivo",
+      "fingerprint_label": "Fingerprint",
+      "copy_link": "Copiar link",
+      "close": "Fechar",
+      "create_issue": "Criar Issue"
+    }
+  },
+  "regression": {
+    "label": "Regressão",
+    "title": "Gate piorou em relação ao run anterior"
+  },
+  "commandPalette": {
+    "placeholder": "Buscar comandos, runs, findings…",
+    "noResults": "Nenhum resultado para",
+    "tryDifferentTerm": "Tente um termo diferente",
+    "groups": {
+      "navigation": "Navegação",
+      "recentRuns": "Runs Recentes",
+      "findings": "Findings",
+      "actions": "Ações",
+      "help": "Ajuda"
+    },
+    "footer": {
+      "navigate": "navegar",
+      "select": "selecionar",
+      "close": "fechar"
+    },
+    "nav": {
+      "runs_desc": "Execuções recentes",
+      "cost_desc": "Análise de custo",
+      "heatmap_desc": "Mapa de achados",
+      "issues_desc": "Tarefas e issues",
+      "dlq_desc": "Dead Letter Queue"
+    },
+    "actions": {
+      "copy_link": "Copiar link da página",
+      "toggle_theme": "Toggle tema"
+    },
+    "help": {
+      "shortcuts": "Ver atalhos",
+      "docs": "Documentação",
+      "bug": "Reportar bug"
+    }
+  },
+  "heatmapDays": {
+    "sun": "Dom",
+    "mon": "Seg",
+    "tue": "Ter",
+    "wed": "Qua",
+    "thu": "Qui",
+    "fri": "Sex",
+    "sat": "Sáb"
+  },
+  "filters": {
+    "search_placeholder": "Buscar por issue ID...",
+    "today": "Hoje",
+    "reset": "Resetar"
+  },
+  "charts": {
+    "load_error": "Falha ao carregar dados.",
+    "no_data": "Sem dados para o período selecionado.",
+    "export_csv": "Exportar CSV"
+  },
+  "breadcrumbs": {
+    "home": "Home"
+  },
   "common": {
-    "loading": "Carregando"
+    "loading": "Carregando…",
+    "error": "Erro",
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "settings": "Configurações",
+    "lang": "PT",
+    "lang_full": "Português",
+    "expand_sidebar": "Expandir barra lateral",
+    "collapse_sidebar": "Recolher barra lateral",
+    "unknown_error": "Erro desconhecido"
   }
 }
