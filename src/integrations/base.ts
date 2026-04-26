@@ -3,6 +3,7 @@ export interface IssueInput {
   description: string
   severity: string
   labels?: string[]
+  parentId?: string
 }
 
 export interface ResourceOutput {
