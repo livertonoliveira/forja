@@ -1,6 +1,7 @@
 import { Command } from 'commander'
 import '../doctor/checks/index.js'
 import { getChecks, type CheckResult } from '../doctor/check.js'
+import { listCircuitBreakers } from '../../hooks/circuit-breaker.js'
 
 type CheckOutput = CheckResult & { name: string }
 
@@ -37,7 +38,7 @@ export const doctorCommand = new Command('doctor')
     const code = failCount > 0 ? 2 : warnCount > 0 ? 1 : 0
 
     if (options.json) {
-      console.log(JSON.stringify(results, null, 2))
+      console.log(JSON.stringify({ checks: results, circuitBreakers: listCircuitBreakers() }, null, 2))
       process.exit(code)
     }
 

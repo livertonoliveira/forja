@@ -16,12 +16,17 @@ import type { DoctorCheck } from '../../doctor/check.js'
 // vi.hoisted ensures mockGetChecks is available when vi.mock factory runs
 // ---------------------------------------------------------------------------
 
-const { mockGetChecks } = vi.hoisted(() => ({
+const { mockGetChecks, mockListCircuitBreakers } = vi.hoisted(() => ({
   mockGetChecks: vi.fn<[], DoctorCheck[]>(),
+  mockListCircuitBreakers: vi.fn(() => []),
 }))
 
 vi.mock('../../doctor/check.js', () => ({
   getChecks: mockGetChecks,
+}))
+
+vi.mock('../../../hooks/circuit-breaker.js', () => ({
+  listCircuitBreakers: mockListCircuitBreakers,
 }))
 
 // Also mock the side-effect import that registers real checks
@@ -195,15 +200,17 @@ describe('doctor command — --json flag', () => {
     expect(() => JSON.parse(combined)).not.toThrow()
   })
 
-  it('outputs an array', async () => {
+  it('outputs an object with checks and circuitBreakers fields', async () => {
     const { logs } = await runDoctorCommand(['--json'])
     const parsed = JSON.parse(logs.join(''))
-    expect(Array.isArray(parsed)).toBe(true)
+    expect(Array.isArray(parsed.checks)).toBe(true)
+    expect(Array.isArray(parsed.circuitBreakers)).toBe(true)
   })
 
   it('each entry has name, status, and message fields', async () => {
     const { logs } = await runDoctorCommand(['--json'])
-    const [entry] = JSON.parse(logs.join(''))
+    const { checks } = JSON.parse(logs.join(''))
+    const [entry] = checks
     expect(entry).toHaveProperty('name', 'check-json')
     expect(entry).toHaveProperty('status', 'pass')
     expect(entry).toHaveProperty('message', 'json output ok')
