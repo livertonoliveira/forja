@@ -177,19 +177,21 @@
   },
   "dlq": {
     "title": "Fila Morta",
-    "desc": "Runs com falha que precisam de atenção",
-    "pending_one": "pendente",
-    "pending_other": "pendentes",
+    "desc": "Eventos webhook mortos — {count} total",
     "no_events": "Nenhum evento morto",
-    "no_events_desc": "Tudo funcionando bem. Nenhum pipeline com falha pendente.",
+    "no_events_desc": "Todos os webhooks estão saudáveis.",
+    "load_more": "Carregar mais",
     "columns": {
-      "run_id": "Run ID",
-      "issue": "Tarefa",
+      "type": "Tipo",
       "status": "Status",
-      "start": "Início",
-      "duration": "Duração",
-      "cost": "Custo",
-      "gate": "Gate"
+      "attempts": "Tentativas",
+      "last_error": "Último Erro",
+      "date": "Data",
+      "actions": "Ações"
+    },
+    "filters": {
+      "all_statuses": "Todos os status",
+      "all_types": "Todos os tipos"
     }
   },
   "findings": {

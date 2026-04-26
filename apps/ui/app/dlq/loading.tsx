@@ -12,7 +12,7 @@ export default function Loading() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-forja-border-default">
-              {Array.from({ length: 7 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <th key={i} className="pb-3 pr-6 text-left">
                   <Skeleton className="h-4 w-16" />
                 </th>
@@ -21,7 +21,7 @@ export default function Loading() {
           </thead>
           <tbody>
             {Array.from({ length: 5 }).map((_, i) => (
-              <SkeletonRow key={i} delay={i * 100} columns={7} />
+              <SkeletonRow key={i} delay={i * 100} columns={6} />
             ))}
           </tbody>
         </table>
