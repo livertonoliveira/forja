@@ -64,6 +64,20 @@
       "when": 1745453200000,
       "tag": "0008_fingerprint",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1745627000000,
+      "tag": "0009_cost_breakdown_idx",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1745628000000,
+      "tag": "0010_dlq_schema",
+      "breakpoints": true
     }
   ]
 }
