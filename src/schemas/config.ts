@@ -23,12 +23,18 @@ export const AzureDevOpsConfigSchema = z.object({
   token: z.string().min(1),
 })
 
+const _bbSlugRe = /^[^/\\?#\s]+$/
+
 export const BitbucketConfigSchema = z.object({
-  workspace: z.string().min(1),
-  repoSlug: z.string().min(1),
-  username: z.string().min(1),
-  appPassword: z.string().min(1),
-})
+  workspace: z.string().min(1).regex(_bbSlugRe, 'workspace must not contain /, \\, ?, # or whitespace'),
+  repoSlug: z.string().min(1).regex(_bbSlugRe, 'repoSlug must not contain /, \\, ?, # or whitespace'),
+  username: z.string().min(1).optional(),
+  appPassword: z.string().min(1).optional(),
+  accessToken: z.string().min(1).optional(),
+}).refine(
+  (data) => data.accessToken !== undefined || (data.username !== undefined && data.appPassword !== undefined),
+  { message: 'BitbucketConfig requires either accessToken or both username and appPassword' }
+)
 
 export const DatadogConfigSchema = z.object({
   apiKey: z.string().min(1),
