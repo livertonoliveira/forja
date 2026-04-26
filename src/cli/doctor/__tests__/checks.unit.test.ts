@@ -46,6 +46,7 @@ import '../checks/disk-space.js'
 import '../checks/db-connection.js'
 import '../checks/linear-connectivity.js'
 import '../checks/db-migrations.js'
+import '../checks/i18n-config.js'
 
 import { getChecks } from '../check.js'
 import fs from 'node:fs/promises'
@@ -223,5 +224,57 @@ describe('linear-connectivity check — name only', () => {
     const check = getChecks().find((c) => c.name === 'linear-connectivity')
     expect(check).toBeDefined()
     expect(check!.name).toBe('linear-connectivity')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// i18n-config
+// ---------------------------------------------------------------------------
+
+describe('i18n-config check', () => {
+  afterEach(() => { vi.restoreAllMocks() })
+
+  it('returns pass when forja/config.md does not exist', async () => {
+    fsMock.readFile.mockRejectedValue(Object.assign(new Error('no such file'), { code: 'ENOENT' }))
+    const check = getChecks().find((c) => c.name === 'i18n-config')
+    expect(check).toBeDefined()
+    const result = await check!.run()
+    expect(result.status).toBe('pass')
+  })
+
+  it('returns warn when artifact_language is absent', async () => {
+    fsMock.readFile.mockResolvedValue('## Project\n## Stack\n## Linear Integration\n')
+    const check = getChecks().find((c) => c.name === 'i18n-config')
+    expect(check).toBeDefined()
+    const result = await check!.run()
+    expect(result.status).toBe('warn')
+    expect(result.message).toContain('artifact_language')
+    expect(result.remediation).toContain('forja config migrate')
+  })
+
+  it('returns fail when artifact_language has an invalid value', async () => {
+    fsMock.readFile.mockResolvedValue('## Conventions\n- artifact_language: xx-INVALID\n')
+    const check = getChecks().find((c) => c.name === 'i18n-config')
+    expect(check).toBeDefined()
+    const result = await check!.run()
+    expect(result.status).toBe('fail')
+    expect(result.message).toContain('xx-INVALID')
+  })
+
+  it('returns pass when artifact_language is valid', async () => {
+    fsMock.readFile.mockResolvedValue('## Conventions\n- artifact_language: pt-BR\n')
+    const check = getChecks().find((c) => c.name === 'i18n-config')
+    expect(check).toBeDefined()
+    const result = await check!.run()
+    expect(result.status).toBe('pass')
+    expect(result.message).toContain('pt-BR')
+  })
+
+  it('returns pass when artifact_language is set via human-readable label with inline comment', async () => {
+    fsMock.readFile.mockResolvedValue('## Conventions\n- Artifact language: en (specs, docs)\n')
+    const check = getChecks().find((c) => c.name === 'i18n-config')
+    expect(check).toBeDefined()
+    const result = await check!.run()
+    expect(result.status).toBe('pass')
   })
 })
