@@ -38,6 +38,27 @@ const JIRA_CONFIG: JiraConfig = {
   projectKey: 'PROJ',
 }
 
+// Workflow fixtures for transition tests
+const SCRUM_TRANSITIONS = [
+  { id: '11', name: 'To Do' },
+  { id: '21', name: 'In Progress' },
+  { id: '31', name: 'Done' },
+]
+
+const KANBAN_TRANSITIONS = [
+  { id: '41', name: 'Open' },
+  { id: '51', name: 'In Progress' },
+  { id: '61', name: 'Closed' },
+]
+
+const CUSTOM_TRANSITIONS = [
+  { id: '71', name: 'Backlog' },
+  { id: '81', name: 'Development' },
+  { id: '91', name: 'Testing' },
+  { id: '101', name: 'Resolved' },
+  { id: '111', name: 'Cancelled' },
+]
+
 // ---------------------------------------------------------------------------
 // Helper to create a fake Response
 // ---------------------------------------------------------------------------
@@ -289,18 +310,6 @@ describe('JiraProvider — security guards', () => {
 // ---------------------------------------------------------------------------
 
 describe('JiraProvider — NotImplementedError methods', () => {
-  it('updateIssue throws NotImplementedError', async () => {
-    const provider = new JiraProvider(JIRA_CONFIG)
-    await expect(provider.updateIssue('PROJ-1', { title: 'new' })).rejects.toThrow(NotImplementedError)
-    await expect(provider.updateIssue('PROJ-1', {})).rejects.toThrow(/updateIssue/)
-  })
-
-  it('closeIssue throws NotImplementedError', async () => {
-    const provider = new JiraProvider(JIRA_CONFIG)
-    await expect(provider.closeIssue('PROJ-1')).rejects.toThrow(NotImplementedError)
-    await expect(provider.closeIssue('PROJ-1')).rejects.toThrow(/closeIssue/)
-  })
-
   it('createPR throws NotImplementedError', async () => {
     const provider = new JiraProvider(JIRA_CONFIG)
     const prInput: PRInput = { title: 'PR', body: 'body', branch: 'feat/x', base: 'main' }
@@ -311,11 +320,163 @@ describe('JiraProvider — NotImplementedError methods', () => {
   it('NotImplementedError has correct name property', async () => {
     const provider = new JiraProvider(JIRA_CONFIG)
     try {
-      await provider.updateIssue('x', {})
+      await provider.createPR({ title: 'PR', body: 'body', branch: 'feat/x', base: 'main' })
     } catch (err) {
       expect(err).toBeInstanceOf(NotImplementedError)
       expect((err as NotImplementedError).name).toBe('NotImplementedError')
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// updateIssue — dynamic transitions
+// ---------------------------------------------------------------------------
+
+describe('JiraProvider — updateIssue (Scrum workflow)', () => {
+  it('GETs transitions then POSTs the found transition ID', async () => {
+    mockFetch
+      .mockResolvedValueOnce(makeResponse({ transitions: SCRUM_TRANSITIONS }))
+      .mockResolvedValueOnce(makeResponse({}))
+
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await provider.updateIssue('PROJ-1', { status: 'Done' } as unknown as Partial<IssueInput>)
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    const [getUrl] = mockFetch.mock.calls[0] as [string, RequestInit]
+    const [postUrl, postInit] = mockFetch.mock.calls[1] as [string, RequestInit]
+    expect(getUrl).toContain('/rest/api/3/issue/PROJ-1/transitions')
+    expect(postUrl).toContain('/rest/api/3/issue/PROJ-1/transitions')
+    const body = JSON.parse(postInit.body as string)
+    expect(body).toEqual({ transition: { id: '31' } })
+  })
+
+  it('is case-insensitive when matching transition name', async () => {
+    mockFetch
+      .mockResolvedValueOnce(makeResponse({ transitions: SCRUM_TRANSITIONS }))
+      .mockResolvedValueOnce(makeResponse({}))
+
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await provider.updateIssue('PROJ-1', { status: 'done' } as unknown as Partial<IssueInput>)
+
+    const [, postInit] = mockFetch.mock.calls[1] as [string, RequestInit]
+    const body = JSON.parse(postInit.body as string)
+    expect(body).toEqual({ transition: { id: '31' } })
+  })
+
+  it('throws informative error listing available transitions when transition not found', async () => {
+    mockFetch.mockResolvedValue(makeResponse({ transitions: SCRUM_TRANSITIONS }))
+
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await expect(
+      provider.updateIssue('PROJ-1', { status: 'Cancelled' } as unknown as Partial<IssueInput>)
+    ).rejects.toThrow(/Cancelled/)
+  })
+
+  it('error message lists available transition names', async () => {
+    mockFetch.mockResolvedValue(makeResponse({ transitions: SCRUM_TRANSITIONS }))
+
+    const provider = new JiraProvider(JIRA_CONFIG)
+    const err = (await provider
+      .updateIssue('PROJ-1', { status: 'Cancelled' } as unknown as Partial<IssueInput>)
+      .catch((e: Error) => e)) as Error
+    expect(err.message).toContain('To Do')
+    expect(err.message).toContain('In Progress')
+    expect(err.message).toContain('Done')
+  })
+
+  it('resolves immediately when patch has no status field', async () => {
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await expect(provider.updateIssue('PROJ-1', {})).resolves.toBeUndefined()
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('throws NotImplementedError when IssueInput fields (title, description, etc.) are passed', async () => {
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await expect(
+      provider.updateIssue('PROJ-1', { title: 'New title' })
+    ).rejects.toBeInstanceOf(NotImplementedError)
+  })
+
+  it('throws for invalid issueId format when status is provided', async () => {
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await expect(
+      provider.updateIssue('../../admin', { status: 'Done' } as unknown as Partial<IssueInput>)
+    ).rejects.toThrow(/invalid issueId/)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// closeIssue — fallback logic across 3 workflows
+// ---------------------------------------------------------------------------
+
+describe('JiraProvider — closeIssue (invalid issueId)', () => {
+  it('throws for invalid issueId format', async () => {
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await expect(provider.closeIssue('../../admin')).rejects.toThrow(/invalid issueId/)
+    await expect(provider.closeIssue('proj-1')).rejects.toThrow(/invalid issueId/)
+  })
+})
+
+describe('JiraProvider — closeIssue (Scrum workflow — Done available)', () => {
+  it('transitions to Done when available', async () => {
+    mockFetch
+      .mockResolvedValueOnce(makeResponse({ transitions: SCRUM_TRANSITIONS }))
+      .mockResolvedValueOnce(makeResponse({}))
+
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await provider.closeIssue('PROJ-10')
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    const [, postInit] = mockFetch.mock.calls[1] as [string, RequestInit]
+    const body = JSON.parse(postInit.body as string)
+    expect(body).toEqual({ transition: { id: '31' } })
+  })
+})
+
+describe('JiraProvider — closeIssue (Kanban workflow — falls back to Closed)', () => {
+  it('uses Closed when Done is not available', async () => {
+    mockFetch
+      .mockResolvedValueOnce(makeResponse({ transitions: KANBAN_TRANSITIONS }))
+      .mockResolvedValueOnce(makeResponse({}))
+
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await provider.closeIssue('PROJ-20')
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    const [, postInit] = mockFetch.mock.calls[1] as [string, RequestInit]
+    const body = JSON.parse(postInit.body as string)
+    expect(body).toEqual({ transition: { id: '61' } })
+  })
+})
+
+describe('JiraProvider — closeIssue (custom workflow — falls back to Resolved)', () => {
+  it('uses Resolved when Done and Closed are not available', async () => {
+    mockFetch
+      .mockResolvedValueOnce(makeResponse({ transitions: CUSTOM_TRANSITIONS }))
+      .mockResolvedValueOnce(makeResponse({}))
+
+    const provider = new JiraProvider(JIRA_CONFIG)
+    await provider.closeIssue('PROJ-30')
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    const [, postInit] = mockFetch.mock.calls[1] as [string, RequestInit]
+    const body = JSON.parse(postInit.body as string)
+    expect(body).toEqual({ transition: { id: '101' } })
+  })
+
+  it('throws informative error when no fallback transition is available', async () => {
+    const noCloseTransitions = [
+      { id: '71', name: 'Backlog' },
+      { id: '81', name: 'Development' },
+      { id: '91', name: 'Testing' },
+    ]
+    mockFetch.mockResolvedValueOnce(makeResponse({ transitions: noCloseTransitions }))
+
+    const provider = new JiraProvider(JIRA_CONFIG)
+    const err = (await provider.closeIssue('PROJ-99').catch((e: Error) => e)) as Error
+    expect(err.message).toContain('closeIssue')
+    expect(err.message).toContain('Done')
+    expect(err.message).toContain('Backlog')
   })
 })
 
