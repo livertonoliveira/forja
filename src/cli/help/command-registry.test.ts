@@ -3,7 +3,7 @@ import { commandRegistry } from './command-registry.js';
 import './index.js';
 
 const EXPECTED_COMMANDS = [
-  'config', 'cost', 'gate', 'help', 'hook', 'infra', 'migrate',
+  'completion', 'config', 'cost', 'doctor', 'gate', 'help', 'hook', 'infra', 'migrate',
   'plugins', 'policies', 'prune', 'replay', 'resume', 'run',
   'schedule', 'setup', 'trace', 'ui',
 ];
@@ -16,7 +16,7 @@ describe('command-registry', () => {
   });
 
   it(`registers exactly ${EXPECTED_COMMANDS.length} commands`, () => {
-    expect(commandRegistry.size).toBe(17);
+    expect(commandRegistry.size).toBe(19);
   });
 
   it('each entry has required fields', () => {

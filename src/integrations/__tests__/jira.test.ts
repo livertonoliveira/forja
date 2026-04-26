@@ -19,6 +19,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { JiraProvider, NotImplementedError } from '../jira.js'
 import { getIntegrationProvider, resetProviderFactories } from '../factory.js'
+import { resetCircuitBreakers } from '../../hooks/circuit-breaker.js'
 import type { JiraConfig } from '../../schemas/config.js'
 import type { IssueInput, PRInput } from '../base.js'
 
@@ -97,6 +98,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  resetCircuitBreakers()
 })
 
 // ---------------------------------------------------------------------------

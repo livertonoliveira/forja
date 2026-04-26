@@ -221,6 +221,6 @@ describe('skeleton.tsx named exports', () => {
 
   it('Skeleton is the only export', () => {
     const keys = Object.keys(SkeletonModule);
-    expect(keys).toEqual(['Skeleton']);
+    expect(keys).toEqual(['Skeleton', 'SkeletonRow', 'SkeletonCard', 'SkeletonChart']);
   });
 });

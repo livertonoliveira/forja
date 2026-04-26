@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const hooksDir = 'src/hooks';
-const externalDeps = ['pg', 'commander', 'zod', 'js-yaml', 'drizzle-orm'];
+const externalDeps = ['pg', 'commander', 'zod', 'js-yaml', 'drizzle-orm', '@opentelemetry/*'];
 const version = readFileSync('VERSION', 'utf-8').trim();
 
 await build({
