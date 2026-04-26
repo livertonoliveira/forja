@@ -21,6 +21,7 @@ export const AzureDevOpsConfigSchema = z.object({
   orgUrl: z.string().url(),
   project: z.string().min(1),
   token: z.string().min(1),
+  repository: z.string().min(1).optional(),
 })
 
 const _bbSlugRe = /^[^/\\?#\s]+$/
