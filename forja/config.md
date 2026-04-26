@@ -27,6 +27,12 @@
 - on_fail: fix
 - on_warn: fix
 
+## OTel (OpenTelemetry)
+- enabled: false
+- endpoint: http://localhost:4317  # OTLP gRPC
+- protocol: grpc  # grpc | http
+- env vars: FORJA_OTEL_ENABLED, FORJA_OTEL_ENDPOINT, FORJA_OTEL_PROTOCOL
+
 ## Conventions
 - Artifact language: pt-BR (specs, issues, docs, milestones, reports, PR descriptions, Linear comments)
 - Prompt language: en (LLM system prompts — hardcoded, not configurable)

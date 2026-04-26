@@ -57,6 +57,12 @@
     "version:bump": "bash scripts/bump-version.sh"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.73.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.215.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.215.0",
+    "@opentelemetry/resources": "^2.7.0",
+    "@opentelemetry/sdk-node": "^0.215.0",
     "commander": "^12.0.0",
     "cron-parser": "^5.5.0",
     "drizzle-orm": "^0.30.10",
