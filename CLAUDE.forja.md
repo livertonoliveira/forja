@@ -78,3 +78,19 @@ forja/
 - Forja works with any stack. The `/forja:init` command detects the project's stack dynamically.
 - All analysis commands adapt their checks based on `forja/config.md`.
 - Never hardcode stack-specific assumptions — always read from config.
+
+## Reference handles for agents
+
+See [`README.md`](README.md) for the full user-facing tour and one-click setup recipe.
+
+- **Dashboard routes**: `/runs/compare?ids=a,b,c`, `/runs/<id>/findings/<id>`, `/cost` (with alerts CRUD + budget caps), `/dlq`. Command Palette via ⌘K.
+- **CLI extras**: `forja doctor` (extensible health checks), `forja completion <bash|zsh|fish>`, global `--dry-run`/`-n`, `forja help <cmd>`, `forja config migrate`.
+- **i18n**: `artifact_language` (configurable, e.g. `pt-BR`) is decoupled from `prompt_language` (always `en`). UI uses `next-intl` with full pt-BR + en catalogs in `apps/ui/messages/`.
+- **Integrations Hub**: typed `IntegrationProvider` (`src/integrations/base.ts` + `factory.ts`). Linear stays primary via MCP; secondary providers are Jira / GitLab / Azure DevOps / Bitbucket. Datadog is a sibling observability provider (metrics / events / logs).
+- **OTel**: `@opentelemetry/sdk-node` with OTLP gRPC / HTTP / console exporters. Toggle via `FORJA_OTEL_ENABLED`, `FORJA_OTEL_ENDPOINT`, `FORJA_OTEL_PROTOCOL`.
+- **Hook resilience**: every external call goes through Circuit Breaker (closed/open/half-open) → RetryEngine (exp. backoff + jitter + `Retry-After`) → DLQ (`hook_dlq` table, migration `0010`, surfaced at `/dlq`).
+- **Storybook**: `npm --prefix apps/ui run storybook` for the component gallery.
+
+### Open work
+
+RBAC for `/cost`, Playwright E2E suite, Vitest CLI E2E suite, visual regression. Configuration is in place (`apps/ui/playwright.config.ts`); the `e2e/` folder is empty.
