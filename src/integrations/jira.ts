@@ -10,6 +10,17 @@ export class NotImplementedError extends Error {
   }
 }
 
+interface JiraTransition {
+  id: string
+  name: string
+}
+
+interface JiraTransitionsResponse {
+  transitions: JiraTransition[]
+}
+
+const CLOSE_FALLBACKS = ['Done', 'Closed', 'Resolved', 'Completed'] as const
+
 const SEVERITY_TO_PRIORITY: Record<string, string> = {
   critical: 'Highest',
   high: 'High',
@@ -69,6 +80,17 @@ export class JiraProvider implements IntegrationProvider {
     return res.json() as Promise<T>
   }
 
+  private async _getTransitions(issueId: string): Promise<JiraTransition[]> {
+    if (!ISSUE_ID_RE.test(issueId)) {
+      throw new Error(`[forja] JiraProvider: invalid issueId format: ${issueId}`)
+    }
+    const data = await this._request<JiraTransitionsResponse>(
+      'GET',
+      `/rest/api/3/issue/${issueId}/transitions`,
+    )
+    return data.transitions
+  }
+
   async createIssue(input: IssueInput): Promise<IssueOutput> {
     const data = await this._request<{ id: string; key: string }>('POST', '/rest/api/3/issue', {
       fields: {
@@ -83,12 +105,47 @@ export class JiraProvider implements IntegrationProvider {
     return { id: data.id, url: `${this._config.baseUrl}/browse/${data.key}`, provider: 'jira' }
   }
 
-  async updateIssue(_id: string, _patch: Partial<IssueInput>): Promise<void> {
-    throw new NotImplementedError('updateIssue')
+  async updateIssue(id: string, patch: Partial<IssueInput>): Promise<void> {
+    const unsupportedFields = Object.keys(patch).filter(k => k !== 'status')
+    if (unsupportedFields.length > 0) {
+      throw new NotImplementedError(`updateIssue with fields: ${unsupportedFields.join(', ')}`)
+    }
+
+    const statusName = (patch as Record<string, unknown>)['status'] as string | undefined
+    if (!statusName) return
+
+    const transitions = await this._getTransitions(id)
+    const found = transitions.find(t => t.name.toLowerCase() === statusName.toLowerCase())
+
+    if (!found) {
+      const available = transitions.map(t => t.name).join(', ')
+      const safeName = statusName.slice(0, 100)
+      throw new Error(
+        `[forja] JiraProvider: transition "${safeName}" not available. Available: ${available}`
+      )
+    }
+
+    await this._request('POST', `/rest/api/3/issue/${id}/transitions`, {
+      transition: { id: found.id },
+    })
   }
 
-  async closeIssue(_id: string): Promise<void> {
-    throw new NotImplementedError('closeIssue')
+  async closeIssue(id: string): Promise<void> {
+    const transitions = await this._getTransitions(id)
+
+    for (const name of CLOSE_FALLBACKS) {
+      const found = transitions.find(t => t.name.toLowerCase() === name.toLowerCase())
+      if (found) {
+        await this._request('POST', `/rest/api/3/issue/${id}/transitions`, {
+          transition: { id: found.id },
+        })
+        return
+      }
+    }
+
+    throw new Error(
+      `[forja] JiraProvider: closeIssue — none of [${CLOSE_FALLBACKS.join(', ')}] available. Current transitions: ${transitions.map(t => t.name).join(', ')}`
+    )
   }
 
   async createPR(_input: PRInput): Promise<PROutput> {
