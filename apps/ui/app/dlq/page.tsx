@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { statusColors, gateDisplay } from '@/lib/ui-constants';
 import { formatDuration } from '@/lib/format';
 import type { Run } from '@/lib/types';
@@ -20,13 +21,14 @@ async function getFailedRuns(): Promise<Run[]> {
 
 export default async function DLQPage() {
   const runs = await getFailedRuns();
+  const t = await getTranslations('dlq');
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-forja-text-primary">Fila Morta</h1>
+        <h1 className="text-xl font-semibold text-forja-text-primary">{t('title')}</h1>
         <p className="text-forja-text-secondary text-sm mt-1">
-          Runs com falha que precisam de atenção ({runs.length} pendente{runs.length !== 1 ? 's' : ''})
+          {t('desc')} ({runs.length} {runs.length !== 1 ? t('pending_other') : t('pending_one')})
         </p>
       </div>
 
@@ -37,13 +39,13 @@ export default async function DLQPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-forja-text-secondary border-b border-forja-border-default">
-                <th className="pb-3 pr-6 font-medium">Run ID</th>
-                <th className="pb-3 pr-6 font-medium">Tarefa</th>
-                <th className="pb-3 pr-6 font-medium">Status</th>
-                <th className="pb-3 pr-6 font-medium">Início</th>
-                <th className="pb-3 pr-6 font-medium">Duração</th>
-                <th className="pb-3 pr-6 font-medium">Custo</th>
-                <th className="pb-3 font-medium">Gate</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.run_id')}</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.issue')}</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.status')}</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.start')}</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.duration')}</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.cost')}</th>
+                <th className="pb-3 font-medium">{t('columns.gate')}</th>
               </tr>
             </thead>
             <tbody>
@@ -69,7 +71,7 @@ export default async function DLQPage() {
                       </span>
                     </td>
                     <td className="py-3 pr-6 text-forja-text-muted text-xs">
-                      {new Date(run.startedAt).toLocaleString('pt-BR')}
+                      {new Date(run.startedAt).toLocaleString()}
                     </td>
                     <td className="py-3 pr-6 text-forja-text-secondary">{formatDuration(run.startedAt, run.finishedAt)}</td>
                     <td className="py-3 pr-6 text-forja-text-secondary">${run.totalCostUsd}</td>

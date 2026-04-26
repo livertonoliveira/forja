@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import type { Run } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -30,16 +31,18 @@ export default async function IssueDetailPage({
 
   const newestFirst: Run[] = res.ok ? await res.json() : [];
   const runs = [...newestFirst].reverse();
+  const t = await getTranslations('issues');
+  const tRuns = await getTranslations('runs');
 
   return (
     <div>
       <div className="mb-6">
         <Link href="/issues" className="text-sm text-forja-text-secondary hover:text-forja-text-primary transition-colors">
-          ← Tarefas
+          {t('back')}
         </Link>
       </div>
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-xl font-semibold text-forja-text-primary">Tarefa</h1>
+        <h1 className="text-xl font-semibold text-forja-text-primary">{t('title')}</h1>
         <a
           href={`https://linear.app/mobitech/issue/${issueId}`}
           target="_blank"
@@ -50,18 +53,18 @@ export default async function IssueDetailPage({
         </a>
       </div>
       {runs.length === 0 ? (
-        <p className="text-forja-text-secondary text-sm">Nenhuma execução encontrada para esta tarefa.</p>
+        <p className="text-forja-text-secondary text-sm">{t('no_runs')}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-forja-text-secondary border-b border-forja-border-default">
-                <th className="pb-3 pr-6 font-medium">#</th>
-                <th className="pb-3 pr-6 font-medium">Início</th>
-                <th className="pb-3 pr-6 font-medium">Status</th>
-                <th className="pb-3 pr-6 font-medium">Custo</th>
-                <th className="pb-3 pr-6 font-medium">Gate</th>
-                <th className="pb-3 font-medium">Regressão</th>
+                <th className="pb-3 pr-6 font-medium">{tRuns('columns.number')}</th>
+                <th className="pb-3 pr-6 font-medium">{tRuns('columns.start')}</th>
+                <th className="pb-3 pr-6 font-medium">{tRuns('columns.status')}</th>
+                <th className="pb-3 pr-6 font-medium">{tRuns('columns.cost')}</th>
+                <th className="pb-3 pr-6 font-medium">{tRuns('columns.gate')}</th>
+                <th className="pb-3 font-medium">{tRuns('columns.regression')}</th>
               </tr>
             </thead>
             <tbody>
@@ -73,7 +76,7 @@ export default async function IssueDetailPage({
                   <tr key={run.id} className="border-b border-forja-border-subtle hover:bg-forja-bg-surface transition-colors">
                     <td className="py-3 pr-6 text-forja-text-muted">{index + 1}</td>
                     <td className="py-3 pr-6 text-forja-text-muted text-xs">
-                      {new Date(run.startedAt).toLocaleString('pt-BR')}
+                      {new Date(run.startedAt).toLocaleString()}
                     </td>
                     <td className="py-3 pr-6">
                       <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${statusColors[run.status] ?? 'bg-gray-100 text-gray-600'}`}>

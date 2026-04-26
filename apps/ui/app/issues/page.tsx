@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { gateBadgeColors } from '@/lib/ui-constants';
 
 export const dynamic = 'force-dynamic';
@@ -13,21 +14,22 @@ interface IssueSummary {
 export default async function IssuesPage() {
   const res = await fetch('http://localhost:4242/api/issues', { next: { revalidate: 30 } });
   const issues: IssueSummary[] = res.ok ? await res.json() : [];
+  const t = await getTranslations('issues');
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-forja-text-primary mb-6">Tarefas</h1>
+      <h1 className="text-xl font-semibold text-forja-text-primary mb-6">{t('title')}</h1>
       {issues.length === 0 ? (
-        <p className="text-forja-text-secondary text-sm">Nenhuma tarefa encontrada.</p>
+        <p className="text-forja-text-secondary text-sm">{t('empty')}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-forja-text-secondary border-b border-forja-border-default">
-                <th className="pb-3 pr-6 font-medium">Tarefa</th>
-                <th className="pb-3 pr-6 font-medium">Execuções</th>
-                <th className="pb-3 pr-6 font-medium">Último Gate</th>
-                <th className="pb-3 font-medium">Última Execução</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.issue')}</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.runs')}</th>
+                <th className="pb-3 pr-6 font-medium">{t('columns.last_gate')}</th>
+                <th className="pb-3 font-medium">{t('columns.last_run')}</th>
               </tr>
             </thead>
             <tbody>
@@ -49,7 +51,7 @@ export default async function IssuesPage() {
                     )}
                   </td>
                   <td className="py-3 text-forja-text-muted text-xs">
-                    {new Date(issue.lastRun).toLocaleString('pt-BR')}
+                    {new Date(issue.lastRun).toLocaleString()}
                   </td>
                 </tr>
               ))}

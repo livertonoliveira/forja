@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { compareRuns } from '@/lib/forja-store';
 import { formatMs } from '@/lib/format';
 import { gateDisplay } from '@/lib/ui-constants';
@@ -31,6 +32,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
 
   const result = await compareRuns(ids);
   const { runs, crossProject, costDiff, durationDiff } = result;
+  const t = await getTranslations('runs.compare');
 
   const oldestGate = runs[0]?.gate;
   const newestGate = runs[runs.length - 1]?.gate;
@@ -39,8 +41,8 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     <div>
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-forja-text-primary">Comparação de Runs</h1>
-          <p className="text-sm text-forja-text-muted mt-1">{runs.length} runs comparados</p>
+          <h1 className="text-xl font-semibold text-forja-text-primary">{t('title')}</h1>
+          <p className="text-sm text-forja-text-muted mt-1">{t('description', { count: runs.length })}</p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <CopyLinkButton />
@@ -52,8 +54,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         <Card className="border-amber-400 mb-6">
           <CardContent className="py-3 px-4">
             <p className="text-sm text-amber-700">
-              ⚠ Estes runs pertencem a projetos diferentes. A comparação prossegue normalmente,
-              mas os resultados podem refletir diferenças de contexto entre projetos.
+              ⚠ {t('cross_project_warning')}
             </p>
           </CardContent>
         </Card>
@@ -61,14 +62,14 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
 
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
-          <p className="text-xs text-forja-text-muted uppercase tracking-wider mb-2">Variação de custo</p>
+          <p className="text-xs text-forja-text-muted uppercase tracking-wider mb-2">{t('cost_variation')}</p>
           <p className={`text-lg font-semibold ${costDiff > 0 ? 'text-red-600' : costDiff < 0 ? 'text-green-600' : 'text-forja-text-secondary'}`}>
             {costDiff > 0 ? '+' : ''}{costDiff.toFixed(4)}
             <span className="text-xs font-normal ml-1 text-forja-text-muted">USD</span>
           </p>
         </div>
         <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
-          <p className="text-xs text-forja-text-muted uppercase tracking-wider mb-2">Variação de duração</p>
+          <p className="text-xs text-forja-text-muted uppercase tracking-wider mb-2">{t('duration_variation')}</p>
           <p className={`text-lg font-semibold ${durationDiff !== null && durationDiff > 0 ? 'text-red-600' : durationDiff !== null && durationDiff < 0 ? 'text-green-600' : 'text-forja-text-secondary'}`}>
             {durationDiff !== null
               ? `${durationDiff > 0 ? '+' : durationDiff < 0 ? '-' : ''}${formatMs(Math.abs(durationDiff))}`
@@ -76,13 +77,13 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           </p>
         </div>
         <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
-          <p className="text-xs text-forja-text-muted uppercase tracking-wider mb-2">Gate (mais antigo)</p>
+          <p className="text-xs text-forja-text-muted uppercase tracking-wider mb-2">{t('gate_older')}</p>
           <p className={`text-lg font-semibold ${oldestGate ? gateDisplay[oldestGate]?.cls : 'text-forja-text-muted'}`}>
             {oldestGate ? gateDisplay[oldestGate]?.label : '—'}
           </p>
         </div>
         <div className="bg-forja-bg-surface border border-forja-border-subtle rounded-lg p-4">
-          <p className="text-xs text-forja-text-muted uppercase tracking-wider mb-2">Gate (mais novo)</p>
+          <p className="text-xs text-forja-text-muted uppercase tracking-wider mb-2">{t('gate_newer')}</p>
           <p className={`text-lg font-semibold ${newestGate ? gateDisplay[newestGate]?.cls : 'text-forja-text-muted'}`}>
             {newestGate ? gateDisplay[newestGate]?.label : '—'}
           </p>
@@ -91,7 +92,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
 
       <section className="mb-8">
         <h2 className="text-xs font-semibold text-forja-text-secondary uppercase tracking-wider mb-3">
-          Runs comparados
+          {t('runs_compared')}
         </h2>
         <div className="flex flex-wrap gap-2">
           {runs.map((run, i) => (
@@ -117,7 +118,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       <div className="space-y-3">
         <details open>
           <summary className="cursor-pointer select-none py-3 px-4 bg-forja-bg-surface border border-forja-gate-fail-border rounded-lg text-sm font-semibold text-forja-gate-fail-text hover:bg-forja-bg-elevated transition-colors list-none">
-            Novos ({result.new.length})
+            {t('new')} ({result.new.length})
           </summary>
           <div className="mt-2 pb-2">
             <FindingDiffTable findings={result.new} variant="new" />
@@ -126,7 +127,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
 
         <details>
           <summary className="cursor-pointer select-none py-3 px-4 bg-forja-bg-surface border border-forja-gate-pass-border rounded-lg text-sm font-semibold text-forja-gate-pass-text hover:bg-forja-bg-elevated transition-colors list-none">
-            Resolvidos ({result.resolved.length})
+            {t('resolved')} ({result.resolved.length})
           </summary>
           <div className="mt-2 pb-2">
             <FindingDiffTable findings={result.resolved} variant="resolved" />
@@ -135,7 +136,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
 
         <details>
           <summary className="cursor-pointer select-none py-3 px-4 bg-forja-bg-surface border border-forja-border-default rounded-lg text-sm font-semibold text-forja-text-secondary hover:bg-forja-bg-elevated transition-colors list-none">
-            Persistentes ({result.persistent.length})
+            {t('persistent')} ({result.persistent.length})
           </summary>
           <div className="mt-2 pb-2">
             <FindingDiffTable findings={result.persistent} variant="persistent" />

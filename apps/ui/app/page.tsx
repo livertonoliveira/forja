@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { listRecentRuns } from '@/lib/forja-store';
 import { typography } from '@/lib/typography';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
@@ -9,22 +10,23 @@ import { EmptyRuns } from '@/components/shell/EmptyState';
 
 export default async function HomePage() {
   const runs = await listRecentRuns(10);
+  const t = await getTranslations('runs');
 
   return (
     <div>
-      <h1 className={`${typography.heading.lg} text-forja-text-primary mb-6`}>Execuções Recentes</h1>
+      <h1 className={`${typography.heading.lg} text-forja-text-primary mb-6`}>{t('recent')}</h1>
       {runs.length === 0 ? (
         <EmptyRuns />
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tarefa</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Duração</TableHead>
-              <TableHead>Custo</TableHead>
-              <TableHead>Gate</TableHead>
-              <TableHead>Início</TableHead>
+              <TableHead>{t('columns.issue')}</TableHead>
+              <TableHead>{t('columns.status')}</TableHead>
+              <TableHead>{t('columns.duration')}</TableHead>
+              <TableHead>{t('columns.cost')}</TableHead>
+              <TableHead>{t('columns.gate')}</TableHead>
+              <TableHead>{t('columns.start')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -46,7 +48,7 @@ export default async function HomePage() {
                   {run.gate ?? '—'}
                 </TableCell>
                 <TableCell className={typography.body.sm + ' text-forja-text-muted'}>
-                  {new Date(run.startedAt).toLocaleString('pt-BR')}
+                  {new Date(run.startedAt).toLocaleString()}
                 </TableCell>
               </TableRow>
             ))}
