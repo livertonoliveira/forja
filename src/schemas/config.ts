@@ -29,6 +29,14 @@ export const BitbucketConfigSchema = z.object({
   appPassword: z.string().min(1),
 })
 
+export const DatadogConfigSchema = z.object({
+  apiKey: z.string().min(1),
+  appKey: z.string().min(1),
+  site: z.enum(['datadoghq.com', 'datadoghq.eu']).default('datadoghq.com'),
+})
+
+export type DatadogConfig = z.infer<typeof DatadogConfigSchema>
+
 export type JiraConfig = z.infer<typeof JiraConfigSchema>
 export type GitLabConfig = z.infer<typeof GitLabConfigSchema>
 export type AzureDevOpsConfig = z.infer<typeof AzureDevOpsConfigSchema>
@@ -55,6 +63,7 @@ export const ConfigSchema = z.object({
   gitlab: GitLabConfigSchema.optional(),
   azure: AzureDevOpsConfigSchema.optional(),
   bitbucket: BitbucketConfigSchema.optional(),
+  datadog: DatadogConfigSchema.optional(),
   timeouts: PhaseTimeoutsSchema.default({}),
   pluginHookTimeoutMs: z.number().int().positive().default(5000),
   artifact_language: z.enum(SUPPORTED_ARTIFACT_LANGUAGES).default('en'),
