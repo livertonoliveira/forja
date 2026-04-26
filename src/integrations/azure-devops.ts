@@ -20,6 +20,12 @@ function mapSeverity(severity: string): number {
   }
 }
 
+function assertNumericId(value: string, field: string): void {
+  if (!/^\d+$/.test(value)) {
+    throw new Error(`[forja] AzureDevOps: ${field} must be a numeric work item ID, got: ${value}`)
+  }
+}
+
 const AZURE_DOMAIN_RE = /\.(azure\.com|visualstudio\.com)$/
 
 export class AzureDevOpsProvider implements IntegrationProvider {
@@ -28,6 +34,7 @@ export class AzureDevOpsProvider implements IntegrationProvider {
   private readonly _config: AzureDevOpsConfig
   private readonly _authHeader: string
   private _processTemplate: ProcessTemplate | null = null
+  private _repoCache: { id: string; name: string } | null = null
 
   constructor(config: AzureDevOpsConfig) {
     const parsed = new URL(config.orgUrl)
@@ -44,20 +51,29 @@ export class AzureDevOpsProvider implements IntegrationProvider {
     return { Authorization: this._authHeader, 'Content-Type': contentType }
   }
 
+  private async _request(
+    url: string,
+    init: Omit<RequestInit, 'signal'>,
+    errorLabel: string,
+    timeoutMs = 10_000,
+  ): Promise<Response> {
+    const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
+    if (!res.ok) throw new Error(`[forja] AzureDevOps: ${errorLabel} (${res.status})`)
+    return res
+  }
+
   private async detectTemplate(): Promise<ProcessTemplate> {
     if (this._processTemplate !== null) return this._processTemplate
 
     const { orgUrl, project } = this._config
     const url = `${orgUrl}/_apis/projects/${encodeURIComponent(project)}?includeCapabilities=true&api-version=7.1`
 
-    const res = await fetch(url, {
-      headers: this._headers(),
-      signal: AbortSignal.timeout(5000),
-    })
-
-    if (!res.ok) {
-      throw new Error(`[forja] AzureDevOps: failed to fetch project capabilities (${res.status})`)
-    }
+    const res = await this._request(
+      url,
+      { headers: this._headers() },
+      'failed to fetch project capabilities',
+      5000,
+    )
 
     const data = (await res.json()) as {
       capabilities?: { processTemplate?: { templateName?: string } }
@@ -78,6 +94,32 @@ export class AzureDevOpsProvider implements IntegrationProvider {
     return template
   }
 
+  private async _resolveRepository(): Promise<{ id: string; name: string }> {
+    if (this._repoCache !== null) return this._repoCache
+
+    const { orgUrl, project, repository } = this._config
+
+    if (repository) {
+      const url = `${orgUrl}/${project}/_apis/git/repositories/${encodeURIComponent(repository)}?api-version=7.1`
+      const res = await fetch(url, { headers: this._headers(), signal: AbortSignal.timeout(10_000) })
+      if (res.status === 404) throw new Error(`[forja] AzureDevOps: repository '${repository}' not found`)
+      if (!res.ok) throw new Error(`[forja] AzureDevOps: failed to get repository (${res.status})`)
+      const data = (await res.json()) as { id: string; name: string }
+      this._repoCache = { id: data.id, name: data.name }
+      return this._repoCache
+    }
+
+    const url = `${orgUrl}/${project}/_apis/git/repositories?api-version=7.1`
+    const res = await this._request(url, { headers: this._headers() }, 'failed to list repositories')
+    const data = (await res.json()) as { value?: Array<{ id: string; name: string }> }
+    const repos = data.value ?? []
+    const repo = repos[0]
+    if (!repo) throw new Error('[forja] AzureDevOps: no repositories found in project')
+
+    this._repoCache = repo
+    return repo
+  }
+
   private getWorkItemType(template: ProcessTemplate, input: IssueInput): string {
     if (input.labels?.includes('bug')) return 'Bug'
 
@@ -95,22 +137,33 @@ export class AzureDevOpsProvider implements IntegrationProvider {
     const { orgUrl, project } = this._config
     const url = `${orgUrl}/${project}/_apis/wit/workitems/$${encodeURIComponent(workItemType)}?api-version=7.1`
 
-    const body = [
+    const body: Array<{ op: string; path: string; value: unknown }> = [
       { op: 'add', path: '/fields/System.Title', value: input.title },
       { op: 'add', path: '/fields/System.Description', value: input.description },
       { op: 'add', path: '/fields/Microsoft.VSTS.Common.Priority', value: mapSeverity(input.severity) },
     ]
 
-    const res = await fetch(url, {
-      method: 'PATCH',
-      headers: this._headers('application/json-patch+json'),
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(10_000),
-    })
-
-    if (!res.ok) {
-      throw new Error(`[forja] AzureDevOps: failed to create work item (${res.status})`)
+    if (input.parentId) {
+      assertNumericId(input.parentId, 'parentId')
+      body.push({
+        op: 'add',
+        path: '/relations/-',
+        value: {
+          rel: 'System.LinkTypes.Hierarchy-Reverse',
+          url: `${orgUrl}/_apis/wit/workItems/${input.parentId}`,
+        },
+      })
     }
+
+    const res = await this._request(
+      url,
+      {
+        method: 'PATCH',
+        headers: this._headers('application/json-patch+json'),
+        body: JSON.stringify(body),
+      },
+      'failed to create work item',
+    )
 
     const data = (await res.json()) as {
       id: number
@@ -124,32 +177,93 @@ export class AzureDevOpsProvider implements IntegrationProvider {
     }
   }
 
-  async updateIssue(_id: string, _patch: Partial<IssueInput>): Promise<void> {
-    throw new NotImplementedError('updateIssue')
+  async updateIssue(id: string, patch: Partial<IssueInput>): Promise<void> {
+    assertNumericId(id, 'id')
+
+    const ops: Array<{ op: string; path: string; value: unknown }> = []
+
+    if (patch.title !== undefined) ops.push({ op: 'replace', path: '/fields/System.Title', value: patch.title })
+    if (patch.description !== undefined) ops.push({ op: 'replace', path: '/fields/System.Description', value: patch.description })
+    if (patch.severity !== undefined) ops.push({ op: 'replace', path: '/fields/Microsoft.VSTS.Common.Priority', value: mapSeverity(patch.severity) })
+
+    if (ops.length === 0) return
+
+    const { orgUrl, project } = this._config
+    const url = `${orgUrl}/${project}/_apis/wit/workitems/${id}?api-version=7.1`
+
+    await this._request(
+      url,
+      {
+        method: 'PATCH',
+        headers: this._headers('application/json-patch+json'),
+        body: JSON.stringify(ops),
+      },
+      'failed to update work item',
+    )
   }
 
-  async closeIssue(_id: string): Promise<void> {
-    throw new NotImplementedError('closeIssue')
+  async closeIssue(id: string): Promise<void> {
+    assertNumericId(id, 'id')
+    const template = await this.detectTemplate()
+    const finalState = template === 'Scrum' ? 'Done' : 'Closed'
+
+    const { orgUrl, project } = this._config
+    const url = `${orgUrl}/${project}/_apis/wit/workitems/${id}?api-version=7.1`
+
+    await this._request(
+      url,
+      {
+        method: 'PATCH',
+        headers: this._headers('application/json-patch+json'),
+        body: JSON.stringify([{ op: 'replace', path: '/fields/System.State', value: finalState }]),
+      },
+      'failed to close work item',
+    )
   }
 
-  async createPR(_input: PRInput): Promise<PROutput> {
-    throw new NotImplementedError('createPR')
+  async createPR(input: PRInput): Promise<PROutput> {
+    const { orgUrl, project } = this._config
+    const repo = await this._resolveRepository()
+
+    const url = `${orgUrl}/${project}/_apis/git/repositories/${repo.id}/pullrequests?api-version=7.1`
+
+    const res = await this._request(
+      url,
+      {
+        method: 'POST',
+        headers: this._headers(),
+        body: JSON.stringify({
+          sourceRefName: `refs/heads/${input.branch}`,
+          targetRefName: `refs/heads/${input.base}`,
+          title: input.title,
+          description: input.body,
+        }),
+      },
+      'failed to create pull request',
+    )
+
+    const data = (await res.json()) as { pullRequestId: number }
+
+    return {
+      id: String(data.pullRequestId),
+      url: `${orgUrl}/_git/${encodeURIComponent(repo.name)}/pullrequest/${data.pullRequestId}`,
+      provider: 'azure-devops',
+    }
   }
 
   async addComment(issueId: string, body: string): Promise<void> {
     const { orgUrl, project } = this._config
     const url = `${orgUrl}/${project}/_apis/wit/workItems/${issueId}/comments?api-version=7.1-preview.3`
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: this._headers(),
-      body: JSON.stringify({ text: body }),
-      signal: AbortSignal.timeout(10_000),
-    })
-
-    if (!res.ok) {
-      throw new Error(`[forja] AzureDevOps: failed to add comment (${res.status})`)
-    }
+    await this._request(
+      url,
+      {
+        method: 'POST',
+        headers: this._headers(),
+        body: JSON.stringify({ text: body }),
+      },
+      'failed to add comment',
+    )
   }
 
   async healthCheck(): Promise<{ ok: boolean; latencyMs: number }> {
