@@ -519,14 +519,14 @@ describe('DLQClient — onUpdate callback propagates to row state', () => {
 
   it('calling onUpdate triggers setEvents with updated status', () => {
     const events = [makeEvent({ id: 'evt-1', status: 'dead' })];
-    let capturedSetEvents: ((fn: (prev: DLQEvent[]) => DLQEvent[]) => void) | null = null;
+    let _capturedSetEvents: ((fn: (prev: DLQEvent[]) => DLQEvent[]) => void) | null = null;
 
     let callCount = 0;
     vi.mocked(React.useState).mockImplementation(((initial: unknown) => {
       callCount++;
       if (callCount === 1) {
         const setter = (fn: (prev: DLQEvent[]) => DLQEvent[]) => {
-          capturedSetEvents = setter;
+          _capturedSetEvents = setter;
           // Call fn to verify behavior
           const result = fn(events);
           clientState.events = result;
