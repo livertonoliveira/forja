@@ -1,5 +1,6 @@
 import { registerCheck, withTimeout } from '../cli/doctor/check.js'
 import { getIntegrationProvider } from './factory.js'
+import './gitlab.js'
 
 registerCheck({
   name: 'integration-provider',

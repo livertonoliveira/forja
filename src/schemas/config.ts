@@ -14,6 +14,7 @@ export const JiraConfigSchema = z.object({
 export const GitLabConfigSchema = z.object({
   baseUrl: z.string().url(),
   token: z.string().min(1),
+  projectId: z.number().int().positive().optional(),
 })
 
 export const AzureDevOpsConfigSchema = z.object({
