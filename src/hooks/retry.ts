@@ -1,3 +1,5 @@
+import { enqueueDLQ } from '../store/dlq.js';
+
 export class HttpError extends Error {
   constructor(
     public readonly status: number,
@@ -49,7 +51,8 @@ export async function withRetry<T>(
   fn: () => Promise<T>,
   config: RetryConfig = defaults,
   onExhausted: (error: Error) => Promise<void>,
-  hookType?: string
+  hookType?: string,
+  dlqPayload?: unknown
 ): Promise<T | void> {
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     try {
@@ -59,11 +62,29 @@ export async function withRetry<T>(
 
       if (isNonRetryable(err)) {
         await onExhausted(error);
+        if (hookType !== undefined && dlqPayload !== undefined) {
+          await enqueueDLQ({
+            hookType,
+            payload: dlqPayload,
+            errorMessage: error.message,
+            attempts: attempt + 1,
+            lastAttemptAt: new Date().toISOString(),
+          }).catch((e: unknown) => console.warn('[forja] enqueueDLQ failed:', e instanceof Error ? e.message : String(e)));
+        }
         return;
       }
 
       if (attempt === config.maxRetries) {
         await onExhausted(error);
+        if (hookType !== undefined && dlqPayload !== undefined) {
+          await enqueueDLQ({
+            hookType,
+            payload: dlqPayload,
+            errorMessage: error.message,
+            attempts: attempt + 1,
+            lastAttemptAt: new Date().toISOString(),
+          }).catch((e: unknown) => console.warn('[forja] enqueueDLQ failed:', e instanceof Error ? e.message : String(e)));
+        }
         return;
       }
 
