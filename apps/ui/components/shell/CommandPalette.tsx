@@ -80,14 +80,12 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     { id: 'nav-heatmap', icon: LayoutGrid, label: 'Heatmap', description: tCp('nav.heatmap_desc'), href: '/heatmap', shortcut: 'G H' },
     { id: 'nav-issues', icon: AlertCircle, label: 'Issues', description: tCp('nav.issues_desc'), href: '/issues' },
     { id: 'nav-dlq', icon: Inbox, label: 'DLQ', description: tCp('nav.dlq_desc'), href: '/dlq' },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [tCp]);
 
   const HELP_ITEMS: HelpItem[] = useMemo(() => [
     { id: 'help-shortcuts', icon: Keyboard, label: tCp('help.shortcuts'), description: '⌘K, G+R, G+C, G+H' },
     { id: 'help-docs', icon: BookOpen, label: tCp('help.docs') },
     { id: 'help-bug', icon: Bug, label: tCp('help.bug') },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [tCp]);
   const [query, setQuery] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -174,7 +172,6 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         onClose();
       },
     },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [onClose, tCp]);
 
   if (!open) return null;

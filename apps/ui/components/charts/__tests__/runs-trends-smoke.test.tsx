@@ -106,7 +106,7 @@ vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ json: () => Promise.resolve([
 
 import { TrendChart, type LineConfig } from '../TrendChart';
 import { GateFunnelChart } from '../GateFunnelChart';
-import { GranularityToggle, GRANULARITY_LABELS, GRANULARITIES } from '../chart-utils';
+import { GranularityToggle } from '../chart-utils';
 
 // ---------------------------------------------------------------------------
 // Tree-walking helpers (same pattern as shell.test.tsx)
