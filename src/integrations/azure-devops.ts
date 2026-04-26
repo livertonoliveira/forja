@@ -65,7 +65,12 @@ export class AzureDevOpsProvider implements IntegrationProvider {
         return r
       },
       undefined,
-      async (err) => { throw err },
+      async (err) => {
+        if (err instanceof HttpError) {
+          throw new Error(`[forja] AzureDevOps: ${errorLabel} (HTTP ${err.status})`)
+        }
+        throw err
+      },
       'azure-devops',
     ) as Response
   }

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { AzureDevOpsProvider, createAzureDevOpsProvider } from './azure-devops.js'
 import type { AzureDevOpsConfig } from '../schemas/config.js'
+import { resetCircuitBreakers } from '../hooks/circuit-breaker.js'
 
 const BASE_CONFIG: AzureDevOpsConfig = {
   orgUrl: 'https://dev.azure.com/myorg',
@@ -58,6 +59,7 @@ function makePRResponse(id = 42) {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  resetCircuitBreakers()
 })
 
 describe('AzureDevOpsProvider — template detection: Agile', () => {

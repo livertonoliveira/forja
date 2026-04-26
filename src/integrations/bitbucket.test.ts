@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { BitbucketProvider } from './bitbucket.js'
 import type { BitbucketConfig } from '../schemas/config.js'
+import { resetCircuitBreakers } from '../hooks/circuit-breaker.js'
 
 const BASIC_CONFIG: BitbucketConfig = {
   workspace: 'acme',
@@ -34,6 +35,7 @@ function mockFetch(...responses: MockResponse[]) {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  resetCircuitBreakers()
 })
 
 // ---------------------------------------------------------------------------

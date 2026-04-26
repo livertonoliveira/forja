@@ -66,7 +66,7 @@ export class BitbucketProvider implements IntegrationProvider {
         return r
       },
       undefined,
-      async (err) => { throw err },
+      async (err) => { throw new Error(`[bitbucket] ${err instanceof Error ? err.message : String(err)}`) },
       'bitbucket',
     ) as Response
     if (result.status === 204) return undefined as T

@@ -11,6 +11,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
+import { resetCircuitBreakers } from '../hooks/circuit-breaker.js';
 
 import { loadPolicy } from './parser.js';
 import { evaluatePolicy } from './evaluator.js';
@@ -22,6 +23,8 @@ import type { PolicyFile } from './parser.js';
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
+
+beforeEach(() => { resetCircuitBreakers(); });
 
 const POLICY_PATH = join(process.cwd(), 'policies/default.yaml');
 

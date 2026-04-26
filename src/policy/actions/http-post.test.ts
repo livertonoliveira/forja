@@ -12,10 +12,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { interpolateObject, httpPost } from './http-post.js';
 import type { ActionContext } from '../actions.js';
+import { resetCircuitBreakers } from '../../hooks/circuit-breaker.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+beforeEach(() => { resetCircuitBreakers(); });
 
 const makeContext = (runId = 'run-abc-123'): ActionContext => ({ runId });
 

@@ -13,10 +13,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { executeActions } from '../../../src/policy/actions.js';
 import type { ActionContext } from '../../../src/policy/actions.js';
 import type { PolicyAction } from '../../../src/policy/parser.js';
+import { resetCircuitBreakers } from '../../../src/hooks/circuit-breaker.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+beforeEach(() => { resetCircuitBreakers(); });
 
 function makeContext(runId = '00000000-0000-0000-0000-000000000001'): ActionContext {
   return { runId };
