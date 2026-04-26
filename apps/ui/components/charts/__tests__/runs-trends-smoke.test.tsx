@@ -79,6 +79,21 @@ vi.mock('@/components/ui/skeleton', () => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Mock next-intl — components use useTranslations; mock it to return a
+// simple key-passthrough function so tests work without a provider
+// ---------------------------------------------------------------------------
+
+vi.mock('next-intl', () => {
+  const msgs: Record<string, Record<string, string>> = {
+    'gantt.granularity': { hour: 'hora', day: 'dia', week: 'semana', month: 'mês' },
+    'charts': { load_error: 'Falha ao carregar dados.', no_data: 'Sem dados para o período selecionado.', export_csv: 'Exportar CSV' },
+  };
+  return {
+    useTranslations: (ns: string) => (key: string) => msgs[ns]?.[key] ?? key,
+  };
+});
+
+// ---------------------------------------------------------------------------
 // Mock fetch — charts call fetch on mount via useEffect; effect is mocked
 // so fetch is never actually invoked, but stub it anyway for safety
 // ---------------------------------------------------------------------------
@@ -246,11 +261,14 @@ describe('GranularityToggle — structure', () => {
     expect(buttons).toHaveLength(4);
   });
 
-  it('button text values match GRANULARITY_LABELS', () => {
+  it('button text values match i18n translations (via mock)', () => {
     const el = GranularityToggle({ value: 'day', onChange: vi.fn() }) as React.ReactElement;
     const text = flattenText(el);
-    for (const g of GRANULARITIES) {
-      expect(text).toContain(GRANULARITY_LABELS[g]);
+    // The component uses useTranslations with the mocked pt-BR values.
+    // Assert that each mocked translation label appears in the rendered tree.
+    const mockLabels = ['hora', 'dia', 'semana', 'mês'];
+    for (const label of mockLabels) {
+      expect(text, `expected text to contain "${label}"`).toContain(label);
     }
   });
 

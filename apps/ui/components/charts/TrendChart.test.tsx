@@ -27,6 +27,16 @@ const _mockState = {
   error: false,
 };
 
+vi.mock('next-intl', () => {
+  const msgs: Record<string, Record<string, string>> = {
+    'gantt.granularity': { hour: 'hora', day: 'dia', week: 'semana', month: 'mês' },
+    'charts': { load_error: 'Falha ao carregar dados.', no_data: 'Sem dados para o período selecionado.', export_csv: 'Exportar CSV' },
+  };
+  return {
+    useTranslations: (ns: string) => (key: string) => msgs[ns]?.[key] ?? key,
+  };
+});
+
 vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal<typeof React>();
 

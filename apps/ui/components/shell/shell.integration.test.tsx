@@ -41,6 +41,19 @@ vi.mock('next/link', () => ({
   default: MockLink,
 }));
 
+// ---------------------------------------------------------------------------
+// Mock next-intl — Breadcrumbs uses useTranslations('breadcrumbs')
+// ---------------------------------------------------------------------------
+
+vi.mock('next-intl', () => ({
+  useTranslations: (ns: string) => (key: string) => {
+    const msgs: Record<string, Record<string, string>> = {
+      breadcrumbs: { home: 'Home' },
+    };
+    return msgs[ns]?.[key] ?? key;
+  },
+}));
+
 import { usePathname, useSelectedLayoutSegments } from 'next/navigation';
 
 // ---------------------------------------------------------------------------
