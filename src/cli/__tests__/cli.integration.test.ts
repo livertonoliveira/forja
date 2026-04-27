@@ -32,10 +32,10 @@ describe('forja CLI integration', () => {
     }
   }, TIMEOUT);
 
-  it('--version prints 0.1.0', () => {
+  it('--version prints 0.2.0', () => {
     const result = spawnSync('node', [BINARY, '--version'], { timeout: TIMEOUT, encoding: 'utf-8' });
     const output = (result.stdout + result.stderr).trim();
-    expect(output).toBe('0.1.0');
+    expect(output).toBe('0.2.0');
   }, TIMEOUT);
 
   it('run TEST-123 starts the pipeline for the given issue', () => {

@@ -9,7 +9,7 @@ import { PhaseIdempotencyGuard, cleanPhaseData } from '../../engine/idempotency.
 import { DualWriter } from '../../trace/dual-writer.js';
 import { TraceWriter } from '../../trace/writer.js';
 import { setPhaseTimeout } from '../../engine/timeout.js';
-import { PhaseTimeoutsSchema, SUPPORTED_ARTIFACT_LANGUAGES, type ArtifactLanguage } from '../../schemas/config.js';
+import { PhaseTimeoutsSchema, PhasesEnabledSchema, SUPPORTED_ARTIFACT_LANGUAGES, type ArtifactLanguage } from '../../schemas/config.js';
 import { buildLanguageInstruction } from '../../config/i18n.js';
 import { loadModelsPolicy, getModelForPhase, type ModelsPolicy } from '../../policy/models-policy.js';
 import { isProjectCapped, evaluate } from '../../cost/alerts-evaluator.js';
@@ -74,6 +74,14 @@ export const runCommand = new Command('run')
 
     const loadedConfig = await loadConfig();
     initOTel(readOTelConfig());
+
+    const enabledPhases = PhasesEnabledSchema.parse(loadedConfig.phases ?? {}) as Record<string, boolean | undefined>;
+    const activeSequence = PIPELINE_SEQUENCE.filter((phase) => enabledPhases[phase] !== false);
+    const skippedPhases = PIPELINE_SEQUENCE.filter((phase) => enabledPhases[phase] === false);
+    if (skippedPhases.length > 0) {
+      console.log(`[forja] phases disabled by config: ${skippedPhases.join(', ')}`);
+    }
+
     const rawArtifactLanguage = loadedConfig.artifactLanguage ?? 'en';
     const isValidLang = (SUPPORTED_ARTIFACT_LANGUAGES as readonly string[]).includes(rawArtifactLanguage);
     if (!isValidLang) {
@@ -114,7 +122,7 @@ export const runCommand = new Command('run')
         'forja.run',
         { 'forja.run.id': run.id, 'forja.project': projectPrefix, 'forja.issue_id': issueId },
         async (runSpan) => {
-          for (const phase of PIPELINE_SEQUENCE) {
+          for (const phase of activeSequence) {
             const forceThis = options.force || options.forcePhase === phase;
             if (!(await guard.shouldRun(phase, { force: forceThis }))) {
               continue;

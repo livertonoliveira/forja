@@ -68,6 +68,18 @@ export const PhaseTimeoutsSchema = z.object({
   pr: z.number().int().positive().default(120),
 });
 
+export const PhasesEnabledSchema = z.object({
+  dev: z.boolean().default(true),
+  test: z.boolean().default(true),
+  perf: z.boolean().default(true),
+  security: z.boolean().default(true),
+  review: z.boolean().default(true),
+  homolog: z.boolean().default(true),
+  pr: z.boolean().default(true),
+});
+
+export type PhasesEnabled = z.infer<typeof PhasesEnabledSchema>;
+
 export const ConfigSchema = z.object({
   storeUrl: z.string(),
   retentionDays: z.number().int().default(90),
@@ -82,6 +94,7 @@ export const ConfigSchema = z.object({
   datadog: DatadogConfigSchema.optional(),
   otel: OTelConfigSchema.optional(),
   timeouts: PhaseTimeoutsSchema.default({}),
+  phases: PhasesEnabledSchema.default({}),
   pluginHookTimeoutMs: z.number().int().positive().default(5000),
   artifact_language: z.enum(SUPPORTED_ARTIFACT_LANGUAGES).default('en'),
 });

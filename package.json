@@ -1,6 +1,6 @@
 {
   "name": "@forja-hq/cli",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Automated development pipeline for Claude Code — from issue to PR with quality gates, parallel agents, and persistent artifacts.",
   "type": "module",
   "license": "BUSL-1.1",
@@ -41,6 +41,7 @@
   "scripts": {
     "build": "tsx esbuild.config.ts && tsc --emitDeclarationOnly && npm run build:ui",
     "build:ui": "cd apps/ui && npm install && npm run build && cp -r .next/static .next/standalone/.next/static",
+    "prepublishOnly": "npm run build",
     "dev": "tsx src/cli/index.ts",
     "typecheck": "tsc --noEmit",
     "test:types": "tsd --typings src/plugin/index.ts",
