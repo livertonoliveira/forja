@@ -110,7 +110,7 @@ describe('composeUp()', () => {
     const calls = vi.mocked(exec).mock.calls;
     expect(calls.length).toBeGreaterThan(0);
     const cmd = calls[0][0] as string;
-    expect(cmd).toBe('docker compose up -d');
+    expect(cmd).toBe('docker compose -f docker-compose.forja.yml up -d');
   });
 
   it('rejects when exec fails', async () => {
@@ -135,7 +135,7 @@ describe('composeDown()', () => {
     const calls = vi.mocked(exec).mock.calls;
     expect(calls.length).toBeGreaterThan(0);
     const cmd = calls[0][0] as string;
-    expect(cmd).toBe('docker compose down');
+    expect(cmd).toBe('docker compose -f docker-compose.forja.yml down');
   });
 
   it('rejects when exec fails', async () => {
@@ -162,7 +162,7 @@ describe('composeStatus()', () => {
     const calls = vi.mocked(exec).mock.calls;
     expect(calls.length).toBeGreaterThan(0);
     const cmd = calls[0][0] as string;
-    expect(cmd).toBe('docker compose ps');
+    expect(cmd).toBe('docker compose -f docker-compose.forja.yml ps');
   });
 
   it('rejects when exec fails', async () => {
