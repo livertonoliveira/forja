@@ -84,11 +84,11 @@ beforeEach(() => {
   } as unknown as Awaited<ReturnType<typeof createStoreFromConfig>>);
 
   vi.mocked(PipelineFSM).mockImplementation(
-    () => ({ transition: mockTransition }) as unknown as InstanceType<typeof PipelineFSM>,
+    function() { return { transition: mockTransition } as unknown as InstanceType<typeof PipelineFSM>; },
   );
 
   vi.mocked(TraceWriter).mockImplementation(
-    () => ({ write: mockWrite }) as unknown as InstanceType<typeof TraceWriter>,
+    function() { return { write: mockWrite } as unknown as InstanceType<typeof TraceWriter>; },
   );
 });
 

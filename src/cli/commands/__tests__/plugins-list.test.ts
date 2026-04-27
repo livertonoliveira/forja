@@ -21,10 +21,7 @@ vi.mock('../../../plugin/registry.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../plugin/registry.js')>();
   return {
     ...actual,
-    PluginRegistry: vi.fn().mockImplementation(() => ({
-      bootstrap: mockBootstrap,
-      list: mockList,
-    })),
+    PluginRegistry: vi.fn().mockImplementation(function() { return { bootstrap: mockBootstrap, list: mockList }; }),
   };
 });
 

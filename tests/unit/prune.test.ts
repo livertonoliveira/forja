@@ -9,10 +9,12 @@ vi.mock('../../src/config/loader.js', () => ({
 }));
 
 vi.mock('../../src/store/drizzle/adapter.js', () => ({
-  DrizzlePostgresStore: vi.fn().mockImplementation(() => ({
-    deleteRunsBefore: vi.fn().mockResolvedValue({ runIds: [] }),
-    close: vi.fn().mockResolvedValue(undefined),
-  })),
+  DrizzlePostgresStore: vi.fn().mockImplementation(function() {
+    return {
+      deleteRunsBefore: vi.fn().mockResolvedValue({ runIds: [] }),
+      close: vi.fn().mockResolvedValue(undefined),
+    };
+  }),
 }));
 
 vi.mock('../../src/store/retention.js', () => ({
@@ -105,7 +107,7 @@ describe('pruneCommand — action (mocked store)', () => {
       close: vi.fn().mockResolvedValue(undefined),
     };
     mockDrizzleStore.mockImplementation(
-      () => storeInstance as unknown as InstanceType<typeof DrizzlePostgresStore>,
+      function() { return storeInstance as unknown as InstanceType<typeof DrizzlePostgresStore>; },
     );
     mockLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://forja:forja@localhost:5432/forja',

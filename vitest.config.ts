@@ -3,8 +3,6 @@ import path from 'path';
 
 export default defineConfig({
   esbuild: {
-    // Use the automatic JSX runtime so TSX files without `import React`
-    // (Next.js 17+ convention) are transformed correctly without a DOM.
     jsx: 'automatic',
   },
   resolve: {
@@ -14,5 +12,14 @@ export default defineConfig({
   },
   test: {
     pool: 'forks',
+    include: ['tests/**/*.{test,spec}.{ts,js}', 'src/**/*.{test,spec}.{ts,js}', 'scripts/__tests__/**/*.{test,spec}.{ts,js}'],
+    // bin/ contains compiled JS test files that should not be re-run
+    // ui-components imports TSX/JSX — run from apps/ui/ where React is configured
+    exclude: [
+      '**/node_modules/**',
+      'bin/**',
+      'dist/**',
+      'tests/unit/ui-components.unit.test.ts',
+    ],
   },
 });

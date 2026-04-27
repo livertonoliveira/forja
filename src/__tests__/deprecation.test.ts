@@ -56,7 +56,7 @@ describe('warnDeprecated — trace writing', () => {
     process.env.FORJA_RUN_ID = runId;
 
     const writeMock = vi.fn().mockResolvedValue(undefined);
-    MockTraceWriter.mockImplementation(() => ({ write: writeMock }) as unknown as TraceWriter);
+    MockTraceWriter.mockImplementation(function() { return { write: writeMock }; } as unknown as () => TraceWriter);
 
     vi.spyOn(process, 'emitWarning').mockImplementation(() => {});
 

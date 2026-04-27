@@ -62,11 +62,11 @@ vi.mock('../../src/store/factory.js', () => ({
 
 // Mock FSM — always succeeds transitions
 vi.mock('../../src/engine/fsm.js', () => ({
-  PipelineFSM: vi.fn().mockImplementation(() => ({
+  PipelineFSM: vi.fn().mockImplementation(function() { return {
     transition: vi.fn().mockResolvedValue(undefined),
     getState: vi.fn().mockResolvedValue('init'),
     canTransition: vi.fn().mockResolvedValue(true),
-  })),
+  }; }),
   InvalidTransitionError: class InvalidTransitionError extends Error {
     from: string;
     to: string;
@@ -86,37 +86,33 @@ const mockWriteCheckpoint = vi.fn().mockResolvedValue(undefined);
 const mockGetPhaseId = vi.fn().mockReturnValue(randomUUID());
 
 vi.mock('../../src/trace/dual-writer.js', () => ({
-  DualWriter: vi.fn().mockImplementation(() => ({
+  DualWriter: vi.fn().mockImplementation(function() { return {
     writePhaseStart: mockWritePhaseStart,
     writePhaseEnd: mockWritePhaseEnd,
     writeCheckpoint: mockWriteCheckpoint,
     getPhaseId: mockGetPhaseId,
-  })),
+  }; }),
 }));
 
 // Mock TraceWriter
 vi.mock('../../src/trace/writer.js', () => ({
-  TraceWriter: vi.fn().mockImplementation(() => ({
-    write: vi.fn().mockResolvedValue(undefined),
-  })),
+  TraceWriter: vi.fn().mockImplementation(function() { return { write: vi.fn().mockResolvedValue(undefined) }; }),
 }));
 
 // Mock CheckpointManager — all phases are NOT completed (no skip)
 vi.mock('../../src/engine/checkpoint.js', () => ({
-  CheckpointManager: vi.fn().mockImplementation(() => ({
+  CheckpointManager: vi.fn().mockImplementation(function() { return {
     list: vi.fn().mockResolvedValue([]),
     save: vi.fn().mockResolvedValue(undefined),
     hasCompleted: vi.fn().mockResolvedValue(false),
     listCheckpoints: vi.fn().mockResolvedValue([]),
     deleteCheckpoint: vi.fn().mockResolvedValue(undefined),
-  })),
+  }; }),
 }));
 
 // Mock PhaseIdempotencyGuard — always says "yes, run this phase"
 vi.mock('../../src/engine/idempotency.js', () => ({
-  PhaseIdempotencyGuard: vi.fn().mockImplementation(() => ({
-    shouldRun: vi.fn().mockResolvedValue(true),
-  })),
+  PhaseIdempotencyGuard: vi.fn().mockImplementation(function() { return { shouldRun: vi.fn().mockResolvedValue(true) }; }),
   cleanPhaseData: vi.fn().mockResolvedValue(undefined),
 }));
 

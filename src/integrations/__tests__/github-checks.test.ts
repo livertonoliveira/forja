@@ -115,7 +115,7 @@ describe('parseGitRemote — edge cases', () => {
 // ---------------------------------------------------------------------------
 
 describe('createCheck — GITHUB_TOKEN from environment', () => {
-  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>;
+  let fetchSpy: MockInstance<typeof fetch>;
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
@@ -227,7 +227,7 @@ describe('createCheck — GITHUB_TOKEN from environment', () => {
 });
 
 describe('createCheck — GITHUB_TOKEN from config', () => {
-  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>;
+  let fetchSpy: MockInstance<typeof fetch>;
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
@@ -264,8 +264,8 @@ describe('createCheck — GITHUB_TOKEN from config', () => {
 });
 
 describe('createCheck — no token available', () => {
-  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>;
-  let warnSpy: MockInstance<Parameters<typeof console.warn>, void>;
+  let fetchSpy: MockInstance<typeof fetch>;
+  let warnSpy: MockInstance<typeof console.warn>;
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
