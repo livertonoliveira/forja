@@ -14,7 +14,7 @@ vi.mock('../../src/store/drizzle/migrations.js', () => ({
 }));
 
 vi.mock('../../src/config/loader.js', () => ({
-  loadConfig: vi.fn().mockResolvedValue({ storeUrl: 'postgresql://forja:forja@localhost:5432/forja', source: 'default' }),
+  loadConfig: vi.fn().mockResolvedValue({ storeUrl: 'postgresql://forja:forja@localhost:5432/forja', projectId: 'test-project', source: 'default' }),
   redactDsn: vi.fn().mockImplementation((url: string) => url),
 }));
 
@@ -91,7 +91,7 @@ describe('infraCommand integration', () => {
     mockWaitForHealthy.mockResolvedValue(undefined);
     mockRunMigrations.mockResolvedValue(undefined);
     // Default loadConfig returns the default connection string
-    mockLoadConfig.mockResolvedValue({ storeUrl: 'postgresql://forja:forja@localhost:5432/forja', source: 'default' });
+    mockLoadConfig.mockResolvedValue({ storeUrl: 'postgresql://forja:forja@localhost:5432/forja', projectId: 'test-project', source: 'default' });
     // redactDsn passes through the URL unchanged in tests
     mockRedactDsn.mockImplementation((url: string) => url);
   });
@@ -117,7 +117,7 @@ describe('infraCommand integration', () => {
     });
 
     it('calls runMigrations with DATABASE_URL env var when set', async () => {
-      mockLoadConfig.mockResolvedValueOnce({ storeUrl: 'postgresql://custom:pass@localhost:5432/customdb', source: 'env' });
+      mockLoadConfig.mockResolvedValueOnce({ storeUrl: 'postgresql://custom:pass@localhost:5432/customdb', projectId: 'test-project', source: 'env' });
       await runAction('up');
       expect(mockRunMigrations).toHaveBeenCalledWith('postgresql://custom:pass@localhost:5432/customdb');
     });

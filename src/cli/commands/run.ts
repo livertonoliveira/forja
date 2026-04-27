@@ -122,7 +122,7 @@ export const runCommand = new Command('run')
     try {
       await withSpan(
         'forja.run',
-        { 'forja.run.id': run.id, 'forja.project': projectPrefix, 'forja.issue_id': issueId },
+        { 'forja.run.id': run.id, 'forja.project': projectId, 'forja.issue_id': issueId },
         async (runSpan) => {
           for (const phase of activeSequence) {
             const forceThis = options.force || options.forcePhase === phase;

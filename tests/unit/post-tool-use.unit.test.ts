@@ -21,7 +21,7 @@ vi.mock('../../src/store/index.js', () => {
 });
 
 vi.mock('../../src/config/loader.js', () => {
-  const loadConfig = vi.fn().mockResolvedValue({ storeUrl: '', source: 'default' });
+  const loadConfig = vi.fn().mockResolvedValue({ storeUrl: '', projectId: 'test-project', source: 'default' });
   const clearConfigCache = vi.fn();
   return { loadConfig, clearConfigCache };
 });

@@ -89,6 +89,7 @@ describe('createStoreFromConfig() — connection success', () => {
   it('returns the store when ping() resolves successfully', async () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://forja:forja@localhost:5432/forja',
+      projectId: 'test-project',
       source: 'default',
     });
     mockPing.mockResolvedValue(undefined);
@@ -102,6 +103,7 @@ describe('createStoreFromConfig() — connection success', () => {
   it('calls loadConfig() to get the connection string', async () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://user:pass@host:5432/db',
+      projectId: 'test-project',
       source: 'user-file',
     });
     mockPing.mockResolvedValue(undefined);
@@ -115,6 +117,7 @@ describe('createStoreFromConfig() — connection success', () => {
   it('does not print any error when connection succeeds', async () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://forja:forja@localhost:5432/forja',
+      projectId: 'test-project',
       source: 'default',
     });
     mockPing.mockResolvedValue(undefined);
@@ -133,6 +136,7 @@ describe('createStoreFromConfig() — connection failure', () => {
   it('calls process.exit(1) when ping() rejects', async () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://forja:forja@localhost:5432/forja',
+      projectId: 'test-project',
       source: 'default',
     });
     mockPing.mockRejectedValue(new Error('Connection refused'));
@@ -143,7 +147,7 @@ describe('createStoreFromConfig() — connection failure', () => {
 
   it('prints an error message containing the connection URL', async () => {
     const storeUrl = 'postgresql://forja:forja@localhost:5432/forja';
-    mockedLoadConfig.mockResolvedValue({ storeUrl, source: 'default' });
+    mockedLoadConfig.mockResolvedValue({ storeUrl, projectId: 'test-project', source: 'default' });
     mockPing.mockRejectedValue(new Error('Connection refused'));
 
     try {
@@ -159,6 +163,7 @@ describe('createStoreFromConfig() — connection failure', () => {
   it('prints recovery suggestion mentioning "forja infra up"', async () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://forja:forja@localhost:5432/forja',
+      projectId: 'test-project',
       source: 'default',
     });
     mockPing.mockRejectedValue(new Error('Connection refused'));
@@ -176,6 +181,7 @@ describe('createStoreFromConfig() — connection failure', () => {
   it('prints recovery suggestion mentioning FORJA_STORE_URL', async () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://forja:forja@localhost:5432/forja',
+      projectId: 'test-project',
       source: 'default',
     });
     mockPing.mockRejectedValue(new Error('Connection refused'));
@@ -192,7 +198,7 @@ describe('createStoreFromConfig() — connection failure', () => {
 
   it('handles Neon/Supabase SSL URL in error message', async () => {
     const sslUrl = 'postgresql://user:pass@db.neon.tech:5432/db?sslmode=require';
-    mockedLoadConfig.mockResolvedValue({ storeUrl: sslUrl, source: 'env' });
+    mockedLoadConfig.mockResolvedValue({ storeUrl: sslUrl, projectId: 'test-project', source: 'env' });
     mockPing.mockRejectedValue(new Error('SSL SYSCALL error'));
 
     try {
