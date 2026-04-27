@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.8] — 2026-04-27
+
+### Corrigido
+
+- `VERSION` e `package.json` estavam dessincronizados: `npm version patch` atualizava só o `package.json`, enquanto o binário usa `VERSION` via esbuild — CI falhava com `expected '0.2.6' to be '0.2.7'`
+- `scripts/bump-version.sh` agora roda `npm version` junto, garantindo que os dois arquivos ficam sempre iguais
+
 ## [0.2.7] — 2026-04-27
 
 ### Corrigido
