@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
+import type { PhasesEnabled } from '../schemas/config.js';
 
 export type ConfigSource = 'env' | 'project-file' | 'user-file' | 'default';
 
@@ -10,6 +11,7 @@ export interface LoadedConfig {
   slackWebhookUrl?: string;
   githubToken?: string;
   artifactLanguage?: string;
+  phases?: Partial<PhasesEnabled>;
   source: ConfigSource;
 }
 
@@ -19,6 +21,7 @@ interface StoredConfig {
   slackWebhookUrl?: string;
   githubToken?: string;
   artifactLanguage?: string;
+  phases?: Partial<PhasesEnabled>;
 }
 
 const DEFAULT_STORE_URL = 'postgresql://forja:forja@localhost:5432/forja';
@@ -31,6 +34,7 @@ interface ConfigFile {
   slackWebhookUrl?: string;
   githubToken?: string;
   artifactLanguage?: string;
+  phases?: Partial<PhasesEnabled>;
 }
 
 async function readJsonFile(filePath: string): Promise<ConfigFile | null> {
@@ -76,15 +80,18 @@ export async function loadConfig(): Promise<LoadedConfig> {
     ?? projectConfig?.artifactLanguage
     ?? userConfig?.artifactLanguage;
 
+  const phases: Partial<PhasesEnabled> | undefined =
+    projectConfig?.phases ?? userConfig?.phases;
+
   if (process.env.FORJA_STORE_URL) {
-    result = { storeUrl: process.env.FORJA_STORE_URL, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, source: 'env' };
+    result = { storeUrl: process.env.FORJA_STORE_URL, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'env' };
   } else {
     if (projectConfig?.storeUrl) {
-      result = { storeUrl: projectConfig.storeUrl, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, source: 'project-file' };
+      result = { storeUrl: projectConfig.storeUrl, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'project-file' };
     } else if (userConfig?.storeUrl) {
-      result = { storeUrl: userConfig.storeUrl, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, source: 'user-file' };
+      result = { storeUrl: userConfig.storeUrl, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'user-file' };
     } else {
-      result = { storeUrl: DEFAULT_STORE_URL, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, source: 'default' };
+      result = { storeUrl: DEFAULT_STORE_URL, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'default' };
     }
   }
 

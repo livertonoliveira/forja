@@ -210,24 +210,31 @@ async function main(): Promise<void> {
   // Step 5: Execute release
   if (args.dryRun) {
     process.stdout.write(`[dry-run] Would run: npm version ${bump} --no-git-tag-version\n`);
+    process.stdout.write(`[dry-run] Would write: VERSION=${nextVersion}\n`);
     process.stdout.write(`[dry-run] Would run: npx tsx scripts/generate-changelog.ts --for ${nextVersion}\n`);
-    process.stdout.write(`[dry-run] Would run: git add package.json package-lock.json CHANGELOG.md\n`);
+    process.stdout.write(`[dry-run] Would run: git add package.json package-lock.json CHANGELOG.md VERSION\n`);
     process.stdout.write(`[dry-run] Would run: git commit -m "chore: release v${nextVersion}"\n`);
     process.stdout.write(`[dry-run] Would run: git tag -a v${nextVersion} -m "release v${nextVersion}"\n`);
     return;
   }
 
   const changelogScript = path.join(ROOT_DIR, 'scripts', 'generate-changelog.ts');
+  const versionFile = path.join(ROOT_DIR, 'VERSION');
 
-  const steps: Array<{ cmd: string; args: string[] }> = [
+  const steps: Array<{ cmd: string; args: string[] } | (() => void)> = [
     { cmd: 'npm', args: ['version', bump, '--no-git-tag-version'] },
+    () => fs.writeFileSync(versionFile, nextVersion + '\n'),
     { cmd: 'npx', args: ['tsx', changelogScript, '--for', nextVersion] },
-    { cmd: 'git', args: ['add', 'package.json', 'package-lock.json', 'CHANGELOG.md'] },
+    { cmd: 'git', args: ['add', 'package.json', 'package-lock.json', 'CHANGELOG.md', 'VERSION'] },
     { cmd: 'git', args: ['commit', '-m', `chore: release v${nextVersion}`] },
     { cmd: 'git', args: ['tag', '-a', `v${nextVersion}`, '-m', `release v${nextVersion}`] },
   ];
 
   for (const step of steps) {
+    if (typeof step === 'function') {
+      step();
+      continue;
+    }
     const result = run(step.cmd, step.args);
     if (result.code !== 0) {
       die(`Command failed: ${step.cmd} ${step.args.join(' ')}\n${result.stderr}`);
