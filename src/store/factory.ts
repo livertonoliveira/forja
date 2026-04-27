@@ -26,7 +26,7 @@ export async function createStoreFromConfig(): Promise<ForjaStore> {
         await runMigrations(config.storeUrl);
         console.error(`[forja] Auto-applied ${pending} pending migration(s).`);
       } else {
-        console.error(`[forja] ⚠ ${pending} pending migration(s) detected. Run \`forja infra migrate\` to apply.`);
+        console.error(`[forja] ⚠ ${pending} pending migration(s) detected. Run \`forja infra up\` to apply.`);
       }
     }
   } catch {
