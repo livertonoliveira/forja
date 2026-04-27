@@ -23,8 +23,8 @@ import fs from 'fs/promises';
 // Constants
 // ---------------------------------------------------------------------------
 
-const RUN_ID = '00000000-0000-0000-0000-000000000042';
-const PHASE_ID = 'aaaaaaaa-0000-0000-0000-000000000001';
+const RUN_ID = '00000000-0000-4000-8000-000000000042';
+const PHASE_ID = 'aaaaaaaa-0000-4000-8000-000000000001';
 const ISO_1 = '2024-06-01T10:00:00.000Z';
 const ISO_2 = '2024-06-01T11:00:00.000Z';
 
@@ -204,7 +204,7 @@ describe('CheckpointManager.getLastCompleted() — from store', () => {
   });
 
   it('returns the most recently completed phase when multiple exist', async () => {
-    const phaseId2 = 'bbbbbbbb-0000-0000-0000-000000000002';
+    const phaseId2 = 'bbbbbbbb-0000-4000-8000-000000000002';
     const store = makeStoreMock([
       makePhase({ id: PHASE_ID, name: 'dev', status: 'completed', finishedAt: ISO_1 }),
       makePhase({ id: phaseId2, name: 'test', status: 'completed', finishedAt: ISO_2 }),
@@ -285,7 +285,7 @@ describe('CheckpointManager.getLastCompleted() — file fallback', () => {
       completedAt: ISO_2,
       artifactPaths: [],
       fsmState: 'test',
-      phaseId: 'cccccccc-0000-0000-0000-000000000003',
+      phaseId: 'cccccccc-0000-4000-8000-000000000003',
     };
 
     // Reverse-walk stops at test.json (latest in sequence)
@@ -378,7 +378,7 @@ describe('CheckpointManager.hasCompleted()', () => {
   it('returns true even when other non-completed phases exist alongside the completed one', async () => {
     const store = makeStoreMock([
       makePhase({ id: PHASE_ID, name: 'dev', status: 'completed', finishedAt: ISO_1 }),
-      makePhase({ id: 'bbbbbbbb-0000-0000-0000-000000000002', name: 'test', status: 'running', finishedAt: null }),
+      makePhase({ id: 'bbbbbbbb-0000-4000-8000-000000000002', name: 'test', status: 'running', finishedAt: null }),
     ]);
     const mgr = new CheckpointManager(store, RUN_ID);
 
@@ -417,7 +417,7 @@ describe('CheckpointManager.listCheckpoints()', () => {
   });
 
   it('returns a Checkpoint[] for each completed phase', async () => {
-    const phaseId2 = 'bbbbbbbb-0000-0000-0000-000000000002';
+    const phaseId2 = 'bbbbbbbb-0000-4000-8000-000000000002';
     const store = makeStoreMock([
       makePhase({ id: PHASE_ID, name: 'dev', status: 'completed', finishedAt: ISO_1 }),
       makePhase({ id: phaseId2, name: 'test', status: 'completed', finishedAt: ISO_2 }),
@@ -430,7 +430,7 @@ describe('CheckpointManager.listCheckpoints()', () => {
   });
 
   it('does not include non-completed phases', async () => {
-    const phaseId2 = 'bbbbbbbb-0000-0000-0000-000000000002';
+    const phaseId2 = 'bbbbbbbb-0000-4000-8000-000000000002';
     const store = makeStoreMock([
       makePhase({ id: PHASE_ID, name: 'dev', status: 'completed', finishedAt: ISO_1 }),
       makePhase({ id: phaseId2, name: 'test', status: 'running', finishedAt: null }),

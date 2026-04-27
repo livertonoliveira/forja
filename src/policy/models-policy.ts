@@ -11,7 +11,7 @@ const ValidModelSchema = z.enum([
 
 const ModelsPolicyFileSchema = z.object({
   version: z.string(),
-  phases: z.record(ValidModelSchema),
+  phases: z.record(z.string(), ValidModelSchema),
 });
 
 export type ModelsPolicy = z.infer<typeof ModelsPolicyFileSchema>;

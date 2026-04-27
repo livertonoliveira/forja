@@ -21,7 +21,7 @@ import { resetCircuitBreakers } from '../../../src/hooks/circuit-breaker.js';
 
 beforeEach(() => { resetCircuitBreakers(); });
 
-function makeContext(runId = '00000000-0000-0000-0000-000000000001'): ActionContext {
+function makeContext(runId = '00000000-0000-4000-8000-000000000001'): ActionContext {
   return { runId };
 }
 
@@ -122,7 +122,7 @@ describe('executeActions — notify_slack action', () => {
   it('calls fetch with interpolated message when FORJA_SLACK_WEBHOOK_URL is set', async () => {
     process.env.FORJA_SLACK_WEBHOOK_URL = 'https://hooks.slack.com/test';
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
-    const ctx = makeContext('aaaaaaaa-0000-0000-0000-000000000001');
+    const ctx = makeContext('aaaaaaaa-0000-4000-8000-000000000001');
     const actions: PolicyAction[] = [{ action: 'notify_slack', channel: '#alerts', message: 'run {{runId}}' }];
     await executeActions(actions, ctx);
     expect(warnSpy).not.toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe('executeActions — notify_slack action', () => {
     expect(url).toBe('https://hooks.slack.com/test');
     expect(JSON.parse(init.body as string)).toMatchObject({
       channel: '#alerts',
-      text: 'run aaaaaaaa-0000-0000-0000-000000000001',
+      text: 'run aaaaaaaa-0000-4000-8000-000000000001',
     });
     fetchSpy.mockRestore();
   });

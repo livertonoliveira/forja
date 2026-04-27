@@ -9,7 +9,7 @@ const PhaseToolsPolicySchema = z.object({
 
 const ToolsPolicyFileSchema = z.object({
   version: z.string(),
-  phases: z.record(PhaseToolsPolicySchema),
+  phases: z.record(z.string(), PhaseToolsPolicySchema),
 });
 
 export type ToolsPolicy = z.infer<typeof ToolsPolicyFileSchema>;

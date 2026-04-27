@@ -39,8 +39,8 @@ import { detectCommandDrift } from '../../src/engine/drift-detector.js';
 // Constants
 // ---------------------------------------------------------------------------
 
-const RUN_ID_1 = '00000000-0000-0000-0000-000000000001';
-const RUN_ID_2 = '00000000-0000-0000-0000-000000000002';
+const RUN_ID_1 = '00000000-0000-4000-8000-000000000001';
+const RUN_ID_2 = '00000000-0000-4000-8000-000000000002';
 const ISO = '2024-01-01T00:00:00.000Z';
 const ISO_AFTER = '2024-01-01T01:00:00.000Z';
 
@@ -583,7 +583,7 @@ describe('replayRun — full replay mode', () => {
 
   it('warns but does not throw when gitSha is not available', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const newRunId = '00000000-0000-0000-0000-000000000099';
+    const newRunId = '00000000-0000-4000-8000-000000000099';
     // startedAt must be >= Date.now() so the replay code can find the new run
     const futureIso = new Date(Date.now() + 5000).toISOString();
     const newRun = makeRun(newRunId, { issueId: 'MOB-1013', startedAt: futureIso });
@@ -610,7 +610,7 @@ describe('replayRun — full replay mode', () => {
   });
 
   it('returns regression=false when new run has no additional high/critical findings', async () => {
-    const newRunId = '00000000-0000-0000-0000-000000000099';
+    const newRunId = '00000000-0000-4000-8000-000000000099';
     // startedAt must be >= Date.now() so the replay code can find the new run
     const futureIso = new Date(Date.now() + 5000).toISOString();
     const newRun = makeRun(newRunId, { issueId: 'MOB-1013', startedAt: futureIso });
