@@ -1,0 +1,20 @@
+version: "1"
+policies:
+  - name: gate-critical
+    when:
+      finding.severity: critical
+    then:
+      - action: fail_gate
+      - action: log
+        message: "Critical: {{finding.title}} at {{finding.filePath}}"
+      - action: notify_slack
+        channel: "#ops"
+        message: "Ops alert: {{finding.title}}"
+
+  - name: gate-medium
+    when:
+      finding.severity: medium
+    then:
+      - action: warn_gate
+      - action: log
+        message: "Medium severity: {{finding.title}}"

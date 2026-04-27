@@ -1,15 +1,44 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
-import { TraceEventSchema, TraceEvent } from '../schemas/index.js';
+import { TraceEventSchema, TraceEvent, CURRENT_SCHEMA_VERSION, isCompatible } from '../schemas/index.js';
 
-export async function readTrace(runId: string): Promise<TraceEvent[]> {
+export async function readTrace(runId: string, baseDir?: string): Promise<TraceEvent[]> {
   z.string().uuid().parse(runId);
-  const tracePath = path.join('forja', 'state', 'runs', runId, 'trace.jsonl');
+  const root = baseDir ?? process.cwd();
+  const tracePath = path.join(root, 'forja', 'state', 'runs', runId, 'trace.jsonl');
   const content = await fs.readFile(tracePath, { encoding: 'utf8' });
-  return content
-    .split('\n')
-    .filter((line) => line.trim().length > 0)
+  const lines = content.split('\n').filter((line) => line.trim().length > 0);
+
+  if (lines.length === 0) return [];
+
+  let firstParsed: unknown;
+  try {
+    firstParsed = JSON.parse(lines[0]);
+  } catch {
+    throw new Error("Trace file missing schemaVersion header. Run 'forja migrate-trace' to upgrade legacy traces.");
+  }
+  if (
+    typeof firstParsed !== 'object' ||
+    firstParsed === null ||
+    (firstParsed as Record<string, unknown>)['type'] !== 'header' ||
+    typeof (firstParsed as Record<string, unknown>)['schemaVersion'] !== 'string'
+  ) {
+    throw new Error(
+      "Trace file missing schemaVersion header. Run 'forja migrate-trace' to upgrade legacy traces.",
+    );
+  }
+  const firstParsedRecord = firstParsed as Record<string, unknown>;
+  const declaredVersion = firstParsedRecord['schemaVersion'] as string;
+  if (!isCompatible(declaredVersion, CURRENT_SCHEMA_VERSION)) {
+    const safeVersion = String(declaredVersion ?? '').replace(/[^\w.]/g, '').slice(0, 20);
+    throw new Error(
+      `Trace file uses schemaVersion ${safeVersion} which is incompatible with current version ${CURRENT_SCHEMA_VERSION}. Run 'forja migrate-trace'.`,
+    );
+  }
+
+  return lines
+    .slice(1)
     .map((line) => TraceEventSchema.parse(JSON.parse(line)));
 }
 

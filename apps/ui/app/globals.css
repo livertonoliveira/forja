@@ -1,3 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
+    --card: 0 0% 97%;
+    --card-foreground: 0 0% 4%;
+    --popover: 0 0% 94%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 43 64% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 4%;
+    --muted: 0 0% 91%;
+    --muted-foreground: 0 0% 33%;
+    --accent: 43 64% 44%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 83%;
+    --input: 0 0% 83%;
+    --ring: 43 64% 44%;
+    --radius: 0.5rem;
+    --forja-bg-elevated: #F0F0F0;
+    --forja-border-subtle: #E8E8E8;
+    --forja-text-primary: #0A0A0A;
+    --forja-gate-pass-border: #86EFAC;
+    --forja-gate-fail-border: #FCA5A5;
+    --forja-gate-warn-border: #FCD34D;
+    --forja-text-gold: #C9A84C;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}
+
+/* ── Toast styles ─────────────────────────────────────────── */
+.forja-toast {
+  background: var(--forja-bg-elevated);
+  border: 1px solid var(--forja-border-subtle);
+  color: var(--forja-text-primary);
+  font-family: 'Inter var', sans-serif;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 0 1px rgba(201,168,76,0.3);
+}
+.forja-toast--success { border-left: 3px solid var(--forja-gate-pass-border); }
+.forja-toast--error   { border-left: 3px solid var(--forja-gate-fail-border); }
+.forja-toast--warning { border-left: 3px solid var(--forja-gate-warn-border); }
+.forja-toast--info    { border-left: 3px solid var(--forja-text-gold); }
+[data-sonner-toast] [data-button] {
+  background: var(--forja-text-gold);
+  color: #ffffff;
+  font-weight: 600;
+}
+[data-sonner-toast] [data-button]:hover {
+  opacity: 0.85;
+}
+
+/* ── Reduced motion ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .animate-shimmer {
+    animation: none !important;
+    background-image: none !important;
+  }
+}

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { TraceEvent } from '../../schemas/trace.js';
+import { CURRENT_SCHEMA_VERSION } from '../../schemas/versioning.js';
 
 // ---------------------------------------------------------------------------
 // Mock the trace reader before importing the module under test
@@ -30,6 +31,7 @@ function makePhaseStartEvent(
   fingerprint: string,
 ): TraceEvent {
   return {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     ts: NOW,
     runId,
     eventType: 'phase_start',
@@ -40,6 +42,7 @@ function makePhaseStartEvent(
 
 function makeOtherEvent(runId: string): TraceEvent {
   return {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     ts: NOW,
     runId,
     eventType: 'run_start',
@@ -130,6 +133,7 @@ describe('detectCommandDrift', () => {
 
   it('ignores phase_start events that have no commandFingerprint', async () => {
     const eventWithoutFp: TraceEvent = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ts: NOW,
       runId: RUN_ID_1,
       eventType: 'phase_start',
@@ -148,6 +152,7 @@ describe('detectCommandDrift', () => {
 
   it('ignores phase_start events that have a non-string phase in payload', async () => {
     const badPhaseEvent: TraceEvent = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ts: NOW,
       runId: RUN_ID_1,
       eventType: 'phase_start',
@@ -166,6 +171,7 @@ describe('detectCommandDrift', () => {
 
   it('ignores non-phase_start events when building fingerprint maps', async () => {
     const toolCallEvent: TraceEvent = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ts: NOW,
       runId: RUN_ID_1,
       eventType: 'tool_call',

@@ -3,12 +3,20 @@ import {
   pgEnum,
   uuid,
   text,
+  varchar,
   timestamp,
   numeric,
   integer,
   jsonb,
   index,
+  customType,
 } from 'drizzle-orm/pg-core';
+
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return 'tsvector';
+  },
+});
 
 export const runStatusEnum = pgEnum('run_status', [
   'init', 'spec', 'dev', 'test', 'perf', 'security', 'review', 'homolog', 'pr', 'done', 'failed',
@@ -17,6 +25,8 @@ export const runStatusEnum = pgEnum('run_status', [
 export const severityEnum = pgEnum('severity', ['critical', 'high', 'medium', 'low']);
 
 export const gateDecisionEnum = pgEnum('gate_decision', ['pass', 'warn', 'fail']);
+
+export const dlqStatusEnum = pgEnum('dlq_status', ['dead', 'reprocessed', 'ignored']);
 
 export const runs = pgTable('runs', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -29,6 +39,8 @@ export const runs = pgTable('runs', {
   model: text('model'),
   totalCost: numeric('total_cost', { precision: 10, scale: 6 }).notNull().default('0'),
   totalTokens: integer('total_tokens').notNull().default(0),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
+  searchVector: tsvector('search_vector'),
 }, (t) => ({
   issueIdIdx: index('runs_issue_id_idx').on(t.issueId),
   statusIdx: index('runs_status_idx').on(t.status),
@@ -41,6 +53,7 @@ export const phases = pgTable('phases', {
   startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
   finishedAt: timestamp('finished_at', { withTimezone: true }),
   status: text('status').notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('phases_run_id_idx').on(t.runId),
 }));
@@ -74,11 +87,14 @@ export const findings = pgTable('findings', {
   suggestion: text('suggestion'),
   owasp: text('owasp'),
   cwe: text('cwe'),
+  fingerprint: text('fingerprint'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('findings_run_id_idx').on(t.runId),
   phaseIdIdx: index('findings_phase_id_idx').on(t.phaseId),
   runSeverityIdx: index('findings_run_id_severity_idx').on(t.runId, t.severity),
+  fingerprintIdx: index('findings_fingerprint_idx').on(t.fingerprint),
 }));
 
 export const toolCalls = pgTable('tool_calls', {
@@ -92,6 +108,7 @@ export const toolCalls = pgTable('tool_calls', {
   output: jsonb('output'),
   durationMs: integer('duration_ms'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('tool_calls_run_id_idx').on(t.runId),
   phaseIdIdx: index('tool_calls_phase_id_idx').on(t.phaseId),
@@ -111,6 +128,7 @@ export const costEvents = pgTable('cost_events', {
   cacheReadTokens: integer('cache_read_tokens').notNull().default(0),
   costUsd: numeric('cost_usd', { precision: 10, scale: 6 }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('cost_events_run_id_idx').on(t.runId),
   phaseIdIdx: index('cost_events_phase_id_idx').on(t.phaseId),
@@ -127,7 +145,9 @@ export const gateDecisions = pgTable('gate_decisions', {
   mediumCount: integer('medium_count').notNull().default(0),
   lowCount: integer('low_count').notNull().default(0),
   policyApplied: text('policy_applied').notNull(),
+  justification: text('justification'),
   decidedAt: timestamp('decided_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('gate_decisions_run_id_idx').on(t.runId),
   runPhaseIdx: index('gate_decisions_run_id_phase_id_idx').on(t.runId, t.phaseId),
@@ -140,6 +160,21 @@ export const issueLinks = pgTable('issue_links', {
   issueUrl: text('issue_url'),
   title: text('title'),
   linkedAt: timestamp('linked_at', { withTimezone: true }).notNull(),
+  schemaVersion: varchar('schema_version', { length: 10 }).notNull().default('1.0'),
 }, (t) => ({
   runIdIdx: index('issue_links_run_id_idx').on(t.runId),
+}));
+
+export const hookDlq = pgTable('hook_dlq', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  hookType: text('hook_type').notNull(),
+  payload: jsonb('payload').notNull(),
+  errorMessage: text('error_message'),
+  attempts: integer('attempts').default(0),
+  lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  status: dlqStatusEnum('status').default('dead').notNull(),
+}, (t) => ({
+  statusIdx: index('hook_dlq_status_idx').on(t.status),
+  createdAtIdx: index('hook_dlq_created_at_idx').on(t.createdAt),
 }));

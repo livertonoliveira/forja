@@ -15,6 +15,7 @@
 - Test framework: Node test runner (built-in) + vitest
 - Lint: eslint
 - Typecheck: tsc --noEmit
+- Plugin hook timeout: pluginHookTimeoutMs = 5000 ms (ConfigSchema field)
 - Package manager: npm
 
 ## Linear Integration
@@ -22,8 +23,19 @@
 - Team: Mobitech
 - Team ID: 90497937-52ef-4562-9273-ade6c868032a
 
+## Gate Behavior
+- on_fail: fix
+- on_warn: fix
+
+## OTel (OpenTelemetry)
+- enabled: false
+- endpoint: http://localhost:4317  # OTLP gRPC
+- protocol: grpc  # grpc | http
+- env vars: FORJA_OTEL_ENABLED, FORJA_OTEL_ENDPOINT, FORJA_OTEL_PROTOCOL
+
 ## Conventions
-- Artifacts language: pt-BR (specs, issues, docs, milestones, reports, PR descriptions)
+- Artifact language: pt-BR (specs, issues, docs, milestones, reports, PR descriptions, Linear comments)
+- Prompt language: en (LLM system prompts — hardcoded, not configurable)
 - Code language: English (code, variable names, commits, branch names)
 - Commit style: Conventional Commits (feat:, fix:, refactor:, test:, chore:)
 - Branch naming: <type>/<issue-id>-<short-description>

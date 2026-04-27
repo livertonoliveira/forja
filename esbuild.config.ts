@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const hooksDir = 'src/hooks';
-const externalDeps = ['pg', 'commander', 'zod', 'js-yaml', 'drizzle-orm'];
+const externalDeps = ['pg', 'commander', 'zod', 'js-yaml', 'drizzle-orm', '@opentelemetry/*'];
 const version = readFileSync('VERSION', 'utf-8').trim();
 
 await build({
@@ -23,6 +23,16 @@ await build({
 });
 
 chmodSync('bin/forja.js', '755');
+
+await build({
+  entryPoints: ['src/plugin/index.ts'],
+  bundle: true,
+  platform: 'node',
+  target: 'node20',
+  external: externalDeps,
+  format: 'esm',
+  outfile: 'dist/plugin/index.js',
+});
 
 if (existsSync(hooksDir)) {
   const hookFiles = readdirSync(hooksDir).filter(

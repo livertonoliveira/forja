@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
 import { TraceWriter } from '../trace/writer.js';
+import { readActiveRun } from '../trace/active-run.js';
 import { UUID_RE, validateUuid } from './utils.js';
 import { loadToolsPolicy, isToolAllowed } from '../policy/tools-policy.js';
 
@@ -11,10 +12,15 @@ export async function handlePreToolUse(payload: unknown): Promise<void> {
   const raw = payload as Record<string, unknown>;
   const toolName = typeof raw?.tool_name === 'string' ? raw.tool_name : 'unknown';
 
-  const runId = process.env.FORJA_RUN_ID;
+  let runId = process.env.FORJA_RUN_ID;
   if (!runId || !UUID_RE.test(runId)) {
-    process.stderr.write('[forja] pre-tool-use: FORJA_RUN_ID is missing or not a UUID, skipping\n');
-    return;
+    const active = await readActiveRun();
+    if (active) {
+      runId = active.runId;
+    } else {
+      process.stderr.write('[forja] pre-tool-use: FORJA_RUN_ID is missing and no active run found, skipping\n');
+      return;
+    }
   }
 
   const phase = process.env.FORJA_PHASE ?? 'unknown';

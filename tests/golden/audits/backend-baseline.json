@@ -1,0 +1,9 @@
+[
+  { "category": "performance:n-plus-one", "severity": "medium", "filePathContains": "n-plus-one-positive" },
+  { "category": "performance:missing-cache", "severity": "low", "filePathContains": "missing-cache-positive" },
+  { "category": "performance:pessimistic-locks", "severity": "medium", "filePathContains": "pessimistic-locks-positive" },
+  { "category": "performance:blocking-io", "severity": "medium", "filePathContains": "blocking-io-positive" },
+  { "category": "performance:memory-growth", "severity": "medium", "filePathContains": "memory-growth-positive" },
+  { "category": "security:secret-leaks", "severity": "high", "filePathContains": "secret-leaks-positive" },
+  { "category": "performance:missing-request-timeout", "severity": "medium", "filePathContains": "request-timeout-positive" }
+]

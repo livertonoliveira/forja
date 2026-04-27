@@ -219,7 +219,8 @@ describe.skipIf(SKIP_IN_CI)('DualWriter — integration', () => {
       // JSONL file should still exist and contain the phase_start event
       const tracePath = path.join('forja', 'state', 'runs', runId, 'trace.jsonl');
       const content = await fs.readFile(tracePath, 'utf8');
-      const lines = content.split('\n').filter((l) => l.trim().length > 0);
+      const lines = content.split('\n').filter((l) => l.trim().length > 0)
+        .filter((l) => { try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; } });
       expect(lines).toHaveLength(1);
 
       const event = JSON.parse(lines[0]) as { eventType: string };
@@ -243,7 +244,8 @@ describe.skipIf(SKIP_IN_CI)('DualWriter — integration', () => {
 
       const tracePath = path.join('forja', 'state', 'runs', runId, 'trace.jsonl');
       const content = await fs.readFile(tracePath, 'utf8');
-      const lines = content.split('\n').filter((l) => l.trim().length > 0);
+      const lines = content.split('\n').filter((l) => l.trim().length > 0)
+        .filter((l) => { try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; } });
       expect(lines).toHaveLength(1);
 
       const event = JSON.parse(lines[0]) as { eventType: string };
@@ -523,7 +525,8 @@ describe.skipIf(SKIP_IN_CI)('DualWriter — integration', () => {
 
       const tracePath = path.join('forja', 'state', 'runs', run.id, 'trace.jsonl');
       const content = await fs.readFile(tracePath, 'utf8');
-      const lines = content.split('\n').filter((l) => l.trim().length > 0);
+      const lines = content.split('\n').filter((l) => l.trim().length > 0)
+        .filter((l) => { try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; } });
 
       expect(lines.length).toBeGreaterThanOrEqual(1);
       const firstEvent = JSON.parse(lines[0]) as { eventType: string; runId: string };

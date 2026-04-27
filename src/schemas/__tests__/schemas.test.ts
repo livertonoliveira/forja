@@ -90,6 +90,7 @@ describe('GateDecisionSchema', () => {
       mediumCount: 1,
       lowCount: 3,
       policyApplied: 'default',
+      justification: null,
       decidedAt: ISO_DT,
     };
     expect(() => GateDecisionSchema.parse(valid)).not.toThrow();
@@ -106,6 +107,7 @@ describe('GateDecisionSchema', () => {
       mediumCount: 2,
       lowCount: 0,
       policyApplied: 'strict',
+      justification: null,
       decidedAt: ISO_DT,
     };
     expect(() => GateDecisionSchema.parse(valid)).not.toThrow();
@@ -246,6 +248,35 @@ describe('ConfigSchema', () => {
     expect(() => ConfigSchema.parse({})).toThrow(z.ZodError);
   });
 });
+
+// ---------------------------------------------------------------------------
+// ConfigSchema — artifact_language roundtrip
+// ---------------------------------------------------------------------------
+describe('ConfigSchema — artifact_language', () => {
+  const base = {
+    storeUrl: 'https://example.com/store',
+    retentionDays: 30,
+    phasesDir: './phases',
+    logLevel: 'info' as const,
+    teamId: 'team-abc',
+  }
+
+  it('defaults to "en" when artifact_language is absent', () => {
+    const result = ConfigSchema.parse(base)
+    expect(result.artifact_language).toBe('en')
+  })
+
+  it('preserves artifact_language when explicitly provided', () => {
+    const result = ConfigSchema.parse({ ...base, artifact_language: 'pt-BR' })
+    expect(result.artifact_language).toBe('pt-BR')
+  })
+
+  it('throws ZodError when artifact_language is invalid', () => {
+    expect(() =>
+      ConfigSchema.parse({ ...base, artifact_language: 'xx-INVALID' })
+    ).toThrow(z.ZodError)
+  })
+})
 
 // ---------------------------------------------------------------------------
 // TraceEventSchema

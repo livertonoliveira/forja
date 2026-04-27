@@ -1,18 +1,18 @@
+import { getTranslations } from 'next-intl/server';
 import HeatmapGrid from '@/components/HeatmapGrid';
-import { listAllFindings } from '@/lib/forja-store';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HeatmapPage() {
-  const findings = await listAllFindings();
+  const t = await getTranslations('heatmap');
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-gray-100 mb-2">Findings Heatmap</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Severity × category — {findings.length} total finding{findings.length !== 1 ? 's' : ''}
+      <h1 className="text-xl font-semibold text-forja-text-primary mb-2">{t('title')}</h1>
+      <p className="text-sm text-forja-text-secondary mb-6">
+        {t('desc')}
       </p>
-      <HeatmapGrid findings={findings} />
+      <HeatmapGrid />
     </div>
   );
 }

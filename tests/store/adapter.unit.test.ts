@@ -72,6 +72,7 @@ const fakeRun = () => {
   const raw = {
     id: randomUUID(),
     issueId: 'ISSUE-1',
+    schemaVersion: '1.0',
     startedAt: NOW,
     finishedAt: null as Date | null,
     status: 'init' as const,
@@ -89,6 +90,7 @@ const fakePhase = () => {
   const raw = {
     id: randomUUID(),
     runId: randomUUID(),
+    schemaVersion: '1.0',
     name: 'develop',
     startedAt: NOW,
     finishedAt: null as Date | null,
@@ -120,6 +122,7 @@ const fakeFinding = () => {
     runId: randomUUID(),
     phaseId: randomUUID(),
     agentId: null as string | null,
+    schemaVersion: '1.0',
     severity: 'high' as const,
     category: 'security',
     filePath: null as string | null,
@@ -141,6 +144,7 @@ const fakeToolCall = () => {
     runId: randomUUID(),
     phaseId: randomUUID(),
     agentId: randomUUID(),
+    schemaVersion: '1.0',
     spanId: null as string | null,
     tool: 'Read',
     input: {},
@@ -158,6 +162,7 @@ const fakeCostEvent = () => {
     runId: randomUUID(),
     phaseId: randomUUID(),
     agentId: randomUUID(),
+    schemaVersion: '1.0',
     spanId: null as string | null,
     model: 'claude-sonnet-4-6',
     tokensIn: 100,
@@ -173,6 +178,7 @@ const fakeGateDecision = () => {
   const raw = {
     id: randomUUID(),
     runId: randomUUID(),
+    schemaVersion: '1.0',
     phaseId: null as string | null,
     decision: 'pass' as const,
     criticalCount: 0,
@@ -190,6 +196,7 @@ const fakeIssueLink = () => {
   const raw = {
     id: randomUUID(),
     runId: randomUUID(),
+    schemaVersion: '1.0',
     issueId: 'MOB-997',
     issueUrl: null as string | null,
     title: null as string | null,

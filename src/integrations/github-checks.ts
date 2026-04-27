@@ -1,6 +1,8 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { loadConfig } from '../config/loader.js';
+import { DryRunInterceptor, DRY_RUN_ACTIONS } from '../cli/middleware/dry-run.js';
+import { withRetry, HttpError } from '../hooks/retry.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -40,46 +42,52 @@ export async function createCheck(options: {
   summary: string;
   detailsUrl?: string;
 }): Promise<void> {
-  const { owner, repo, sha, name, conclusion, title, summary, detailsUrl } = options;
+  return DryRunInterceptor.intercept(DRY_RUN_ACTIONS.GITHUB_CREATE_CHECK, async () => {
+    const { owner, repo, sha, name, conclusion, title, summary, detailsUrl } = options;
 
-  const config = await loadConfig();
-  const token = config.githubToken;
+    const config = await loadConfig();
+    const token = config.githubToken;
 
-  if (!token) {
-    console.warn('[forja] GITHUB_TOKEN not set — skipping GitHub check');
-    return;
-  }
+    if (!token) {
+      console.warn('[forja] GITHUB_TOKEN not set — skipping GitHub check');
+      return;
+    }
 
-  const repoNamePattern = /^[a-zA-Z0-9_.-]{1,100}$/;
-  if (!repoNamePattern.test(owner) || !repoNamePattern.test(repo)) {
-    console.warn('[forja] Invalid owner/repo in git remote — skipping GitHub check');
-    return;
-  }
+    const repoNamePattern = /^[a-zA-Z0-9_.-]{1,100}$/;
+    if (!repoNamePattern.test(owner) || !repoNamePattern.test(repo)) {
+      console.warn('[forja] Invalid owner/repo in git remote — skipping GitHub check');
+      return;
+    }
 
-  if (!/^[0-9a-f]{40}$/i.test(sha)) {
-    console.warn('[forja] Invalid git SHA — skipping GitHub check');
-    return;
-  }
+    if (!/^[0-9a-f]{40}$/i.test(sha)) {
+      console.warn('[forja] Invalid git SHA — skipping GitHub check');
+      return;
+    }
 
-  const url = `https://api.github.com/repos/${owner}/${repo}/check-runs`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-    },
-    body: JSON.stringify({
-      name,
-      head_sha: sha,
-      status: 'completed',
-      conclusion,
-      output: { title, summary },
-      details_url: detailsUrl,
-    }),
-    signal: AbortSignal.timeout(10_000),
+    const url = `https://api.github.com/repos/${owner}/${repo}/check-runs`;
+    await withRetry(
+      async () => {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+          },
+          body: JSON.stringify({
+            name,
+            head_sha: sha,
+            status: 'completed',
+            conclusion,
+            output: { title, summary },
+            details_url: detailsUrl,
+          }),
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!response.ok) throw new HttpError(response.status, response.headers.get('Retry-After'));
+      },
+      undefined,
+      async (err) => console.warn('[forja] GitHub check failed after retries:', err.message),
+      'github-checks'
+    );
   });
-
-  if (!response.ok) {
-    console.warn(`[forja] GitHub check creation failed: ${response.status} ${response.statusText}`);
-  }
 }

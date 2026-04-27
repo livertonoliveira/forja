@@ -30,11 +30,19 @@ jobs:
             exit 1
           fi
 
+      - name: Validate changelog entry
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ! grep -qF "## [${VERSION}]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md não contém entrada para a versão ${VERSION}. Execute 'npm run changelog -- --for ${VERSION}' antes de publicar." >&2
+            exit 1
+          fi
+
       - name: Extract changelog entry
         id: changelog
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          NOTES=$(awk "/^## \[${VERSION}\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+          NOTES=$(awk -v ver="$VERSION" '$0 ~ ("^## \\[" ver "\\]") {found=1; next} found && /^## \[/ {exit} found {print}' CHANGELOG.md)
           if [ -z "$NOTES" ]; then
             NOTES="Release ${GITHUB_REF_NAME}"
           fi

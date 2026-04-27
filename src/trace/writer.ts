@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
-import { TraceEventSchema, TraceEvent, Finding, GateDecision } from '../schemas/index.js';
+import { TraceEventSchema, TraceEvent, Finding, GateDecision, CURRENT_SCHEMA_VERSION } from '../schemas/index.js';
 
 // Avoids repeated fs.mkdir syscalls within the same process (e.g. long-running runs).
 const _mkdirCache = new Set<string>();
@@ -15,21 +15,43 @@ async function ensureDir(dirPath: string): Promise<void> {
 export class TraceWriter {
   private runId: string;
   private tracePath: string;
+  private _headerWritten = false;
 
-  constructor(runId: string) {
+  constructor(runId: string, baseDir?: string) {
     z.string().uuid().parse(runId);
     this.runId = runId;
-    this.tracePath = path.join('forja', 'state', 'runs', runId, 'trace.jsonl');
+    const root = baseDir ?? process.cwd();
+    this.tracePath = path.join(root, 'forja', 'state', 'runs', runId, 'trace.jsonl');
   }
 
-  async write(event: Omit<TraceEvent, 'ts'>): Promise<void> {
-    const full: TraceEvent = { ...event, ts: new Date().toISOString() };
+  async writeHeader(): Promise<void> {
+    const dir = path.dirname(this.tracePath);
+    await fs.mkdir(dir, { recursive: true });
+    const header = {
+      type: 'header',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      createdAt: new Date().toISOString(),
+      runId: this.runId,
+    };
+    try {
+      await fs.writeFile(this.tracePath, JSON.stringify(header) + '\n', { encoding: 'utf8', flag: 'wx' });
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err;
+    }
+  }
+
+  async write(event: Omit<TraceEvent, 'ts' | 'schemaVersion'>): Promise<void> {
+    const full: TraceEvent = { ...event, schemaVersion: CURRENT_SCHEMA_VERSION, ts: new Date().toISOString() };
     // Skip validation in production — TypeScript types guarantee correctness at call sites.
     if (process.env.NODE_ENV !== 'production') {
       const result = TraceEventSchema.safeParse(full);
       if (!result.success) throw result.error;
     }
     await ensureDir(path.dirname(this.tracePath));
+    if (!this._headerWritten) {
+      await this.writeHeader();
+      this._headerWritten = true;
+    }
     await fs.appendFile(this.tracePath, JSON.stringify(full) + '\n', { encoding: 'utf8', flag: 'a' });
   }
 
@@ -87,6 +109,15 @@ export class TraceWriter {
       eventType: 'checkpoint',
       spanId,
       payload: { checkpoint: true, phase },
+    });
+  }
+
+  async writePluginRegistered(plugin: { id: string; source: string; version: string; path: string }, spanId?: string): Promise<void> {
+    await this.write({
+      runId: this.runId,
+      eventType: 'plugin_registered',
+      spanId,
+      payload: { id: plugin.id, source: plugin.source, version: plugin.version, path: plugin.path },
     });
   }
 

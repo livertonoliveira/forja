@@ -5,8 +5,19 @@ import path from 'path';
 import { ZodError } from 'zod';
 import { TraceWriter } from '../../src/trace/writer.js';
 import { readTrace, formatTrace } from '../../src/trace/reader.js';
-import { TraceEventSchema } from '../../src/schemas/index.js';
+import { TraceEventSchema, CURRENT_SCHEMA_VERSION } from '../../src/schemas/index.js';
 import type { Finding, GateDecision } from '../../src/schemas/index.js';
+
+/** Read only the non-header lines from a trace.jsonl file. */
+async function readTraceEventLines(traceFile: string): Promise<string[]> {
+  const raw = await fs.readFile(traceFile, 'utf8');
+  return raw
+    .split('\n')
+    .filter((l) => l.trim().length > 0)
+    .filter((l) => {
+      try { return (JSON.parse(l) as Record<string, unknown>)['type'] !== 'header'; } catch { return false; }
+    });
+}
 
 // Track run IDs created during tests so we can clean them up
 const createdRunIds: string[] = [];
@@ -40,6 +51,7 @@ afterEach(async () => {
 
 function makeFinding(runId: string): Finding {
   return {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     id: randomUUID(),
     runId,
     phaseId: randomUUID(),
@@ -53,6 +65,7 @@ function makeFinding(runId: string): Finding {
 
 function makeGateDecision(runId: string): GateDecision {
   return {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     id: randomUUID(),
     runId,
     decision: 'pass',
@@ -61,6 +74,7 @@ function makeGateDecision(runId: string): GateDecision {
     mediumCount: 0,
     lowCount: 0,
     policyApplied: 'default',
+    justification: null,
     decidedAt: new Date().toISOString(),
   };
 }
@@ -75,8 +89,7 @@ describe('TraceWriter — valid event produces JSONL file', () => {
     const writer = new TraceWriter(runId);
     await writer.writePhaseStart('develop');
 
-    const raw = await fs.readFile(tracePath(runId), 'utf8');
-    const lines = raw.split('\n').filter((l) => l.trim().length > 0);
+    const lines = await readTraceEventLines(tracePath(runId));
     expect(lines).toHaveLength(1);
     // Each line must be parseable JSON
     expect(() => JSON.parse(lines[0])).not.toThrow();
@@ -93,8 +106,7 @@ describe('TraceWriter — each line validates against TraceEventSchema', () => {
     const writer = new TraceWriter(runId);
     await writer.writePhaseStart('test-phase');
 
-    const raw = await fs.readFile(tracePath(runId), 'utf8');
-    const lines = raw.split('\n').filter((l) => l.trim().length > 0);
+    const lines = await readTraceEventLines(tracePath(runId));
     for (const line of lines) {
       expect(() => TraceEventSchema.parse(JSON.parse(line))).not.toThrow();
     }
@@ -142,8 +154,7 @@ describe('TraceWriter — append-only writes', () => {
     await writer.writePhaseEnd('develop', 'success');
     await writer.writeError(new Error('oops'), 'develop');
 
-    const raw = await fs.readFile(tracePath(runId), 'utf8');
-    const lines = raw.split('\n').filter((l) => l.trim().length > 0);
+    const lines = await readTraceEventLines(tracePath(runId));
 
     expect(lines).toHaveLength(3);
     for (const line of lines) {

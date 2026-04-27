@@ -13,10 +13,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { executeActions } from '../../../src/policy/actions.js';
 import type { ActionContext } from '../../../src/policy/actions.js';
 import type { PolicyAction } from '../../../src/policy/parser.js';
+import { resetCircuitBreakers } from '../../../src/hooks/circuit-breaker.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+beforeEach(() => { resetCircuitBreakers(); });
 
 function makeContext(runId = '00000000-0000-0000-0000-000000000001'): ActionContext {
   return { runId };
@@ -141,12 +144,19 @@ describe('executeActions — notify_slack action', () => {
   });
 
   it('warns but does not throw when fetch rejects', async () => {
+    vi.useFakeTimers();
     process.env.FORJA_SLACK_WEBHOOK_URL = 'https://hooks.slack.com/test';
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network error'));
     const actions: PolicyAction[] = [{ action: 'notify_slack', message: 'alert' }];
-    await expect(executeActions(actions, makeContext())).resolves.toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith('[forja] Slack notification failed: network error');
+    const p = executeActions(actions, makeContext());
+    await vi.runAllTimersAsync();
+    await expect(p).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[forja] Slack notification failed after retries:'),
+      expect.any(String)
+    );
     fetchSpy.mockRestore();
+    vi.useRealTimers();
   });
 
   it('sends only one notification per channel even with multiple critical findings', async () => {
@@ -249,7 +259,7 @@ describe('executeActions — mixed action list', () => {
     fetchSpy.mockRestore();
   });
 
-  it('logs multiple messages; notify_slack warns when no URL, http_post is silent', async () => {
+  it('logs multiple messages; notify_slack warns when no URL, http_post warns when no url', async () => {
     delete process.env.FORJA_SLACK_WEBHOOK_URL;
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -265,7 +275,7 @@ describe('executeActions — mixed action list', () => {
     await executeActions(actions, makeContext());
 
     expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(warnSpy).toHaveBeenCalledOnce();
+    expect(warnSpy).toHaveBeenCalledTimes(2);
     expect(warnSpy).toHaveBeenCalledWith('[forja] FORJA_SLACK_WEBHOOK_URL not set — Slack notification skipped');
 
     logSpy.mockRestore();

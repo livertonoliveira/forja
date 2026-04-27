@@ -15,6 +15,8 @@ import {
   issueLinks,
 } from './schema.js';
 
+import { CURRENT_SCHEMA_VERSION, isCompatible } from '../../schemas/versioning.js';
+
 import type { ForjaStore } from '../interface.js';
 import type {
   Run, NewRun,
@@ -41,6 +43,19 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers: convert between ISO strings and Date objects for drizzle columns
+// ---------------------------------------------------------------------------
+
+function toDate(value: Date | string): Date {
+  return value instanceof Date ? value : new Date(value as string);
+}
+
+function toDateOrNull(value: Date | string | null | undefined): Date | null {
+  if (!value) return null;
+  return value instanceof Date ? value : new Date(value as string);
+}
+
+// ---------------------------------------------------------------------------
 // Helpers: convert Drizzle row shapes (Date timestamps) to plain domain types
 // ---------------------------------------------------------------------------
 
@@ -53,7 +68,16 @@ type DrizzleCostEvent = typeof costEvents.$inferSelect;
 type DrizzleGateDecision = typeof gateDecisions.$inferSelect;
 type DrizzleIssueLink = typeof issueLinks.$inferSelect;
 
+function assertCompatible(schemaVersion: string, entity: string): void {
+  if (!isCompatible(schemaVersion, CURRENT_SCHEMA_VERSION)) {
+    throw new Error(
+      `Incompatible schemaVersion "${schemaVersion}" on ${entity} (current: "${CURRENT_SCHEMA_VERSION}"). Major versions must match.`
+    );
+  }
+}
+
 function toRun(r: DrizzleRun): Run {
+  assertCompatible(r.schemaVersion, 'Run');
   return {
     ...r,
     startedAt: r.startedAt instanceof Date ? r.startedAt.toISOString() : r.startedAt,
@@ -62,6 +86,7 @@ function toRun(r: DrizzleRun): Run {
 }
 
 function toPhase(r: DrizzlePhase): Phase {
+  assertCompatible(r.schemaVersion, 'Phase');
   return {
     ...r,
     startedAt: r.startedAt instanceof Date ? r.startedAt.toISOString() : r.startedAt,
@@ -78,6 +103,7 @@ function toAgent(r: DrizzleAgent): Agent {
 }
 
 function toFinding(r: DrizzleFinding): Finding {
+  assertCompatible(r.schemaVersion, 'Finding');
   return {
     ...r,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
@@ -85,6 +111,7 @@ function toFinding(r: DrizzleFinding): Finding {
 }
 
 function toToolCall(r: DrizzleToolCall): ToolCall {
+  assertCompatible(r.schemaVersion, 'ToolCall');
   return {
     ...r,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
@@ -92,6 +119,7 @@ function toToolCall(r: DrizzleToolCall): ToolCall {
 }
 
 function toCostEvent(r: DrizzleCostEvent): CostEvent {
+  assertCompatible(r.schemaVersion, 'CostEvent');
   return {
     ...r,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
@@ -99,6 +127,7 @@ function toCostEvent(r: DrizzleCostEvent): CostEvent {
 }
 
 function toGateDecision(r: DrizzleGateDecision): GateDecision {
+  assertCompatible(r.schemaVersion, 'GateDecision');
   return {
     ...r,
     decidedAt: r.decidedAt instanceof Date ? r.decidedAt.toISOString() : r.decidedAt,
@@ -106,6 +135,7 @@ function toGateDecision(r: DrizzleGateDecision): GateDecision {
 }
 
 function toIssueLink(r: DrizzleIssueLink): IssueLink {
+  assertCompatible(r.schemaVersion, 'IssueLink');
   return {
     ...r,
     linkedAt: r.linkedAt instanceof Date ? r.linkedAt.toISOString() : r.linkedAt,
@@ -126,12 +156,22 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async createRun(data: NewRun): Promise<Run> {
-    const [row] = await this.db.insert(runs).values(data as unknown as DrizzleRun).returning();
+    const [row] = await this.db.insert(runs).values({
+      ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      startedAt: toDate(data.startedAt),
+      finishedAt: toDateOrNull(data.finishedAt),
+    } as unknown as DrizzleRun).returning();
     return toRun(row);
   }
 
   async updateRun(id: string, data: Partial<Omit<NewRun, 'id'>>): Promise<Run> {
-    const [row] = await this.db.update(runs).set(data as unknown as Partial<DrizzleRun>).where(eq(runs.id, id)).returning();
+    const values = {
+      ...data,
+      ...(data.startedAt !== undefined && { startedAt: toDate(data.startedAt) }),
+      ...(data.finishedAt !== undefined && { finishedAt: toDateOrNull(data.finishedAt) }),
+    };
+    const [row] = await this.db.update(runs).set(values as unknown as Partial<DrizzleRun>).where(eq(runs.id, id)).returning();
     if (!row) throw new Error(`Not found: Run ${id}`);
     return toRun(row);
   }
@@ -152,12 +192,22 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async createPhase(data: NewPhase): Promise<Phase> {
-    const [row] = await this.db.insert(phases).values(data as unknown as DrizzlePhase).returning();
+    const [row] = await this.db.insert(phases).values({
+      ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      startedAt: toDate(data.startedAt),
+      finishedAt: toDateOrNull(data.finishedAt),
+    } as unknown as DrizzlePhase).returning();
     return toPhase(row);
   }
 
   async updatePhase(id: string, data: Partial<Omit<NewPhase, 'id'>>): Promise<Phase> {
-    const [row] = await this.db.update(phases).set(data as unknown as Partial<DrizzlePhase>).where(eq(phases.id, id)).returning();
+    const values = {
+      ...data,
+      ...(data.startedAt !== undefined && { startedAt: toDate(data.startedAt) }),
+      ...(data.finishedAt !== undefined && { finishedAt: toDateOrNull(data.finishedAt) }),
+    };
+    const [row] = await this.db.update(phases).set(values as unknown as Partial<DrizzlePhase>).where(eq(phases.id, id)).returning();
     if (!row) throw new Error(`Not found: Phase ${id}`);
     return toPhase(row);
   }
@@ -173,23 +223,38 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async createAgent(data: NewAgent): Promise<Agent> {
-    const [row] = await this.db.insert(agents).values(data as unknown as DrizzleAgent).returning();
+    const [row] = await this.db.insert(agents).values({
+      ...data,
+      startedAt: toDate(data.startedAt),
+      finishedAt: toDateOrNull(data.finishedAt),
+    } as unknown as DrizzleAgent).returning();
     return toAgent(row);
   }
 
   async updateAgent(id: string, data: Partial<Omit<NewAgent, 'id'>>): Promise<Agent> {
-    const [row] = await this.db.update(agents).set(data as unknown as Partial<DrizzleAgent>).where(eq(agents.id, id)).returning();
+    const values = {
+      ...data,
+      ...(data.startedAt !== undefined && { startedAt: toDate(data.startedAt) }),
+      ...(data.finishedAt !== undefined && { finishedAt: toDateOrNull(data.finishedAt) }),
+    };
+    const [row] = await this.db.update(agents).set(values as unknown as Partial<DrizzleAgent>).where(eq(agents.id, id)).returning();
     if (!row) throw new Error(`Not found: Agent ${id}`);
     return toAgent(row);
   }
 
   async insertFinding(data: NewFinding): Promise<Finding> {
-    const [row] = await this.db.insert(findings).values(data as unknown as DrizzleFinding).returning();
+    const [row] = await this.db.insert(findings).values({
+      ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      createdAt: toDate(data.createdAt),
+    } as unknown as DrizzleFinding).returning();
     return toFinding(row);
   }
 
   async insertFindings(data: NewFinding[]): Promise<Finding[]> {
-    const rows = await this.db.insert(findings).values(data as unknown as DrizzleFinding[]).returning();
+    const rows = await this.db.insert(findings).values(
+      data.map(d => ({ ...d, schemaVersion: CURRENT_SCHEMA_VERSION, createdAt: toDate(d.createdAt) } as unknown as DrizzleFinding))
+    ).returning();
     return rows.map(toFinding);
   }
 
@@ -205,12 +270,20 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async insertToolCall(data: NewToolCall): Promise<ToolCall> {
-    const [row] = await this.db.insert(toolCalls).values(data as unknown as DrizzleToolCall).returning();
+    const [row] = await this.db.insert(toolCalls).values({
+      ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      createdAt: toDate(data.createdAt),
+    } as unknown as DrizzleToolCall).returning();
     return toToolCall(row);
   }
 
   async insertCostEvent(data: NewCostEvent): Promise<CostEvent> {
-    const [row] = await this.db.insert(costEvents).values(data as unknown as DrizzleCostEvent).returning();
+    const [row] = await this.db.insert(costEvents).values({
+      ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      createdAt: toDate(data.createdAt),
+    } as unknown as DrizzleCostEvent).returning();
     return toCostEvent(row);
   }
 
@@ -239,7 +312,11 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async insertGateDecision(data: NewGateDecision): Promise<GateDecision> {
-    const [row] = await this.db.insert(gateDecisions).values(data as unknown as DrizzleGateDecision).returning();
+    const [row] = await this.db.insert(gateDecisions).values({
+      ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      decidedAt: toDate(data.decidedAt),
+    } as unknown as DrizzleGateDecision).returning();
     return toGateDecision(row);
   }
 
@@ -275,7 +352,10 @@ export class DrizzlePostgresStore implements ForjaStore {
   }
 
   async linkIssue(data: NewIssueLink): Promise<IssueLink> {
-    const [row] = await this.db.insert(issueLinks).values(data as unknown as DrizzleIssueLink).returning();
+    const [row] = await this.db.insert(issueLinks).values({
+      ...data,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+    } as unknown as DrizzleIssueLink).returning();
     return toIssueLink(row);
   }
 

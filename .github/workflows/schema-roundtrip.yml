@@ -1,0 +1,39 @@
+name: Schema Roundtrip
+
+on:
+  pull_request:
+    paths:
+      - 'src/schemas/**'
+      - 'src/store/migrations/**'
+      - 'tests/fixtures/schemas/**'
+      - 'migrations/**'
+  push:
+    branches: [main, harness-v2]
+    paths:
+      - 'src/schemas/**'
+      - 'src/store/migrations/**'
+      - 'tests/fixtures/schemas/**'
+      - 'migrations/**'
+
+concurrency:
+  group: schema-roundtrip-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  schema-roundtrip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Schema roundtrip tests
+        run: npx vitest run --passWithNoTests tests/integration/schema-roundtrip.test.ts

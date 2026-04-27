@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-04-21",
+  "description": "Baseline snapshot for audit:frontend — used by Part 2 golden test",
+  "nextjs": {
+    "fixtureDir": "tests/fixtures/audits/frontend/nextjs",
+    "heuristics": [
+      "use-client-leakage",
+      "missing-cache-config",
+      "revalidation-anti-pattern",
+      "middleware-bundle-size",
+      "static-prerendering-gaps"
+    ],
+    "expectedMinFindings": 5,
+    "note": "Each heuristic has a positive fixture that must produce ≥1 finding"
+  },
+  "vite": {
+    "fixtureDir": "tests/fixtures/audits/frontend/generic",
+    "methodology": "generic-11-category",
+    "status": "implemented-part-2",
+    "expectedMinFindings": 1,
+    "note": "Generic 11-category methodology implemented in Part 2. Positive fixtures should produce ≥1 finding each."
+  }
+}

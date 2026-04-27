@@ -55,6 +55,20 @@ Analyze `$ARGUMENTS` to determine what to work on:
 
 For each task, execute the following phases:
 
+### 0. Start trace
+
+Before loading context or touching any code, initialize the run trace:
+
+```bash
+forja trace init --issue <issue-id>
+```
+
+Capture the UUID printed to stdout — this is the `FORJA_RUN_ID` for this session. Use it in all subsequent CLI calls (e.g., `forja gate --run <FORJA_RUN_ID>`).
+
+If the `forja` binary is not found, run via `npx forja trace init --issue <issue-id>` instead.
+
+Report to the user: `Run ID: <uuid>` so they can monitor progress in the dashboard.
+
 ### 1. Load task context
 
 **Linear mode:**
@@ -139,20 +153,26 @@ Check the exit code:
 
 The gate command persists the decision to both the JSONL trace and Postgres automatically. Do NOT evaluate gate rules manually — always delegate to the CLI.
 
+**Before handling gate results:** Read the `Gate Behavior` section from `forja/config.md`:
+- `on_fail`: controls behavior for exit code 2 (`ask` | `fix` | `defer`). Default: `ask`.
+- `on_warn`: controls behavior for exit code 1 (`ask` | `fix` | `pass`). Default: `ask`.
+
 **If exit code 2 (FAIL):**
 1. Present the critical/high findings to the user
 2. Create tracking issues:
    - **Linear mode:** Create sub-issues linked to the current task via `mcp__linear-server__save_issue` with rich descriptions (Context, What to do, Acceptance Criteria)
    - **Local mode:** Record in `forja/changes/<feature>/tracking.md`
-3. Ask: "I found issues that need fixing. Would you like me to apply the fixes automatically?"
-4. If yes: launch an Agent to fix, then re-run ONLY the phases that failed
-5. If no: pause and let the user fix manually
+3. Act based on `on_fail`:
+   - **`ask`**: Ask "I found issues that need fixing. Would you like me to apply the fixes automatically?" — if yes, fix; if no, pause.
+   - **`fix`**: Inform "Auto-fixing issues per project config..." and immediately launch an Agent to fix, then re-run ONLY the phases that failed.
+   - **`defer`**: Inform "Issues tracked for later (gate behavior: defer). Continuing pipeline..." and proceed to acceptance.
 
 **If exit code 1 (WARN):**
 1. Present warnings
-2. Ask: "There are warnings. Fix now or proceed to acceptance?"
-3. If fix: same flow as FAIL
-4. If proceed: continue
+2. Act based on `on_warn`:
+   - **`ask`**: Ask "There are warnings. Fix now or proceed to acceptance?" — if fix, same flow as FAIL; if proceed, continue.
+   - **`fix`**: Inform "Auto-fixing warnings per project config..." and apply fixes, then re-run ONLY the phases that warned.
+   - **`pass`**: Inform "Warnings noted (gate behavior: pass). Continuing to acceptance..." and proceed.
 
 **If exit code 0 (PASS):**
 Continue automatically.

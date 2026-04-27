@@ -5,7 +5,7 @@ import { join, resolve, relative, isAbsolute } from 'path';
 import { FindingWriter } from '../../trace/finding-writer.js';
 import { TraceWriter } from '../../trace/writer.js';
 import { DualWriter } from '../../trace/dual-writer.js';
-import { GateDecision } from '../../schemas/index.js';
+import { GateDecision, CURRENT_SCHEMA_VERSION } from '../../schemas/index.js';
 import { loadPolicy, evaluatePolicy, executeActions } from '../../policy/index.js';
 import { loadConfig } from '../../config/loader.js';
 import { createStore } from '../../store/index.js';
@@ -58,6 +58,7 @@ export const gateCommand = new Command('gate')
       const lowCount = findings.filter(f => f.severity === 'low').length;
 
       const gateDecision: GateDecision = {
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         id: randomUUID(),
         runId: run,
         decision,
@@ -66,6 +67,7 @@ export const gateCommand = new Command('gate')
         mediumCount,
         lowCount,
         policyApplied: rel,
+        justification: null,
         decidedAt: new Date().toISOString(),
       };
 

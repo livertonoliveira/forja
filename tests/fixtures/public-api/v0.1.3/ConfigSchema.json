@@ -1,0 +1,85 @@
+{
+  "$ref": "#/definitions/ConfigSchema",
+  "definitions": {
+    "ConfigSchema": {
+      "type": "object",
+      "properties": {
+        "storeUrl": {
+          "type": "string"
+        },
+        "retentionDays": {
+          "type": "integer",
+          "default": 90
+        },
+        "phasesDir": {
+          "type": "string"
+        },
+        "logLevel": {
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ]
+        },
+        "teamId": {
+          "type": "string"
+        },
+        "linearToken": {
+          "type": "string"
+        },
+        "timeouts": {
+          "type": "object",
+          "properties": {
+            "dev": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 600
+            },
+            "test": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 300
+            },
+            "perf": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 180
+            },
+            "security": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 180
+            },
+            "review": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 180
+            },
+            "homolog": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 60
+            },
+            "pr": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 120
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        }
+      },
+      "required": [
+        "storeUrl",
+        "phasesDir",
+        "logLevel",
+        "teamId"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

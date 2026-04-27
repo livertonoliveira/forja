@@ -16,9 +16,10 @@ export interface Run {
   model: string | null;
   totalCost: string;
   totalTokens: number;
+  schemaVersion: string;
 }
 
-export type NewRun = Omit<Run, 'id'>;
+export type NewRun = Omit<Run, 'id' | 'schemaVersion'>;
 
 export interface Phase {
   id: string;
@@ -27,9 +28,10 @@ export interface Phase {
   startedAt: string;
   finishedAt: string | null;
   status: string;
+  schemaVersion: string;
 }
 
-export type NewPhase = Omit<Phase, 'id'>;
+export type NewPhase = Omit<Phase, 'id' | 'schemaVersion'>;
 
 export interface Agent {
   id: string;
@@ -59,10 +61,12 @@ export interface Finding {
   suggestion: string | null;
   owasp: string | null;
   cwe: string | null;
+  fingerprint: string | null;
   createdAt: string;
+  schemaVersion: string;
 }
 
-export type NewFinding = Omit<Finding, 'id'>;
+export type NewFinding = Omit<Finding, 'id' | 'schemaVersion'>;
 
 export interface ToolCall {
   id: string;
@@ -75,9 +79,10 @@ export interface ToolCall {
   output: unknown | null;
   durationMs: number | null;
   createdAt: string;
+  schemaVersion: string;
 }
 
-export type NewToolCall = Omit<ToolCall, 'id'>;
+export type NewToolCall = Omit<ToolCall, 'id' | 'schemaVersion'>;
 
 export interface CostEvent {
   id: string;
@@ -92,9 +97,10 @@ export interface CostEvent {
   cacheReadTokens: number;
   costUsd: string;
   createdAt: string;
+  schemaVersion: string;
 }
 
-export type NewCostEvent = Omit<CostEvent, 'id'>;
+export type NewCostEvent = Omit<CostEvent, 'id' | 'schemaVersion'>;
 
 export interface GateDecision {
   id: string;
@@ -106,10 +112,12 @@ export interface GateDecision {
   mediumCount: number;
   lowCount: number;
   policyApplied: string;
+  justification: string | null;
   decidedAt: string;
+  schemaVersion: string;
 }
 
-export type NewGateDecision = Omit<GateDecision, 'id'>;
+export type NewGateDecision = Omit<GateDecision, 'id' | 'schemaVersion'>;
 
 export interface IssueLink {
   id: string;
@@ -118,9 +126,10 @@ export interface IssueLink {
   issueUrl: string | null;
   title: string | null;
   linkedAt: string;
+  schemaVersion: string;
 }
 
-export type NewIssueLink = Omit<IssueLink, 'id'>;
+export type NewIssueLink = Omit<IssueLink, 'id' | 'schemaVersion'>;
 
 export interface CostSummary {
   phaseId: string;
@@ -129,4 +138,25 @@ export interface CostSummary {
   totalTokensOut: number;
   totalCacheCreationTokens: number;
   totalCacheReadTokens: number;
+}
+
+export type DLQStatus = 'dead' | 'reprocessed' | 'ignored';
+
+export interface DLQEntry {
+  id: string;
+  hookType: string;
+  payload: unknown;
+  errorMessage: string | null;
+  attempts: number;
+  lastAttemptAt: string | null;
+  createdAt: string;
+  status: DLQStatus;
+}
+
+export interface NewDLQEntry {
+  hookType: string;
+  payload: unknown;
+  errorMessage?: string | null;
+  attempts?: number;
+  lastAttemptAt?: string | null;
 }

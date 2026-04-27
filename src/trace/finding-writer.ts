@@ -18,7 +18,7 @@ export class FindingWriter {
     this.traceWriter = traceWriter ?? new TraceWriter(runId);
   }
 
-  write(finding: Omit<Finding, 'id' | 'runId' | 'phaseId' | 'createdAt'>): void {
+  write(finding: Omit<Finding, 'id' | 'runId' | 'phaseId' | 'createdAt' | 'schemaVersion'>): void {
     const sanitized = {
       ...finding,
       title: redact(finding.title),

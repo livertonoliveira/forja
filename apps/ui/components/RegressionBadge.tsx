@@ -1,10 +1,13 @@
+'use client';
+
+import { Badge } from "@/components/ui/badge"
+import { useTranslations } from 'next-intl';
+
 export default function RegressionBadge() {
+  const t = useTranslations('regression');
   return (
-    <span
-      className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-red-900 text-red-300"
-      title="Gate piorou em relação ao run anterior"
-    >
-      Regressão
-    </span>
-  );
+    <Badge variant="fail" title={t('title')}>
+      {t('label')}
+    </Badge>
+  )
 }

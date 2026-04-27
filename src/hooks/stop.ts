@@ -1,4 +1,5 @@
 import { TraceWriter } from '../trace/writer.js';
+import { readActiveRun, clearActiveRun } from '../trace/active-run.js';
 import { UUID_RE, validateUuid } from './utils.js';
 import { isTimedOut } from '../engine/timeout.js';
 import { createStoreFromConfig } from '../store/factory.js';
@@ -9,10 +10,17 @@ export async function handleStop(payload: unknown): Promise<void> {
   const stopReason = typeof raw?.stop_reason === 'string' ? raw.stop_reason : 'end_turn';
   const status: 'completed' | 'interrupted' = stopReason === 'interrupted' ? 'interrupted' : 'completed';
 
-  const runId = process.env.FORJA_RUN_ID;
+  let runId = process.env.FORJA_RUN_ID;
+  let fromActiveRunFile = false;
   if (!runId || !UUID_RE.test(runId)) {
-    process.stderr.write('[forja] stop: FORJA_RUN_ID is missing or not a UUID, skipping\n');
-    return;
+    const active = await readActiveRun();
+    if (active) {
+      runId = active.runId;
+      fromActiveRunFile = true;
+    } else {
+      process.stderr.write('[forja] stop: FORJA_RUN_ID is missing and no active run found, skipping\n');
+      return;
+    }
   }
 
   const phase = process.env.FORJA_PHASE ?? 'unknown';
@@ -22,7 +30,8 @@ export async function handleStop(payload: unknown): Promise<void> {
 
   const timedOut = isTimedOut();
 
-  if (timedOut && phaseId) {
+  // FSM/store operations only apply when running under the CLI harness (FORJA_RUN_ID in env)
+  if (!fromActiveRunFile && timedOut && phaseId) {
     const store = await createStoreFromConfig();
     try {
       await store.updatePhase(phaseId, { status: 'timeout', finishedAt: new Date().toISOString() });
@@ -50,4 +59,8 @@ export async function handleStop(payload: unknown): Promise<void> {
       ...(timedOut ? { timedOut: true } : {}),
     },
   });
+
+  if (fromActiveRunFile) {
+    await clearActiveRun();
+  }
 }

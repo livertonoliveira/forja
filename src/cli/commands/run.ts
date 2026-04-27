@@ -2,14 +2,19 @@ import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
 import { Command } from 'commander';
 import { createStoreFromConfig } from '../../store/factory.js';
+import { loadConfig } from '../../config/loader.js';
 import { PipelineFSM, InvalidTransitionError, type PipelineState } from '../../engine/fsm.js';
 import { CheckpointManager } from '../../engine/checkpoint.js';
 import { PhaseIdempotencyGuard, cleanPhaseData } from '../../engine/idempotency.js';
 import { DualWriter } from '../../trace/dual-writer.js';
 import { TraceWriter } from '../../trace/writer.js';
 import { setPhaseTimeout } from '../../engine/timeout.js';
-import { PhaseTimeoutsSchema } from '../../schemas/config.js';
+import { PhaseTimeoutsSchema, SUPPORTED_ARTIFACT_LANGUAGES, type ArtifactLanguage } from '../../schemas/config.js';
+import { buildLanguageInstruction } from '../../config/i18n.js';
 import { loadModelsPolicy, getModelForPhase, type ModelsPolicy } from '../../policy/models-policy.js';
+import { isProjectCapped, evaluate } from '../../cost/alerts-evaluator.js';
+import { initOTel, readOTelConfig, shutdownOTel } from '../../otel/index.js';
+import { withSpan } from '../../otel/tracer.js';
 
 const MODELS_POLICY_PATH = join(dirname(fileURLToPath(import.meta.url)), '../../../policies/models.yaml');
 
@@ -51,12 +56,32 @@ export const runCommand = new Command('run')
     const defaultTimeouts = PhaseTimeoutsSchema.parse({});
     const effectiveTimeouts: Record<string, number> = { ...defaultTimeouts, ...timeoutOverrides };
 
+    const projectPrefix = issueId.replace(/-\d+$/, '');
+    const capCheck = await isProjectCapped(projectPrefix).catch(() => ({ capped: false, currentCost: 0, limit: 0 }));
+    if (capCheck.capped) {
+      console.error(`[forja] Budget cap reached for project ${projectPrefix}. Current cost: $${capCheck.currentCost.toFixed(4)}, limit: $${capCheck.limit}`);
+      process.exit(2);
+    }
+
+    console.log(`[forja] starting run for issue ${issueId}`);
+
     let modelsPolicy: ModelsPolicy | null = null;
     try {
       modelsPolicy = await loadModelsPolicy(MODELS_POLICY_PATH);
     } catch {
       console.warn('[forja] could not load models policy — FORJA_MODEL will not be set per phase');
     }
+
+    const loadedConfig = await loadConfig();
+    initOTel(readOTelConfig());
+    const rawArtifactLanguage = loadedConfig.artifactLanguage ?? 'en';
+    const isValidLang = (SUPPORTED_ARTIFACT_LANGUAGES as readonly string[]).includes(rawArtifactLanguage);
+    if (!isValidLang) {
+      console.warn(`[forja] Unsupported artifact_language "${rawArtifactLanguage}". Supported: ${SUPPORTED_ARTIFACT_LANGUAGES.join(', ')}. Falling back to "en".`);
+    }
+    const artifactLanguage: ArtifactLanguage = isValidLang ? (rawArtifactLanguage as ArtifactLanguage) : 'en';
+    process.env.FORJA_ARTIFACT_LANGUAGE = artifactLanguage;
+    process.env.FORJA_LANGUAGE_INSTRUCTION = buildLanguageInstruction(artifactLanguage);
 
     const store = await createStoreFromConfig();
 
@@ -85,45 +110,66 @@ export const runCommand = new Command('run')
     }
 
     try {
-      for (const phase of PIPELINE_SEQUENCE) {
-        const forceThis = options.force || options.forcePhase === phase;
-        if (!(await guard.shouldRun(phase, { force: forceThis }))) {
-          continue;
-        }
+      await withSpan(
+        'forja.run',
+        { 'forja.run.id': run.id, 'forja.project': projectPrefix, 'forja.issue_id': issueId },
+        async (runSpan) => {
+          for (const phase of PIPELINE_SEQUENCE) {
+            const forceThis = options.force || options.forcePhase === phase;
+            if (!(await guard.shouldRun(phase, { force: forceThis }))) {
+              continue;
+            }
 
-        const phaseTimeout = effectiveTimeouts[phase];
-        if (phaseTimeout !== undefined) {
-          setPhaseTimeout(phase, phaseTimeout);
-        }
+            const phaseTimeout = effectiveTimeouts[phase];
+            if (phaseTimeout !== undefined) {
+              setPhaseTimeout(phase, phaseTimeout);
+            }
 
-        // Clear model env vars first so a previous phase's model never leaks into this phase.
-        // These vars are inherited by hooks (same pattern as FORJA_PHASE_TIMEOUT_AT in setPhaseTimeout).
-        delete process.env.FORJA_MODEL;
-        delete process.env.FORJA_EXPECTED_MODEL;
+            // Clear model env vars first so a previous phase's model never leaks into this phase.
+            delete process.env.FORJA_MODEL;
+            delete process.env.FORJA_EXPECTED_MODEL;
 
-        const phasePolicyName = PHASE_POLICY_NAMES[phase] ?? phase;
-        const phaseModel =
-          options.model ?? (modelsPolicy ? getModelForPhase(phasePolicyName, modelsPolicy) : undefined);
-        if (phaseModel) {
-          process.env.FORJA_MODEL = phaseModel;
-          process.env.FORJA_EXPECTED_MODEL = phaseModel;
-        }
+            const phasePolicyName = PHASE_POLICY_NAMES[phase] ?? phase;
+            const phaseModel =
+              options.model ?? (modelsPolicy ? getModelForPhase(phasePolicyName, modelsPolicy) : undefined);
+            if (phaseModel) {
+              process.env.FORJA_MODEL = phaseModel;
+              process.env.FORJA_EXPECTED_MODEL = phaseModel;
+            }
 
-        await dualWriter.writePhaseStart(phase);
-        await fsm.transition(phase);
-        console.log(`[forja] → ${phase}`);
+            await withSpan(
+              `forja.phase.${phase}`,
+              { 'forja.phase': phase, 'forja.run.id': run.id },
+              async (phaseSpan) => {
+                await dualWriter.writePhaseStart(phase);
+                await fsm.transition(phase);
+                console.log(`[forja] → ${phase}`);
 
-        await dualWriter.writePhaseEnd(phase, 'success');
-        await dualWriter.writeCheckpoint(phase);
+                await dualWriter.writePhaseEnd(phase, 'success');
+                await dualWriter.writeCheckpoint(phase);
 
-        // Retrieve the phaseId from DualWriter's in-memory map (avoids a redundant listPhases call)
-        const phaseId = dualWriter.getPhaseId(phase);
-        if (phaseId) {
-          await checkpointManager.save(phase, phaseId);
-        }
+                const phaseId = dualWriter.getPhaseId(phase);
+                if (phaseId) {
+                  await checkpointManager.save(phase, phaseId);
+                }
 
-        if (options.dryRun) break;
-      }
+                phaseSpan.setAttribute('forja.gate.status', 'success');
+              },
+            );
+
+            if (options.dryRun) {
+              runSpan.setAttribute('forja.dry_run', true);
+              break;
+            }
+          }
+
+          try {
+            await evaluate();
+          } catch (err) {
+            console.warn('[forja] alerts evaluator failed:', err instanceof Error ? err.message : String(err));
+          }
+        },
+      );
     } catch (err) {
       if (err instanceof InvalidTransitionError) {
         console.error(`[forja] ${err.message}`);
@@ -132,6 +178,7 @@ export const runCommand = new Command('run')
         throw err;
       }
     } finally {
+      await shutdownOTel();
       await store.close();
     }
   });

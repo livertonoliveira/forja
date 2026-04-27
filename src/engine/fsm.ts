@@ -1,8 +1,11 @@
-import { join } from 'path';
+import { join } from 'node:path';
 import type { ForjaStore } from '../store/interface.js';
 import type { Run } from '../store/types.js';
+import type { PluginRegistry } from '../plugin/registry.js';
 import { TraceWriter } from '../trace/writer.js';
 import { fingerprintCommand } from './fingerprint.js';
+import type { HookRunner } from '../plugin/hooks.js';
+import type { RunStartContext, RunResultContext, RunErrorContext } from '../plugin/types.js';
 
 export type PipelineState = Run['status'];
 
@@ -35,14 +38,25 @@ export class InvalidTransitionError extends Error {
 export class PipelineFSM {
   private trace: TraceWriter;
   private commandsDir: string;
+  private hookRunner?: HookRunner;
+  private phaseControllers = new Map<string, AbortController>();
 
   constructor(
     private store: ForjaStore,
     private runId: string,
     commandsDir?: string,
+    _registry?: PluginRegistry, // reserved for Part 3 consumption
+    hookRunner?: HookRunner,
   ) {
     this.trace = new TraceWriter(runId);
     this.commandsDir = commandsDir ?? join(process.cwd(), '.claude', 'commands', 'forja');
+    this.hookRunner = hookRunner;
+  }
+
+  async bootstrapHooks(): Promise<void> {
+    if (this.hookRunner) {
+      await this.hookRunner.runOnRegister();
+    }
   }
 
   async getState(): Promise<PipelineState> {
@@ -80,6 +94,13 @@ export class PipelineFSM {
       throw err;
     }
 
+    if (this.hookRunner) {
+      const ac = new AbortController();
+      this.phaseControllers.set(to, ac);
+      const ctx: RunStartContext = { runId: this.runId, phase: to, abortSignal: ac.signal };
+      await this.hookRunner.runOnRun(ctx);
+    }
+
     const commandPath = join(this.commandsDir, `${to}.md`);
     let commandFingerprint: string | undefined;
     const ac = new AbortController();
@@ -92,5 +113,27 @@ export class PipelineFSM {
       clearTimeout(timer);
     }
     await this.trace.writePhaseStart(to, /* agentId */ undefined, /* spanId */ undefined, commandFingerprint);
+  }
+
+  async notifyPhaseResult(
+    phase: PipelineState,
+    status: 'pass' | 'warn' | 'fail',
+    outputs?: Record<string, unknown>,
+  ): Promise<void> {
+    this.phaseControllers.get(phase)?.abort();
+    this.phaseControllers.delete(phase);
+    if (this.hookRunner) {
+      const ctx: RunResultContext = { runId: this.runId, phase, status, outputs };
+      await this.hookRunner.runOnResult(ctx);
+    }
+  }
+
+  async notifyPhaseError(phase: PipelineState, error: Error): Promise<void> {
+    this.phaseControllers.get(phase)?.abort();
+    this.phaseControllers.delete(phase);
+    if (this.hookRunner) {
+      const ctx: RunErrorContext = { runId: this.runId, phase, error };
+      await this.hookRunner.runOnError(ctx);
+    }
   }
 }

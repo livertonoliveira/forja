@@ -2,6 +2,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { Command, Option } from 'commander';
 import { readTrace, formatTrace, generateDashboard } from '../../trace/index.js';
+import { initActiveRun, readActiveRun, clearActiveRun } from '../../trace/active-run.js';
+import { TraceWriter } from '../../trace/writer.js';
 
 function resolveOutputPath(output: string): string {
   const resolved = path.resolve(output);
@@ -41,4 +43,43 @@ export const traceCommand = new Command('trace')
     } else {
       console.log(output);
     }
+  });
+
+traceCommand
+  .command('init')
+  .description('Start a new trace run and write forja/state/.active-run')
+  .option('--issue <issue-id>', 'Linear issue ID associated with this run')
+  .action(async (options: { issue?: string }) => {
+    const runId = await initActiveRun(options.issue);
+    const writer = new TraceWriter(runId);
+    await writer.write({
+      runId,
+      eventType: 'run_start',
+      payload: { issueId: options.issue ?? '', source: 'skill' },
+    });
+    process.stdout.write(runId + '\n');
+  });
+
+traceCommand
+  .command('finish')
+  .description('Finalize the active run and clear forja/state/.active-run')
+  .option('--status <status>', 'Run status (done|incomplete)', 'done')
+  .option('--pr-url <url>', 'Pull request URL to record')
+  .action(async (options: { status: string; prUrl?: string }) => {
+    const active = await readActiveRun();
+    if (!active) {
+      process.stderr.write('[forja] trace finish: no active run found\n');
+      process.exit(1);
+    }
+    const writer = new TraceWriter(active.runId);
+    await writer.write({
+      runId: active.runId,
+      eventType: 'run_end',
+      payload: {
+        status: options.status,
+        ...(options.prUrl ? { prUrl: options.prUrl } : {}),
+      },
+    });
+    await clearActiveRun();
+    process.stdout.write(`[forja] run ${active.runId} finalized with status: ${options.status}\n`);
   });

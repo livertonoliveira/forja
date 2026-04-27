@@ -22,6 +22,62 @@
       "when": 1776704624497,
       "tag": "0002_cache_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1776800000000,
+      "tag": "0003_dsl_justification",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1745280000000,
+      "tag": "0004_schema_versioning",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1776973153000,
+      "tag": "0005_search_vector",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1776976358000,
+      "tag": "0006_filter_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1776978967000,
+      "tag": "0007_trend_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1745453200000,
+      "tag": "0008_fingerprint",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1745627000000,
+      "tag": "0009_cost_breakdown_idx",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1745628000000,
+      "tag": "0010_dlq_schema",
+      "breakpoints": true
     }
   ]
 }

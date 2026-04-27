@@ -1,6 +1,13 @@
 import type { Finding } from '../schemas/finding.js';
 import type { PolicyFile, PolicyAction } from './parser.js';
 import { deepMapStrings } from './deep-map-strings.js';
+import { evaluate as evaluateDSL } from './dsl/evaluator.js';
+import type { PolicyAST } from './dsl/ast.js';
+import type { EvaluationContext } from './dsl/context.js';
+
+export { evaluateDSL };
+export type { PolicyAST, EvaluationContext };
+export type { EvaluationResult as DSLEvaluationResult } from './dsl/evaluator.js';
 
 export interface EvaluationResult {
   decision: 'pass' | 'warn' | 'fail';

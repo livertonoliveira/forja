@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import { generateDashboard } from '../../src/trace/dashboard.js';
+import { CURRENT_SCHEMA_VERSION } from '../../src/schemas/index.js';
 
 // Track run IDs created during tests so we can clean them up
 const createdRunIds: string[] = [];
@@ -23,7 +24,8 @@ async function ensureRunDir(runId: string): Promise<void> {
 
 async function writeTrace(runId: string, events: object[]): Promise<void> {
   await ensureRunDir(runId);
-  const lines = events.map((e) => JSON.stringify(e)).join('\n') + '\n';
+  const header = JSON.stringify({ type: 'header', schemaVersion: CURRENT_SCHEMA_VERSION, createdAt: new Date().toISOString(), runId });
+  const lines = [header, ...events.map((e) => JSON.stringify(e))].join('\n') + '\n';
   await fs.writeFile(path.join(runDir(runId), 'trace.jsonl'), lines, 'utf8');
 }
 

@@ -1,6 +1,8 @@
 import { randomUUID } from 'crypto';
 import { CostEventSchema, CostEvent } from '../schemas/index.js';
+import { DryRunInterceptor, DRY_RUN_ACTIONS } from '../cli/middleware/dry-run.js';
 import { TraceWriter } from '../trace/writer.js';
+import { readActiveRun } from '../trace/active-run.js';
 import { DualWriter } from '../trace/dual-writer.js';
 import { CostAccumulator } from '../cost/accumulator.js';
 import { loadConfig } from '../config/loader.js';
@@ -65,10 +67,15 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
     return;
   }
 
-  const runId = process.env.FORJA_RUN_ID;
+  let runId = process.env.FORJA_RUN_ID;
   if (!runId || !UUID_RE.test(runId)) {
-    process.stderr.write('[forja] post-tool-use: FORJA_RUN_ID is missing or not a UUID, skipping\n');
-    return;
+    const active = await readActiveRun();
+    if (active) {
+      runId = active.runId;
+    } else {
+      process.stderr.write('[forja] post-tool-use: FORJA_RUN_ID is missing and no active run found, skipping\n');
+      return;
+    }
   }
 
   const phase = process.env.FORJA_PHASE ?? 'unknown';
@@ -108,17 +115,19 @@ export async function handlePostToolUse(payload: unknown): Promise<void> {
   const store = await getStore();
   const dualWriter = store ? new DualWriter(writer, store, runId) : null;
 
-  await Promise.allSettled([
-    dualWriter
-      ? dualWriter.writeCostEvent(event)
-      : writer.write({
-          runId,
-          eventType: 'cost',
-          phaseId,
-          agentId,
-          spanId,
-          payload: { costEventId: event.id, phase, model, tokensIn, tokensOut, costUsd },
-        }),
-    accumulator.record(event),
-  ]);
+  await DryRunInterceptor.intercept(DRY_RUN_ACTIONS.COST_WRITE_EVENT, async () => {
+    await Promise.allSettled([
+      dualWriter
+        ? dualWriter.writeCostEvent(event)
+        : writer.write({
+            runId,
+            eventType: 'cost',
+            phaseId,
+            agentId,
+            spanId,
+            payload: { costEventId: event.id, phase, model, tokensIn, tokensOut, costUsd },
+          }),
+      accumulator.record(event),
+    ]);
+  });
 }

@@ -1,349 +1,544 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Claude_Code-Slash_Commands-7C3AED?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTcgMTRsNS01IDUgNSIvPjwvc3ZnPg==" alt="Claude Code">
-  <img src="https://img.shields.io/badge/Stack-Agnostic-10B981?style=for-the-badge" alt="Stack Agnostic">
-  <img src="https://img.shields.io/badge/License-BUSL--1.1-blue?style=for-the-badge" alt="BUSL-1.1 License">
-  <img src="https://img.shields.io/badge/Linear-Integration-5E6AD2?style=for-the-badge&logo=linear&logoColor=white" alt="Linear Integration">
-  <img src="https://img.shields.io/badge/npm-%40forja--hq%2Fcli-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm package">
-  <img src="https://github.com/livertonoliveira/forja/actions/workflows/ci.yml/badge.svg" alt="CI">
+  <img src="https://raw.githubusercontent.com/livertonoliveira/forja/main/docs/assets/logo.png" alt="Forja" height="96">
 </p>
 
 <h1 align="center">Forja</h1>
 
 <p align="center">
-  <strong>The automated development pipeline for Claude Code.</strong><br>
-  From raw idea to shipped pull request — with quality gates, parallel agents, full observability, and an auditable cost trail for every single tool call.
+  <img src="https://img.shields.io/badge/Claude_Code-Slash_Commands-7C3AED?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTcgMTRsNS01IDUgNSIvPjwvc3ZnPg==" alt="Claude Code">
+  <img src="https://img.shields.io/badge/Stack-Agnostic-10B981?style=for-the-badge" alt="Stack Agnóstico">
+  <img src="https://img.shields.io/badge/License-BUSL--1.1-blue?style=for-the-badge" alt="Licença BUSL-1.1">
+  <img src="https://img.shields.io/badge/Linear-Integration-5E6AD2?style=for-the-badge&logo=linear&logoColor=white" alt="Integração Linear">
+  <img src="https://img.shields.io/badge/npm-%40forja--hq%2Fcli-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="pacote npm">
+  <img src="https://github.com/livertonoliveira/forja/actions/workflows/ci.yml/badge.svg" alt="CI">
 </p>
 
 <p align="center">
-  <a href="#why-forja">Why Forja</a> ·
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="#installation">Installation</a> ·
-  <a href="#the-pipeline">The Pipeline</a> ·
+  <strong>A pipeline de desenvolvimento automatizada para Claude Code.</strong><br>
+  Da ideia bruta ao Pull Request entregue — com gates de qualidade, agentes em paralelo, observabilidade completa e trilha auditável de custo para cada chamada de ferramenta.
+</p>
+
+<p align="center">
+  <a href="#por-que-forja">Por que Forja</a> ·
+  <a href="#início-rápido">Início rápido</a> ·
+  <a href="#instalação">Instalação</a> ·
+  <a href="#configuração">Configuração</a> ·
+  <a href="#a-pipeline">A pipeline</a> ·
   <a href="#harness-engine">Harness Engine</a> ·
-  <a href="#slash-commands">Slash Commands</a> ·
-  <a href="#cli-reference">CLI</a> ·
+  <a href="#comandos-slash">Comandos slash</a> ·
+  <a href="#referência-do-cli">CLI</a> ·
   <a href="#dashboard">Dashboard</a> ·
-  <a href="#policies">Policies</a>
+  <a href="#políticas">Políticas</a> ·
+  <a href="#hub-de-integrações">Integrações</a> ·
+  <a href="#plugins--extensibilidade">Plugins</a> ·
+  <a href="#estabilidade--versionamento">Estabilidade</a>
 </p>
 
 ---
 
-## Why Forja
+## Por que Forja
 
-Claude Code is an incredible hammer. Forja gives you the assembly line.
+Claude Code é um martelo incrível. Forja é a linha de montagem.
 
-Shipping a feature the "normal" way with an LLM means juggling a dozen open tabs: requirements, tasks, tests, security review, performance analysis, PR description, Linear updates, commit discipline. Each one eats context. Each one is one prompt away from being forgotten. And when a session crashes mid-way, you start from zero.
+Entregar uma feature do jeito "normal" com um LLM (Large Language Model — modelo de linguagem grande) significa malabarismo entre uma dúzia de abas: requisitos, tarefas, testes, revisão de segurança, análise de performance, descrição de PR (Pull Request), atualização do tracker, disciplina de commit. Cada uma consome contexto. Cada uma está a um prompt de ser esquecida. E quando a sessão trava no meio, você começa do zero.
 
-Forja replaces that chaos with a **deterministic, auditable pipeline** that runs on Claude Code:
+A Forja troca esse caos por uma **pipeline determinística e auditável** rodando em cima do Claude Code:
 
-- **One command specifies a whole feature.** `/forja:spec "add password reset"` becomes a Linear project with milestones, labels, and granular tasks — each sized to fit cleanly in a single Claude run.
-- **One command ships a single task.** `/forja:run TASK-ID` runs develop → test → performance → security → review → acceptance, with **3+ agents in parallel** and a hard quality gate at every phase.
-- **One command ships the PR.** `/forja:pr` produces atomic Conventional Commits and a PR with an aggregated quality report.
+- **Um comando especifica a feature inteira.** `/forja:spec "adicionar reset de senha"` vira um projeto no Linear com milestones, labels e tarefas granulares — cada uma do tamanho certo para caber numa única rodada do Claude.
+- **Um comando entrega a tarefa.** `/forja:run TASK-ID` executa develop → test → performance → security → review → aceitação, com **3+ agentes em paralelo** e um gate de qualidade rígido em cada fase.
+- **Um comando entrega a PR.** `/forja:pr` produz Conventional Commits atômicos e um PR com relatório de qualidade agregado.
 
-Behind the scenes, the **Harness Engine** — a TypeScript runtime registered as a Claude Code hook — intercepts every tool call, persists it to PostgreSQL, computes cost in USD per phase, enforces policy-based quality gates, and exposes a Next.js dashboard so you can see (and replay) everything that happened.
+Por baixo dos panos, o **Harness Engine** — um runtime TypeScript registrado como hook do Claude Code — intercepta cada chamada de ferramenta, persiste no PostgreSQL, calcula custo em USD (Dólar Americano) por fase, aplica gates baseados em política e expõe um dashboard Next.js para você ver (e replayar) tudo o que aconteceu.
 
-### What you actually get
+### O dia a dia muda assim
 
-| | Without Forja | With Forja |
+| Antes | Com Forja |
+|-------|-----------|
+| "Acho que o Claude rodou bem dessa vez" | Trace completo no Postgres, custo por fase em USD, gate determinístico em CI (Continuous Integration — integração contínua) |
+| "Cadê aquele finding crítico do run anterior?" | `/runs/compare?ids=a,b,c` mostra o que mudou — categorizado por fingerprint |
+| "Por que essa pipeline custou tanto?" | `/cost` com top 10 projetos, breakdown por modelo/fase, alerta com budget cap automático |
+| "Slack caiu e perdi a notificação" | Retry com exponential backoff → DLQ (Dead-Letter Queue — fila de letras mortas) persistida → Circuit Breaker — nada se perde, nada flapa em loop |
+| "Vamos integrar com o Jira semana que vem (talvez)" | Provider plugável: Jira, GitLab, Azure DevOps, Bitbucket — escolha por config, não por código |
+| "O dashboard é feio, ninguém abre" | Premium black/white/gold com Command Palette ⌘K, Gantt interativo, drill-down de findings — feito pra ficar aberto o dia inteiro |
+
+### O que você ganha, ponto a ponto
+
+| | Sem Forja | Com Forja |
 |---|---|---|
-| Feature planning | Freeform chat | Linear project with granular tasks (<400 lines each) |
-| Code quality | "Please review this" | 3 parallel agents: performance + security + SOLID/DRY/KISS |
-| Test coverage | Ad-hoc | Unit + integration + e2e generated in parallel |
-| Security posture | Eyeballed | OWASP Top 10 scan on every diff, policy-gated |
-| Cost visibility | None | USD per phase, per model, per tool call |
-| Session crash | Start over | `forja resume <run-id>` picks up at the last checkpoint |
-| Quality gate | LLM opinion | Policy YAML evaluator, `0=pass 1=warn 2=fail` exit codes |
-| Audit trail | Chat log | Full PostgreSQL trace + signed GitHub Check |
-| Commit discipline | "Initial commit" × 20 | Atomic Conventional Commits by design |
-| Stack coverage | Manual setup per repo | Auto-detects Node / Python / Go / Rust / Java / Ruby / PHP / .NET |
+| Planejamento de feature | Conversa livre | Projeto no Linear com tarefas granulares (<400 linhas cada) |
+| Qualidade de código | "Por favor revise isso" | 3 agentes em paralelo: performance + security + SOLID/DRY/KISS |
+| Cobertura de testes | Ad-hoc | Unit + integration + e2e (End-to-End — ponta a ponta) gerados em paralelo |
+| Postura de segurança | Olho no olho | Scan OWASP Top 10 em todo diff, com gate por política |
+| Visibilidade de custo | Nenhuma | USD por fase, por modelo, por chamada de ferramenta |
+| Sessão travou | Começa de novo | `forja resume <run-id>` pega do último checkpoint |
+| Veredito de qualidade | Opinião do LLM | DSL (Domain-Specific Language — linguagem específica de domínio) de gates com 8 predicados tipados + justificativa persistida; exit codes `0=pass 1=warn 2=fail` |
+| Trilha de auditoria | Log do chat | Trace completo no PostgreSQL + GitHub Check assinado |
+| Disciplina de commit | "Initial commit" × 20 | Conventional Commits atômicos por design |
+| Cobertura de stack | Setup manual por repo | Detecta automaticamente Node / Python / Go / Rust / Java / Ruby / PHP / .NET |
+| Extensibilidade | Forka os prompts | Plugin API tipada: comandos custom, fases, módulos de auditoria, ações de política |
+| Estabilidade da API pública | Achismo | `SEMVER.md`, `DEPRECATIONS.md`, CI de breaking changes, guias de upgrade assinados |
+| Compatibilidade de artefatos | "Funciona na minha máquina" | `schemaVersion` em todo schema Zod, header JSONL, front-matter de relatório e linha do Postgres — `forja migrate` para upgrades |
+| Alcance do issue tracker | Só Linear | **Linear** (primário, MCP-native) + Jira / GitLab / Azure DevOps / Bitbucket via factory tipada |
+| Resiliência de chamada externa | Best-effort | RetryEngine (exponential backoff + jitter + `Retry-After`) → DLQ persistida no Postgres + observável em `/dlq` → Circuit Breaker por endpoint |
+| Tracing | Só JSONL | Spans nativos OpenTelemetry via `@opentelemetry/sdk-node` — exporta para qualquer backend (Jaeger / Tempo / Datadog / Honeycomb / OTLP collector) |
+| Dashboard | Tabela de runs | UI premium black/white/gold: Command Palette ⌘K, comparação de runs, drill-down de findings, Gantt, gráficos de tendência, heatmap de atividade, ranking de custo + alertas e budget caps |
+| Ergonomia do CLI | Comandos pelados | `forja doctor` + `--dry-run` + `forja completion <shell>` + `forja help <cmd>` contextual |
+| Internacionalização | Só inglês | `artifact_language` (pt-BR / en) desacoplado do `prompt_language` do LLM (sempre `en`); UI traduzida via `next-intl` |
 
 ---
 
-## Quick Start
+## Início rápido
+
+Quatro linhas para sair do zero ao dashboard rodando:
 
 ```bash
-# 1. Install the CLI globally
+# 1. CLI global
 npm install -g @forja-hq/cli
 
-# 2. Bootstrap Forja in your repo
-forja setup                 # slash commands + hooks only
-# or
-forja setup --with-harness  # also spins up PostgreSQL via Docker
+# 2. Slash commands + hooks + Postgres local via Docker
+forja setup --with-harness
 
-# 3. Open Claude Code in your project and run:
-/forja:init                 # auto-detects your stack
-/forja:spec "add password reset via email"
+# 3. Diagnóstico — falha barulhento se algo estiver fora do lugar
+forja doctor
+
+# 4. Dashboard premium (deixa rodando neste terminal; abra http://localhost:4242 no navegador)
+forja ui
+```
+
+E o loop completo dentro do Claude Code:
+
+```
+/forja:init                                # detecta sua stack
+/forja:spec "adicionar reset de senha por email"
 /forja:run <task-id>
 /forja:pr
 ```
 
-That's the whole loop: specify → run → ship.
+O ciclo todo: especifique → rode → entregue.
 
 ---
 
-## Installation
+## Instalação
 
-Forja has two layers and you can adopt either in isolation.
+A Forja tem duas camadas e você pode adotar qualquer uma isoladamente.
 
-### Layer 1 — Slash commands only (lightweight, zero infra)
+### Camada 1 — Apenas slash commands (leve, zero infra)
 
 ```bash
 npm install -g @forja-hq/cli
 forja setup
 ```
 
-`forja setup` does three things:
+`forja setup` faz três coisas:
 
-1. Copies the `/forja:*` slash commands to `.claude/commands/forja/`
-2. Configures the `PreToolUse`, `PostToolUse`, and `Stop` hooks in `.claude/settings.json`
-3. Appends the Forja section to your `CLAUDE.md`
+1. Copia os slash commands `/forja:*` para `.claude/commands/forja/`
+2. Configura os hooks `PreToolUse`, `PostToolUse` e `Stop` em `.claude/settings.json`
+3. Anexa a seção da Forja no seu `CLAUDE.md`
 
-The pipeline runs immediately, with state stored in Linear issues or local markdown files. **No database, no Docker, no config required.**
+A pipeline já roda imediatamente, com estado salvo em issues do Linear ou em arquivos markdown locais. **Sem banco, sem Docker, sem config.**
 
-### Layer 2 — Harness Engine (persistent state, cost tracking, observability)
+### Camada 2 — Harness Engine (estado persistente, custo, observabilidade)
 
-You have three ways to connect a PostgreSQL database.
+Você tem três caminhos para conectar um PostgreSQL.
 
-#### Option A — Local Postgres via Docker (zero configuration)
+#### Opção A — Postgres local via Docker (zero config)
 
 ```bash
 forja setup --with-harness
 ```
 
-This copies `docker-compose.forja.yml` to your project, spins up PostgreSQL 16, waits for the health check, and runs the migrations. Uses the default DSN `postgresql://forja:forja@localhost:5432/forja`. Requires Docker.
+Copia `docker-compose.forja.yml` para o seu projeto, sobe PostgreSQL 16, espera o health check e roda as migrations. Usa o DSN (Data Source Name — nome da fonte de dados) padrão `postgresql://forja:forja@localhost:5432/forja`. Requer Docker.
 
-#### Option B — Remote / managed Postgres (recommended for teams)
+#### Opção B — Postgres remoto / gerenciado (recomendado para times)
 
-If you already have a PostgreSQL instance (RDS, Neon, Supabase, a shared team DB), point Forja at it:
+Se você já tem uma instância PostgreSQL (RDS, Neon, Supabase, banco compartilhado do time), aponte a Forja para ela:
 
 ```bash
-# Persist the connection string in ~/.forja/config.json (user-level)
+# Persiste a connection string em ~/.forja/config.json (nível usuário)
 forja config set store_url postgresql://user:password@host:5432/forja
 
-# Then run only the migrations — no Docker needed
+# Em seguida, só rode as migrations — sem Docker
 forja infra migrate
 ```
 
-#### Option C — Environment variable (CI/CD, ephemeral shells)
+#### Opção C — Variável de ambiente (CI/CD, shells efêmeros)
 
 ```bash
 export FORJA_STORE_URL=postgresql://user:password@host:5432/forja
 forja infra migrate
 ```
 
-#### Configuration priority
+#### Prioridade de configuração
 
-Forja resolves the store URL in this order, first match wins:
+A Forja resolve a store URL nesta ordem, primeiro match vence:
 
-1. `FORJA_STORE_URL` environment variable
-2. `forja/.forja-config.json` (project-level — commit it if the team shares the same DB)
-3. `~/.forja/config.json` (user-level — personal machine defaults)
-4. Default: `postgresql://forja:forja@localhost:5432/forja` (Docker compose convention)
+1. Variável de ambiente `FORJA_STORE_URL`
+2. `forja/.forja-config.json` (nível projeto — versione no git se o time compartilha o mesmo banco)
+3. `~/.forja/config.json` (nível usuário — defaults da máquina pessoal)
+4. Default: `postgresql://forja:forja@localhost:5432/forja` (convenção do Docker compose)
 
-#### Optional integrations
+#### Integrações opcionais
 
 ```bash
-# GitHub Checks API — posts a signed check-run on every pipeline finish
+# GitHub Checks API — posta um check-run assinado a cada fim de pipeline
 forja config set github_token ghp_...
-# or: export GITHUB_TOKEN=ghp_...
+# ou: export GITHUB_TOKEN=ghp_...
 
-# Slack — notify on critical findings via incoming webhook
+# Slack — notifica findings críticos via incoming webhook
 forja config set slack_webhook_url https://hooks.slack.com/services/...
-# or: export FORJA_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+# ou: export FORJA_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 ```
 
-### Updating
+### Atualizando de uma versão anterior
+
+Se você já tem o Forja rodando e quer pegar tudo o que entrou nesta versão (DLQ, Circuit Breaker, novos providers, OTel, dashboard premium, `forja doctor`, `--dry-run`, `artifact_language`, etc.), o caminho seguro é uma sequência de cinco comandos:
 
 ```bash
+# 1. Atualize o CLI globalmente
 npm update -g @forja-hq/cli
-forja setup   # re-copies updated slash commands (hooks already in place)
+
+# 2. Re-rode o setup — recopia os slash commands; os hooks que já estão em
+#    .claude/settings.json continuam intactos
+forja setup
+
+# 3. Aplique as migrations novas (índices de busca, trend, fingerprint,
+#    cost breakdown e a tabela hook_dlq)
+forja infra migrate
+
+# 4. Adicione o campo artifact_language no forja/config.md sem sobrescrever
+#    nada que já estava lá
+forja config migrate
+
+# 5. Confirme que tudo está verde antes de rodar a próxima pipeline
+forja doctor
 ```
 
-### Verification
+`forja doctor` é a sua rede de proteção: ele aponta migrations pendentes, tokens faltantes, integrações com circuit breaker aberto e config sem `artifact_language`. Exit code `0=pass 1=warn 2=fail` — se sair `2`, leia a mensagem (cada falha vem com hint de remediação) e só siga depois de zerar.
+
+**Atualizando o banco em produção / time:** se vocês compartilham um Postgres, rode `forja infra migrate` em uma única máquina (CI ou um runbook). As migrations `0005`–`0010` são aditivas (criam índices e a tabela `hook_dlq`) — não há downtime nem mudança destrutiva. Use `forja infra status` antes para ver o que está aplicado e o que vai aplicar.
+
+**Artefatos antigos com `schemaVersion`:** se você tem traces JSONL ou relatórios markdown gerados em versões muito antigas (pré-`0004_schema_versioning.sql`), use os comandos pontuais:
 
 ```bash
-forja config get store_url     # verify which DSN is active and its source
-forja infra status             # check DB connection and migration state
+forja migrate trace path/to/trace.jsonl --dry-run   # preview
+forja migrate report path/to/report.md
+forja migrate postgres                              # migra cada linha do banco
 ```
 
-Then open Claude Code and run `/forja:init`. If it detects your stack and creates `forja/config.md`, you're live.
+A versão atual de schema (`1.0`) não introduziu breaking change, então a maioria dos times só precisa dos 5 passos acima.
+
+**Atalhos novos que valem ligar agora:** `forja completion <bash|zsh|fish>` para autocomplete e `forja config set artifact_language pt-BR` se você quer specs, issues e PRs em português.
+
+### Verificação
+
+```bash
+forja config get store_url     # mostra qual DSN está ativo e a fonte
+forja infra status             # status da conexão e estado das migrations
+forja plugins list             # plugins instalados com versão e tipo
+```
+
+Em seguida, abra o Claude Code e rode `/forja:init`. Se ele detectar sua stack e criar `forja/config.md`, você está no ar.
 
 ---
 
-## The Pipeline
+## Configuração
 
-### 1. `/forja:spec` — from idea to decomposed plan
+Capacidades práticas que você liga em segundos depois do setup.
+
+### Idioma dos artefatos
+
+A Forja separa o idioma dos artefatos (specs, issues, docs, descrições de PR) do idioma dos prompts internos do LLM:
+
+```bash
+# Artefatos em português; o LLM continua falando inglês internamente
+forja config set artifact_language pt-BR
+```
+
+`artifact_language` aceita `pt-BR`, `en`, `es`, `fr`, `de`, `ja`, `zh-CN`. `prompt_language` é fixo em `en` — o LLM rende mais nesse idioma e, quando ele fala com você, traduz para o idioma escolhido. Isso garante saída no idioma do time sem degradar a qualidade do raciocínio. O dashboard segue o mesmo `artifact_language` automaticamente, com catálogos completos em `apps/ui/messages/{en,pt-BR}.json`.
+
+### Autocomplete no shell
+
+```bash
+forja completion zsh  > ~/.zsh/completions/_forja
+forja completion bash > ~/.local/share/bash-completion/completions/forja
+forja completion fish > ~/.config/fish/completions/forja.fish
+```
+
+Cobre 100% dos comandos e flags. Valores dinâmicos (run-ids, task-ids) são consultados via API local com fallback estático sem erro quando a API está offline.
+
+### Diagnóstico extensível — `forja doctor`
+
+```bash
+forja doctor
+#   ✓  Node 20.11.1
+#   ✓  38 GB livres em disco
+#   ✓  Postgres acessível, 11/11 migrations aplicadas
+#   ✓  artifact_language: pt-BR
+#   ✓  ANTHROPIC_API_KEY definido
+#   ⚠  Circuit breaker ABERTO para https://hooks.slack.com/...
+#       → 5 falhas em 60s; cooldown termina em 38s
+#   ✗  Health-check do Jira falhou: 401 Unauthorized
+#       → confira JIRA_TOKEN (rotacionado pela última vez 2026-04-12?)
+```
+
+Cada check é um módulo registrado em `src/cli/doctor/checks/`. Saída em ANSI ou `--json` para CI. Exit code `0=pass 1=warn 2=fail` — pluga direto no pipeline de deploy.
+
+### Integrações externas (apenas as que você usa)
+
+Linear é o caminho primário e já vem via MCP (Model Context Protocol — protocolo do Claude Code). Para os demais, exporte o token e adicione o bloco em `forja/config.md`:
+
+```bash
+# Jira
+export JIRA_TOKEN=...
+# integrations.jira: { baseUrl, email }
+
+# GitLab (Cloud ou self-managed)
+export GITLAB_TOKEN=glpat-...
+# integrations.gitlab: { baseUrl }
+
+# Azure DevOps
+export AZURE_DEVOPS_TOKEN=...
+# integrations.azure: { organization, project }
+
+# Bitbucket
+export BITBUCKET_APP_PASSWORD=...
+# integrations.bitbucket: { workspace, username }
+
+# Datadog (métricas + eventos + logs)
+export DD_API_KEY=...
+export DD_APP_KEY=...
+# integrations.datadog: { site }
+```
+
+Re-rode `forja doctor` — cada provider novo aparece com latência de health-check e estado de circuit breaker. Trocar de Jira para GitLab é um diff de config, não um diff de código. Detalhes da arquitetura no [Hub de Integrações](#hub-de-integrações).
+
+### Tracing OpenTelemetry
+
+```bash
+# Habilitar export OTLP/gRPC para um collector local (Jaeger/Tempo/Datadog Agent)
+forja config set otel.enabled true
+forja config set otel.endpoint http://localhost:4317
+forja config set otel.protocol grpc
+
+# Ou via env vars (preferido em CI):
+export FORJA_OTEL_ENABLED=true
+export FORJA_OTEL_ENDPOINT=http://otel-collector:4317
+export FORJA_OTEL_PROTOCOL=grpc   # grpc | http | console
+```
+
+Spans hierárquicos (run → phase → tool call) propagam W3C TraceContext, então um run que chama um webhook se conecta naturalmente ao trace do serviço receptor em Tempo / Jaeger / Datadog / Honeycomb. Com OTel desabilitado, o SDK fica lazy e não adiciona overhead mensurável. Detalhes no [Harness Engine](#harness-engine).
+
+---
+
+## A pipeline
+
+### 1. `/forja:spec` — da ideia ao plano decomposto
 
 ```
-/forja:spec "feature description"   (or a Linear issue ID)
+/forja:spec "descrição da feature"   (ou um issue ID do Linear)
 │
-├─► 2 parallel agents  (Linear fetch  +  codebase map)
+├─► 2 agentes em paralelo  (busca no Linear  +  mapa do codebase)
 │
-└─► user reviews the plan
+└─► usuário revisa o plano
     │
-    └─► OUTPUT
-        ├── proposal.md  +  design.md  (or Linear Documents)
-        └── Linear project
+    └─► SAÍDA
+        ├── proposal.md  +  design.md  (ou Linear Documents)
+        └── projeto Linear
             ├── Milestone 1
-            │   ├── Task A  (~150 lines)
-            │   └── Task B  (~200 lines)
+            │   ├── Tarefa A  (~150 linhas)
+            │   └── Tarefa B  (~200 linhas)
             └── Milestone 2
-                ├── Task C  (~120 lines)
-                └── Task D  (~180 lines)
+                ├── Tarefa C  (~120 linhas)
+                └── Tarefa D  (~180 linhas)
 ```
 
-### 2. `/forja:run TASK-ID` — from task to accepted code
+### 2. `/forja:run TASK-ID` — da tarefa ao código aceito
 
 ```
 /forja:run TASK-ID
 │
-├─► DEVELOP            N parallel agents, one per independent module
+├─► DEVELOP            N agentes em paralelo, um por módulo independente
 │
-├─► TEST               3 parallel agents: unit + integration + e2e
+├─► TEST               3 agentes em paralelo: unit + integration + e2e
 │
-├─► QUALITY PHASES     3 parallel gates, one pass:
-│   ├── PERFORMANCE    2 agents  (diff-scoped)
-│   ├── SECURITY       3 agents  (OWASP on diff)
-│   └── REVIEW         N agents  (SOLID / DRY / KISS)
+├─► QUALITY PHASES     3 gates em paralelo, num único pass:
+│   ├── PERFORMANCE    2 agentes  (escopo: diff)
+│   ├── SECURITY       3 agentes  (OWASP no diff)
+│   └── REVIEW         N agentes  (SOLID / DRY / KISS)
 │
 ├─► GATE CHECK
-│   ├── fail   →  fix and re-run
-│   ├── warn   →  ask user
-│   └── pass   →  continue
+│   ├── fail   →  corrija e re-rode
+│   ├── warn   →  pergunta ao usuário
+│   └── pass   →  continua
 │
-└─► ACCEPT             you approve
+└─► ACCEPT             você aprova
     │
-    └─► /forja:pr      atomic Conventional Commits + PR with report
+    └─► /forja:pr      Conventional Commits atômicos + PR com relatório
 ```
 
 ### Quality gates
 
-Every quality phase emits findings with a severity. The policy evaluator maps severity to a gate decision:
+Cada fase de qualidade emite findings com uma severidade. O avaliador de política mapeia severidade para uma decisão de gate:
 
-| Severity | Gate | Behavior |
-|----------|------|----------|
-| `critical` / `high` | **FAIL** | Pipeline stops. Findings become Linear sub-issues. User must fix or override. |
-| `medium` | **WARN** | Pipeline pauses. User decides: fix now or proceed. |
-| `low` / none | **PASS** | Pipeline continues automatically. |
+| Severidade | Gate | Comportamento |
+|------------|------|---------------|
+| `critical` / `high` | **FAIL** | Pipeline para. Findings viram sub-issues no Linear. Você corrige ou força override. |
+| `medium` | **WARN** | Pipeline pausa. Você decide: corrigir agora ou seguir. |
+| `low` / nenhum | **PASS** | Pipeline continua automaticamente. |
 
-Gate decisions are stored in the `gate_decisions` table and surfaced via `forja gate --run <id>` with standard Unix exit codes: `0=pass 1=warn 2=fail`. Drop that in your CI and you have a deterministic quality gate.
+Decisões de gate são salvas na tabela `gate_decisions` e expostas via `forja gate --run <id>` com exit codes Unix padrão: `0=pass 1=warn 2=fail`. Coloque isso na sua CI e você tem um gate de qualidade determinístico.
 
-### Dual storage (Linear or local)
+### Storage dual (Linear ou local)
 
-| | With Linear MCP | Standalone |
+| | Com Linear MCP | Standalone |
 |---|---|---|
 | Proposal & Design | Linear Documents | `forja/changes/<feature>/proposal.md` + `design.md` |
-| Tasks | Linear Issues (with milestones + labels) | `forja/changes/<feature>/tasks.md` |
-| Quality reports | Comments on issues | `forja/changes/<feature>/report-*.md` |
-| Tracking | Linear sub-issues | `forja/changes/<feature>/tracking.md` |
-| Local footprint | Just `forja/config.md` | Full `forja/` workspace |
+| Tarefas | Linear Issues (com milestones + labels) | `forja/changes/<feature>/tasks.md` |
+| Relatórios de qualidade | Comentários nas issues | `forja/changes/<feature>/report-*.md` |
+| Tracking | Sub-issues no Linear | `forja/changes/<feature>/tracking.md` |
+| Footprint local | Apenas `forja/config.md` | Workspace `forja/` completo |
 
-Either way, **all context survives a crashed session**.
+De qualquer maneira, **todo contexto sobrevive a uma sessão que travou**.
+
+### Pipeline ponta a ponta na prática
+
+```bash
+# 1. Especifique a feature em pt-BR (Linear MCP cria projeto + milestones + issues)
+/forja:spec "rotação automática de tokens de API"
+
+# 2. Antes de tocar em estado, confira o que a pipeline faria
+forja run MOB-XXXX --dry-run
+# Saída prefixada com [DRY-RUN]; zero side effects (notify, GitHub Check, webhook, cost write)
+
+# 3. Rode de verdade — gera spans OTel, mede custo, aplica gates
+forja run MOB-XXXX
+
+# 4. Compare com o run anterior do mesmo task
+forja replay <run-id-anterior> --compare-to <run-id-novo>
+# ou abra o dashboard:
+open "http://localhost:4242/runs/compare?ids=<a>,<b>"
+
+# 5. Se houver finding crítico, drill-down via /runs/<id>/findings/<id>
+#    — botão "Criar issue" usa o IntegrationProvider ativo (Linear por padrão)
+
+# 6. Custo do run + acumulado do projeto
+forja cost --run <run-id>
+open http://localhost:4242/cost
+
+# 7. Quando tudo estiver verde
+/forja:pr
+```
+
+Auditorias de projeto inteiro (não diff-scoped) sempre que você quiser:
+
+```bash
+/forja:audit:run    # backend + frontend + database + security em paralelo
+```
 
 ---
 
 ## Harness Engine
 
-The Harness is what turns Forja from a set of prompts into a real, observable runtime.
+O Harness é o que transforma a Forja de um conjunto de prompts num runtime real e observável.
 
-### How it plugs into Claude Code
+### Como pluga no Claude Code
 
-The `forja` binary registers itself as a [Claude Code hook](https://docs.anthropic.com/en/docs/claude-code/hooks) in `.claude/settings.json`. Every tool call round-trips through it:
+O binário `forja` se registra como um [hook do Claude Code](https://docs.anthropic.com/en/docs/claude-code/hooks) em `.claude/settings.json`. Cada chamada de ferramenta passa por ele:
 
 ```
-Claude Code wants to call a tool
+Claude Code quer chamar uma ferramenta
   │
   ▼
 forja hook pre-tool-use
-  ├─ receives {tool_name, tool_input} via stdin
-  ├─ enforces tools policy (e.g. security phase can't Write or Bash)
-  ├─ validates model assignment (e.g. spec must use Opus)
-  ├─ redacts secrets in the payload (sk-*, ghp_*, high-entropy strings)
-  └─ can BLOCK the tool with exit code 2
+  ├─ recebe {tool_name, tool_input} via stdin
+  ├─ aplica a política de tools (ex: fase security não pode Write nem Bash)
+  ├─ valida atribuição de modelo (ex: spec deve usar Opus)
+  ├─ redige segredos no payload (sk-*, ghp_*, strings de alta entropia)
+  └─ pode BLOQUEAR a ferramenta com exit code 2
   │
   ▼
-Claude executes the tool
+Claude executa a ferramenta
   │
   ▼
 forja hook post-tool-use
-  ├─ reads tokens in / out from the response
-  ├─ computes USD cost per model (Opus 15/75, Sonnet 3/15, Haiku 0.8/4 per 1M)
-  ├─ records duration, tool name, span ID, agent ID
-  └─ writes a cost_event + tool_call row to PostgreSQL
+  ├─ lê tokens in / out da response
+  ├─ calcula custo USD por modelo (Opus 15/75, Sonnet 3/15, Haiku 0.8/4 por 1M)
+  ├─ registra duração, nome da ferramenta, span ID, agent ID
+  └─ grava cost_event + tool_call no PostgreSQL
   │
   ▼
-Claude stops
+Claude para
   │
   ▼
 forja hook stop
-  ├─ detects phase timeouts
-  ├─ transitions the FSM (dev → test → perf → ...)
-  ├─ finalizes run status and writes the consolidated trace
-  └─ triggers actions: GitHub Check, Slack notification, webhooks
+  ├─ detecta timeouts de fase
+  ├─ transiciona o FSM (dev → test → perf → ...)
+  ├─ finaliza o status do run e escreve o trace consolidado
+  └─ dispara ações: GitHub Check, notificação Slack, webhooks
 ```
 
-Net effect: **every tool call is an immutable row in your database**, tagged to a run, phase, agent, and cost. You can replay any run, detect regressions, bill your cost center, or prove what happened during an incident.
+Efeito líquido: **cada chamada de ferramenta é uma linha imutável no seu banco**, marcada com run, fase, agente e custo. Você pode replayar qualquer run, detectar regressões, faturar para o centro de custo certo ou provar o que aconteceu durante um incidente.
 
-### Finite State Machine
+### Máquina de estados
 
-A pipeline run walks through an explicit FSM with row-level locks to prevent concurrent transitions:
+Um run da pipeline percorre um FSM (Finite State Machine — máquina de estados finita) explícito com locks em nível de linha que impedem transições concorrentes:
 
 ```
-happy path:
+caminho feliz:
   init  →  spec  →  dev  →  test  →  perf  →  security  →  review  →  homolog  →  pr  →  done
 
-failure path:
-  perf | security | review   →   failed   →   dev   (retry from dev)
+caminho de falha:
+  perf | security | review   →   failed   →   dev   (retry a partir de dev)
 ```
 
-Invalid transitions are rejected at the database level — you literally can't skip security because the FSM won't let you.
+Transições inválidas são rejeitadas no nível do banco — você literalmente não consegue pular `security` porque o FSM não deixa.
 
-### Checkpoints & resumability
+### Checkpoints e resiliência de sessão
 
-Every phase writes a checkpoint on completion. If Claude crashes, times out, or a human Ctrl+C's the session:
+Cada fase grava um checkpoint ao concluir. Se o Claude trava, dá timeout, ou um humano dá Ctrl+C:
 
 ```bash
-forja resume <run-id>   # picks up at the last successful phase
+forja resume <run-id>   # retoma da última fase concluída
 ```
 
-Combined with `idempotency.ts`, re-running an already-completed phase is a no-op unless you pass `--force` or `--force-phase dev`.
+Combinado com `idempotency.ts`, re-rodar uma fase já concluída é no-op a menos que você passe `--force` ou `--force-phase dev`.
 
-### Replay & regression detection
+### Replay e detecção de regressão
 
 ```bash
 forja replay <run-id>
 ```
 
-Re-executes a previous run with identical inputs, then **diffs the outcomes**: added findings (new bugs), removed findings (fixed or false positives), gate flips. Command files are fingerprinted (SHA-256 of the phase prompt) so you can tell whether a regression came from a code change or from a prompt change — no more "it worked yesterday" mysteries.
+Re-executa um run anterior com inputs idênticos e **dá diff dos resultados**: findings adicionados (bugs novos), removidos (corrigidos ou falsos positivos), gates que mudaram. Os arquivos de comando são fingerprintados (SHA-256 do prompt da fase), então você consegue dizer se uma regressão veio de mudança de código ou de mudança de prompt — chega de "funcionou ontem".
 
-### Cost tracking
+### Custo
 
 ```bash
 forja cost --run <run-id>
 ```
 
-Breakdown by phase and by model, in USD, with token counts. The accumulator runs inside `post-tool-use`, so cost is computed **as it happens** — you can kill a runaway pipeline mid-flight.
+Breakdown por fase e por modelo, em USD, com contagem de tokens. O acumulador roda dentro do `post-tool-use`, então o custo é calculado **conforme acontece** — você consegue matar uma pipeline descontrolada no meio do voo.
 
-Pricing table (per 1M tokens, in / out):
+Tabela de preço (por 1M tokens, in / out):
 - Opus 4.x — `$15 / $75`
 - Sonnet 4.x — `$3 / $15`
 - Haiku 4.x — `$0.80 / $4`
 
-### Secret redaction
+### Redação de segredos
 
-Outbound hook payloads are scanned with:
-- Pattern-based regex for known prefixes (`sk-ant-*`, `ghp_*`, AWS keys, bearer tokens)
-- Shannon-entropy heuristics for unknown high-entropy strings
+Payloads de saída do hook são escaneados com:
+- Regex baseada em padrões para prefixos conhecidos (`sk-ant-*`, `ghp_*`, chaves AWS, bearer tokens)
+- Heurística de entropia de Shannon para strings desconhecidas de alta entropia
 
-Matches are replaced with `[REDACTED]` before anything is written to traces, database, or Slack. Your tokens don't end up in your observability stack.
+Matches são substituídos por `[REDACTED]` antes de qualquer escrita em traces, banco ou Slack. Seus tokens não vazam para a sua stack de observabilidade.
 
 ### GitHub Checks
 
-When a pipeline completes, Forja parses your git remote, extracts `owner/repo`, and posts a signed check-run at the current SHA via the GitHub Checks API. Your PR sees a native ✅/❌ next to the commit — no GitHub Actions setup needed.
+Quando uma pipeline termina, a Forja parseia o git remote, extrai `owner/repo` e posta um check-run assinado no SHA atual via GitHub Checks API. Sua PR mostra um ✅/❌ nativo do lado do commit — sem precisar configurar GitHub Actions.
 
-### Slack notifications
+### Notificações Slack
 
-Policy actions can fire Slack webhooks with templated messages:
+Ações de política podem disparar webhooks Slack com mensagens templatizadas:
 
 ```yaml
 actions:
@@ -353,197 +548,328 @@ actions:
       text: "🚨 Critical finding in {{runId}}: {{finding.title}}"
 ```
 
-Only HTTPS webhooks are accepted.
+Apenas webhooks HTTPS são aceitos.
 
-### Observability
+### Resiliência de hooks — RetryEngine + DLQ + Circuit Breaker
 
-- **JSONL traces** at `forja/state/runs/<run-id>/trace.jsonl` — always written, even if the DB is unavailable (dual-write architecture)
-- **PostgreSQL** for queryable history
-- **Next.js dashboard** (`forja ui`) for humans
+Todo efeito colateral de saída (webhook Slack, GitHub Checks API, batch Datadog, chamada de IntegrationProvider, ação de política `http_post` genérica) atravessa três camadas compostas:
 
-### Retention
-
-```bash
-forja prune --older-than 90d   # default retention is 90 days
-forja prune --dry-run          # preview impact first
+```
+hook call
+   │
+   ▼
+CircuitBreaker (por endpoint, src/hooks/circuit-breaker.ts)
+   │   estados: closed → open → half-open
+   │   failureThreshold=5 em 60s · cooldownMs=60s · successThreshold=2
+   │   open  →  falha em <1ms (sem chamada de rede)
+   ▼
+RetryEngine (src/hooks/retry.ts)
+   │   maxRetries=5 · baseDelay=500ms · maxDelay=30s · jitter
+   │   honra `Retry-After` (segundos ou HTTP-date)
+   │   4xx (exceto 429) pula retry → vai direto para a DLQ
+   ▼
+External API
+   │
+   ▼ (em falha permanente)
+DLQ (tabela hook_dlq, migration 0010_dlq_schema.sql)
+   │   {hook_type, payload, error_message, attempts, status: dead|reprocessed|ignored}
+   │   visível em /dlq com ações de reprocessar / ignorar
+   └─ disponível para qualquer usuário da instância
 ```
 
-Removes rows in batches of 50 and the corresponding `forja/state/runs/<run-id>/` directories, reporting total bytes freed.
+`forja doctor` reporta o estado vivo do circuit breaker por endpoint, então você descobre uma integração intermitente sem abrir o dashboard. Cada retry, transition e enqueue na DLQ é emitido como span OpenTelemetry — aparecem ao lado do resto do trace do seu run.
 
-### Scheduling
+### Tracing OpenTelemetry nativo
+
+O Harness se instrumenta com `@opentelemetry/sdk-node`. Quando OTel está habilitado (`forja config set otel.enabled true` ou `FORJA_OTEL_ENABLED=true`), cada run produz um trace hierárquico: span pai para o run, spans filhos para cada fase, spans netos para cada chamada de ferramenta. Exporters suportados de fábrica:
+
+| Exporter | Como ativar |
+|----------|-------------|
+| **OTLP / gRPC** *(default)* | `FORJA_OTEL_PROTOCOL=grpc` + `FORJA_OTEL_ENDPOINT=http://collector:4317` |
+| **OTLP / HTTP** | `FORJA_OTEL_PROTOCOL=http` + `FORJA_OTEL_ENDPOINT=http://collector:4318/v1/traces` |
+| **Console** | `FORJA_OTEL_PROTOCOL=console` |
+| **Nenhum** *(desabilitado)* | `FORJA_OTEL_ENABLED=false` |
+
+Os spans propagam W3C TraceContext, então um run da CI que chama um webhook pode ser correlacionado com o trace do serviço receptor em Tempo / Jaeger / Datadog / Honeycomb sem mudança de código. Com OTel desabilitado, o SDK é carregado lazy e não adiciona overhead mensurável.
+
+### Observabilidade
+
+- **Traces JSONL** em `forja/state/runs/<run-id>/trace.jsonl` — sempre escritos, mesmo se o banco estiver indisponível (arquitetura dual-write)
+- **PostgreSQL** para histórico consultável
+- **OpenTelemetry** com spans para cada fase, hook, retry e transition do circuit breaker (acima)
+- **Dashboard Next.js** (`forja ui`) para humanos
+
+### Versionamento de schema e migrations
+
+Cada artefato que a Forja produz — registros validados por Zod, headers de trace JSONL, front-matter de relatórios markdown e 7 tabelas do Postgres (`runs`, `phases`, `findings`, `gate_decisions`, `tool_calls`, `cost_events`, `issue_links`) — carrega um campo `schemaVersion` carimbado a partir de `CURRENT_SCHEMA_VERSION` (`src/schemas/versioning.ts`). A versão atual é `1.0`, definida pela migration `0004_schema_versioning.sql`.
+
+Atualizar artefatos antigos é uma operação de um comando:
+
+```bash
+forja migrate trace path/to/trace.jsonl   # upgrade in-place de um trace JSONL
+forja migrate report path/to/report.md    # upgrade do front-matter de um relatório
+forja migrate postgres                    # migra cada linha do banco configurado
+
+# Todos os subcomandos aceitam:
+#   --dry-run            preview da mudança sem escrever
+#   --from <version>     versão de origem explícita (default: lê do header)
+#   --to   <version>     versão de destino explícita (default: CURRENT_SCHEMA_VERSION)
+```
+
+Os runners (`src/store/migrations/{trace,report,postgres}-runner.ts`) percorrem um registry de migration steps versionados, aplicando-os em sequência. A compatibilidade forward é validada por testes golden de roundtrip: fixtures em `tests/fixtures/schemas/{pre-1.0,v1.0,hypothetical-1.1}/` exercitam upgrades pre-1.0 → 1.0, parsing atual e tolerância a versões futuras com campos desconhecidos. A CI re-roda a suíte de roundtrip a cada mudança em `src/schemas/` ou `src/store/migrations/`.
+
+Releases que sobem `schemaVersion` vêm com guia de upgrade em `docs/upgrades/v<X.Y>.md`, gerado a partir de `docs/upgrades/_template.md` e validado por `scripts/validate-upgrade-guide.ts` antes do tagging — o release script se recusa a publicar se sobrar qualquer placeholder `...` não preenchido.
+
+### Retenção
+
+```bash
+forja prune --older-than 90d   # retenção padrão é 90 dias
+forja prune --dry-run          # preview de impacto primeiro
+```
+
+Remove linhas em batches de 50 e os diretórios `forja/state/runs/<run-id>/` correspondentes, reportando total de bytes liberados.
+
+### Agendamento
 
 ```bash
 forja schedule list
 forja schedule create --cron "0 2 * * 1" --command "/forja:audit:run"
 ```
 
-Cron-driven recurring runs. Schedules live in `.forja/schedules.json`; next-run times are computed via `cron-parser`.
+Runs recorrentes via cron. Schedules vivem em `.forja/schedules.json`; próximos horários são calculados via `cron-parser`.
 
-### Harness vs slash-only — side by side
+### Harness vs apenas slash — lado a lado
 
-| Capability | Slash only | + Harness |
-|---|---|---|
-| Pipeline state | Linear / markdown | PostgreSQL + FSM |
-| Session interruption | Start over | `forja resume <run-id>` |
-| Cost tracking | — | USD per phase via `forja cost` |
-| Quality gate verdict | LLM decision | Policy YAML, exit-code enforced |
-| Full tool-call history | — | Queryable in PostgreSQL |
-| Real-time tool interception | — | Pre/post hooks block disallowed tools |
-| Dashboard | — | `forja ui` Next.js app |
-| Replay + regression detection | — | `forja replay <run-id>` |
-| Scheduled pipelines | — | `forja schedule` |
-| GitHub Checks | — | Automatic on run completion |
-| Secret redaction | — | Pattern + entropy-based |
-| Retention / pruning | — | `forja prune` |
+| Capacidade | Apenas slash | Com Harness |
+|------------|--------------|-------------|
+| Estado da pipeline | Linear / markdown | PostgreSQL + FSM |
+| Sessão interrompida | Começa de novo | `forja resume <run-id>` |
+| Tracking de custo | — | USD por fase via `forja cost`, mais UI `/cost` com alertas e budget caps |
+| Veredito de gate | Decisão do LLM | Avaliador da DSL com justificativa persistida e exit-code aplicado |
+| Histórico de tool calls | — | Consultável no PostgreSQL |
+| Interceptação real-time | — | Hooks pre/post bloqueiam ferramentas não permitidas |
+| Dashboard | — | App Next.js `forja ui` — UI premium, palette ⌘K, comparação de runs, drill-down, /dlq |
+| Replay + detecção de regressão | — | `forja replay <run-id>` |
+| Pipelines agendadas | — | `forja schedule` |
+| Issue trackers externos | — | Linear / Jira / GitLab / Azure DevOps / Bitbucket via `IntegrationProvider` |
+| GitHub Checks | — | Automático ao fim do run |
+| Tracing OpenTelemetry | — | Exporters OTLP gRPC / HTTP / console via `@opentelemetry/sdk-node` |
+| Resiliência de hook | — | RetryEngine + DLQ + Circuit Breaker por endpoint |
+| Redação de segredos | — | Padrão + entropia |
+| Retenção / pruning | — | `forja prune` |
 
 ---
 
-## Slash Commands
+## Comandos slash
 
-Every command runs standalone — you don't have to start from `/forja:spec` if you only want a security scan.
+Cada comando roda standalone — você não precisa começar pelo `/forja:spec` se só quer um scan de segurança.
 
 ### Pipeline
 
-| Command | What it does |
-|---------|-------------|
-| `/forja:init` | Auto-detects stack, conventions, test framework; writes `forja/config.md` |
-| `/forja:spec` | Decomposes a feature into granular tasks (<400 lines); creates Linear project with milestones and labels |
-| `/forja:run` | Full pipeline for a single task: develop → test → perf → security → review → accept |
-| `/forja:develop` | Implementation phase with N parallel agents (one per independent module) |
-| `/forja:test` | Generates and runs unit + integration + e2e tests (3 parallel agents) |
-| `/forja:perf` | Performance analysis of the current **diff** — N+1 queries, missing indexes, bundle size, re-renders |
-| `/forja:security` | OWASP scan of the current **diff** — injection, auth, data exposure (3 parallel agents) |
-| `/forja:review` | SOLID, DRY, KISS, Clean Code analysis |
-| `/forja:homolog` | Presents the aggregated quality report for user acceptance |
-| `/forja:pr` | Produces atomic Conventional Commits and opens a PR with the consolidated report |
-| `/forja:update` | Pulls the latest command files from the CLI package |
+| Comando | O que faz |
+|---------|-----------|
+| `/forja:init` | Detecta stack, convenções e framework de testes; escreve `forja/config.md` |
+| `/forja:spec` | Decompõe uma feature em tarefas granulares (<400 linhas); cria projeto Linear com milestones e labels |
+| `/forja:run` | Pipeline completa para uma tarefa: develop → test → perf → security → review → aceitação |
+| `/forja:develop` | Fase de implementação com N agentes em paralelo (um por módulo independente) |
+| `/forja:test` | Gera e roda testes unit + integration + e2e (3 agentes em paralelo) |
+| `/forja:perf` | Análise de performance do **diff atual** — N+1, índices faltantes, bundle size, re-renders |
+| `/forja:security` | Scan OWASP do **diff atual** — injection, auth, exposição de dados (3 agentes em paralelo) |
+| `/forja:review` | Análise SOLID, DRY, KISS, Clean Code |
+| `/forja:homolog` | Apresenta o relatório de qualidade agregado para aceitação do usuário |
+| `/forja:pr` | Produz Conventional Commits atômicos e abre PR com relatório consolidado |
+| `/forja:update` | Puxa os arquivos de comando atualizados do pacote do CLI |
 
-### Audits (project-wide, not diff-scoped)
+### Auditorias (escopo: projeto inteiro, não diff)
 
-| Command | What it does |
-|---------|-------------|
-| `/forja:audit:backend` | Backend performance deep-dive: N+1, missing indexes, memory leaks, concurrency, architecture — **3 parallel agents** |
-| `/forja:audit:frontend` | Frontend performance: auto-routes to Next.js 5-layer methodology or generic 11-category — **3 parallel agents** |
-| `/forja:audit:database` | DB audit: MongoDB / PostgreSQL / MySQL — indexes, queries, modeling, config — **3 parallel agents** |
-| `/forja:audit:security` | AppSec audit: OWASP Top 10, CWE mapping, A–F score, PoC for critical/high — **4 parallel agents** |
-| `/forja:audit:run` | Meta-command that runs every applicable audit in parallel, based on `forja/config.md` project type |
+| Comando | O que faz |
+|---------|-----------|
+| `/forja:audit:backend` | Deep-dive de performance backend: N+1, índices faltantes, memory leaks, concorrência, arquitetura — **3 agentes em paralelo** |
+| `/forja:audit:frontend` | Performance frontend: roteia automaticamente para metodologia Next.js (5 camadas) ou genérica (11 categorias) — **3 agentes em paralelo** |
+| `/forja:audit:database` | Auditoria de DB: MongoDB / PostgreSQL / MySQL — índices, queries, modelagem, config — **3 agentes em paralelo** |
+| `/forja:audit:security` | AppSec: OWASP Top 10, mapeamento CWE, score A–F, PoC para critical/high — **4 agentes em paralelo** |
+| `/forja:audit:run` | Meta-comando que roda toda auditoria aplicável em paralelo, baseado no tipo de projeto em `forja/config.md` |
 
-**Pipeline phases vs audits:**
-- Pipeline phases (`/forja:perf`, `/forja:security`) analyze **only the diff** — fast, task-scoped, runs on every task.
-- Audit commands (`/forja:audit:*`) analyze the **entire codebase** — run periodically or before a release.
+**Fases da pipeline vs auditorias:**
+- Fases da pipeline (`/forja:perf`, `/forja:security`) analisam **apenas o diff** — rápidas, escopo da tarefa, rodam em toda tarefa.
+- Comandos de auditoria (`/forja:audit:*`) analisam o **codebase inteiro** — rode periodicamente ou antes de uma release.
+
+**Auditorias são `AuditModule`s tipados, não apenas prompts.** Cada uma implementa a interface `AuditModule` (`src/plugin/types.ts`) com formato `AuditFinding`/`AuditReport` validado por Zod, exportado como JSON Schema (Draft 7) em `schemas/audit/`. O runner de auditorias (`src/audits/runner.ts`) executa módulos em paralelo com cap configurável de concorrência (default 4, máximo 64) e timeout via `AbortController` por módulo (default 120s), invocando hooks de lifecycle `onRun` / `onResult` para plugins. A auditoria de segurança ainda roda `src/audits/security/poc-generator.ts`, que produz um PoC (Proof of Concept — prova de conceito) curl/exploit com mapeamento CWE para todo finding `critical`/`high` que carrega um `exploitVector`. Como auditorias são plugins de primeira classe, você pode shippar a sua em `forja/plugins/` ou como pacote npm `forja-plugin-*` — veja [Plugins & Extensibilidade](#plugins--extensibilidade).
 
 ---
 
-## CLI Reference
+## Referência do CLI
 
 ```
-forja <command> [options]
+forja <comando> [opções]
 ```
 
-### Project bootstrap
+### Bootstrap do projeto
 
-| Command | Purpose |
-|---------|---------|
-| `forja setup [--with-harness] [--skip-claude-md]` | Install slash commands, configure hooks, optionally spin up Postgres |
-| `forja config get <key>` | Read `store_url`, `slack_webhook_url`, or `github_token` and show its source |
-| `forja config set <key> <value>` | Persist a config value to `~/.forja/config.json` |
-| `forja infra migrate` | Run pending database migrations |
-| `forja infra status` | Show connection status and applied migrations |
-| `forja infra up` / `down` | Docker-backed Postgres lifecycle (equivalent to compose up/down) |
+| Comando | Propósito |
+|---------|-----------|
+| `forja setup [--with-harness] [--skip-claude-md]` | Instala slash commands, configura hooks, opcionalmente sobe Postgres |
+| `forja doctor [--json]` | Diagnóstico extensível — checa Node, disco, conexão DB + migrations pendentes, tokens (Anthropic / GitHub / Linear), validade de `artifact_language` e estado vivo do circuit breaker para cada integração registrada. Exit `0=pass 1=warn 2=fail` |
+| `forja help [<comando>]` | Help contextual gerado a partir do registry de comandos — adapta à largura do terminal, respeita `NO_COLOR` |
+| `forja completion <bash\|zsh\|fish>` | Emite script de completion para o shell escolhido (`forja completion zsh > ~/.zsh/completions/_forja`) |
+| `forja config get <key>` | Lê `store_url`, `slack_webhook_url`, `github_token` ou `artifact_language` e mostra a fonte |
+| `forja config set <key> <value>` | Persiste um valor em `~/.forja/config.json` |
+| `forja config migrate` | Adiciona campos faltantes (ex: `artifact_language`) em `forja/config.md` sem sobrescrever os existentes |
+| `forja infra migrate` | Roda migrations pendentes do banco |
+| `forja infra status` | Status da conexão e migrations aplicadas |
+| `forja infra up` / `down` | Lifecycle do Postgres via Docker (equivalente a compose up/down) |
+| `forja migrate trace <path>` | Atualiza um artefato `trace.jsonl` para o `schemaVersion` atual |
+| `forja migrate report <path>` | Atualiza o front-matter de um relatório markdown |
+| `forja migrate postgres` | Migra cada linha no store Postgres configurado |
+| `forja policies migrate [--in <file>] [--out <file>] [--dry-run]` | Converte políticas YAML legadas para o formato v2 da DSL de gates |
+| `forja plugins list [--json] [--invalid]` | Lista plugins registrados com ID, tipo, versão, fonte e path |
 
-### Pipeline execution
+**Flag global — `--dry-run` / `-n`:** disponível em todo comando que tem efeitos colaterais (criação de PR, post de GitHub Check, notify Slack, POST de webhook, escrita de cost-event). Saída prefixada com `[DRY-RUN]` e zero escritas — validado por `src/cli/middleware/dry-run.test.ts`. Cole na frente de qualquer run para ver o que aconteceria sem tocar em estado.
 
-| Command | Purpose |
-|---------|---------|
-| `forja run <issue-id> [--model <id>] [--dry-run] [--force] [--force-phase <name>] [--timeout-phase <name>:<seconds>]` | Start a tracked pipeline run |
-| `forja resume <run-id>` | Resume an interrupted run from the last checkpoint |
-| `forja replay <run-id> [--phase <name>] [--compare-to <run-id>]` | Re-execute a previous run; diff findings and gate decisions |
+### Execução da pipeline
 
-### Observability & auditing
+| Comando | Propósito |
+|---------|-----------|
+| `forja run <issue-id> [--model <id>] [--dry-run] [--force] [--force-phase <name>] [--timeout-phase <name>:<seconds>]` | Inicia um run rastreado |
+| `forja resume <run-id>` | Retoma um run interrompido a partir do último checkpoint |
+| `forja replay <run-id> [--phase <name>] [--compare-to <run-id>]` | Re-executa um run anterior; dá diff de findings e gates |
 
-| Command | Purpose |
-|---------|---------|
-| `forja trace --run <run-id> [--format md\|json\|pretty] [--output <file>]` | Full execution trace with timeline, findings, costs |
-| `forja cost --run <run-id>` | USD breakdown per phase, per model, with token counts |
-| `forja gate --run <run-id> [--policy <path>]` | Evaluate quality gates; exit `0=pass 1=warn 2=fail` |
-| `forja ui [--port 4242]` | Launch the Next.js dashboard in your browser |
+### Observabilidade e auditoria
 
-### Maintenance
+| Comando | Propósito |
+|---------|-----------|
+| `forja trace --run <run-id> [--format md\|json\|pretty] [--output <file>]` | Trace completo de execução com timeline, findings, custos |
+| `forja cost --run <run-id>` | Breakdown USD por fase, por modelo, com contagem de tokens |
+| `forja gate --run <run-id> [--policy <path>]` | Avalia gates de qualidade; exit `0=pass 1=warn 2=fail` |
+| `forja ui [--port 4242]` | Sobe o dashboard Next.js no navegador |
 
-| Command | Purpose |
-|---------|---------|
-| `forja prune [--older-than <duration>] [--dry-run]` | Delete runs past the retention window |
-| `forja schedule list` | List all scheduled pipelines |
-| `forja schedule create --cron <expr> --command <cmd>` | Register a new cron-based run |
-| `forja schedule delete <id>` | Remove a schedule |
+### Manutenção
 
-### Hook dispatcher (called by Claude Code, not you)
+| Comando | Propósito |
+|---------|-----------|
+| `forja prune [--older-than <duration>] [--dry-run]` | Apaga runs além da janela de retenção |
+| `forja schedule list` | Lista pipelines agendadas |
+| `forja schedule create --cron <expr> --command <cmd>` | Registra novo run cron |
+| `forja schedule delete <id>` | Remove um schedule |
 
-| Command | Purpose |
-|---------|---------|
-| `forja hook pre-tool-use` | Policy + redaction + tool gating |
-| `forja hook post-tool-use` | Cost accounting + tool-call tracing |
-| `forja hook stop` | FSM transition + run finalization |
+### Hook dispatcher (chamado pelo Claude Code, não por você)
+
+| Comando | Propósito |
+|---------|-----------|
+| `forja hook pre-tool-use` | Política + redação + gating de ferramenta |
+| `forja hook post-tool-use` | Contabilidade de custo + tracing de tool call |
+| `forja hook stop` | Transition do FSM + finalização de run |
 
 ---
 
 ## Dashboard
 
 ```bash
-forja ui              # defaults to http://localhost:4242
+forja ui              # default em http://localhost:4242
 ```
 
-A Next.js observability dashboard backed by the same PostgreSQL database as the CLI.
+Um dashboard de observabilidade Next.js apoiado pelo mesmo PostgreSQL do CLI. UI premium black / white / gold construída com Next.js 14 (App Router) + Tailwind + shadcn/ui — pensada para ser o dashboard que o seu time efetivamente mantém aberto o dia inteiro, não o que ele tolera.
 
-| Route | What you see |
-|-------|--------------|
-| `/` | Recent runs: issue, status, duration, cost, gate decision |
-| `/runs` | Paginated table of every run with filters by status, issue, cost, gate |
-| `/runs/<id>` | Gantt chart of tool calls, phase summaries, findings detail, cost breakdown, full trace |
-| `/cost` | Total spend, breakdown by model, breakdown by phase, top-10 most expensive runs |
-| `/issues` | Quality findings catalog across all runs, sortable by severity / category / file path |
-| `/heatmap` | 2-D grid showing finding density per file × category — spots hotspots instantly |
+| Rota | O que tem |
+|------|-----------|
+| `/` | Runs recentes: issue, status, duração, custo, decisão de gate |
+| `/runs` | Tabela paginada de todo run com filtros persistidos na URL (status, issue, gate, intervalo de data) via `nuqs`, busca full-text em `tsvector` |
+| `/runs/<id>` | Gantt chart com timestamps reais de fase e marcadores de gate, sumário por fase, detalhe de findings, breakdown de custo, trace completo |
+| `/runs/<id>/findings/<finding-id>` | Sheet de drill-down com contexto completo, mapeamento OWASP / CWE, histórico do fingerprint e botão *Criar Issue* em qualquer IntegrationProvider registrado |
+| `/runs/compare?ids=a,b,c` | Diff lado a lado de 2–5 runs — findings categorizados como new / resolved / persistent por fingerprint, delta de custo / duração, aviso cross-project |
+| `/cost` | Top 10 projetos ranqueados, breakdown stacked por fase × modelo, mini-heatmap 7×24 (dia × hora), exportação CSV |
+| `/cost` *(painel de alertas)* | CRUD (Create, Read, Update, Delete — criar, ler, atualizar, deletar) sobre `forja/alerts.json`: thresholds por projeto / período (day / week / month), notify via Slack / email, budget cap opcional |
+| `/issues` | Catálogo de findings de qualidade entre todos os runs, ordenável por severidade / categoria / file path |
+| `/heatmap` | Heatmap de atividade — runs por dia × hora na paleta gold |
+| `/dlq` | Dashboard da DLQ (Dead Letter Queue — fila de eventos mortos) para entregas de hook que falharam — filtros por status (`dead` / `reprocessed` / `ignored`) e tipo de hook, preview de payload com syntax-highlight, ações reprocess / ignore |
+
+**Power-user features:**
+
+- **Command Palette ⌘K** (`cmdk`) — navegação fuzzy entre runs / issues / rotas, mais ações rápidas como *Abrir último run*, *Trocar idioma*, *Comparar runs selecionados*
+- **Toast notifications** (`sonner`) para toda ação CRUD com variants success / error / warning / info
+- **i18n** — alterne entre **pt-BR** / **en** pela top bar; o locale ativo segue `artifact_language` do `forja/config.md`
+- **Loading choreography** — animações de reveal staggered e skeletons dedicados em `loading.tsx` por rota, sem layout shift
+- **Galeria Storybook** em `apps/ui/.storybook/` (`npm --prefix apps/ui run storybook`) documenta todo componente (Badge, Button, Card, Sheet, Skeleton, Table, FilterBar, TrendChart, HeatmapGrid, Palette)
+
+### Atalhos de teclado
+
+| Atalho | Ação |
+|--------|------|
+| `⌘K` / `Ctrl+K` | Abre o Command Palette |
+| `g r` | Vai para Runs |
+| `g c` | Vai para Cost |
+| `g h` | Vai para Heatmap |
+| `g d` | Vai para DLQ |
+| `Esc` | Fecha o Sheet de drill-down e devolve foco ao elemento de origem |
 
 ---
 
-## Policies
+## Políticas
 
-Three YAML files in `policies/` (overridable at the project level) drive every declarative decision.
+Três arquivos YAML em `policies/` (sobrescrevíveis no nível do projeto) controlam toda decisão declarativa: comportamento de gate, restrição de tools e atribuição de modelo.
 
-### `default.yaml` — gate policy
+### `default.yaml` — Política de gate (DSL v2)
+
+A política de gate não é mais uma tabela de severidade hardcoded — é uma DSL pequena e declarativa embutida em YAML. Cada gate tem uma expressão `when:` e uma lista de ações `then:`. Expressões suportam `and` / `or` / `not`, operadores de comparação (`> < >= <= == !=`) e chamadas de predicado com argumentos tipados. A gramática EBNF completa está em [`docs/gates-dsl.md`](docs/gates-dsl.md); o racional para manter embutida em YAML (em vez de hooks TypeScript ou CEL) está no [ADR (Architecture Decision Record — registro de decisão arquitetural) 0001](docs/adr/0001-gates-dsl-yaml-only.md).
 
 ```yaml
-# Phase timeouts (seconds)
-timeouts:
-  develop: 600
-  test: 300
-  perf: 180
-  security: 180
-  review: 180
-  homolog: 60
-  pr: 120
+version: '2'
+gates:
+  - name: gate-critical
+    when: findings.countBySeverity("critical") > 0
+    then:
+      - fail
+      - 'log("Critical finding: {{finding.title}}")'
+      - notify_slack("#eng-alerts", "Critical finding in run {{runId}}")
 
-# Finding-to-gate mapping
-rules:
-  - when: { severity: [critical, high] }
-    action: fail_gate
-  - when: { severity: [medium] }
-    action: warn_gate
-  - when: { severity: [low] }
-    action: log
+  - name: gate-high
+    when: findings.countBySeverity("high") > 0
+    then: [fail]
 
-# Side effects
-actions:
-  on_fail:
-    - kind: notify_slack
-      text: "Pipeline {{runId}} FAILED: {{finding.title}}"
-    - kind: http_post
-      url: https://events.pagerduty.com/...
+  - name: gate-coverage-regression
+    when: coverage.delta() < -0.02 and touched.matches("src/**")
+    then: [warn]
+
+  - name: gate-expensive-run
+    when: cost.usd() > 5.00 or time.phaseDurationMs("dev") > 600000
+    then:
+      - 'log("Run {{runId}} is unusually expensive — see /cost dashboard")'
 ```
 
-Override per project with `forja/.forja-policy.yml`.
+#### Os 8 predicados canônicos
 
-### `tools.yaml` — phase-scoped tool restrictions
+Definidos em [`src/policy/dsl/predicates.ts`](src/policy/dsl/predicates.ts) e exportados via `PREDICATES_REGISTRY`. Todos retornam valores fortemente tipados, utilizáveis em comparações.
+
+| Predicado | Retorna | Propósito |
+|-----------|---------|-----------|
+| `coverage.delta()` | `number` | Delta de cobertura vs base (fração; `-0.05` = -5pp) |
+| `coverage.absolute()` | `number` | Percentual absoluto de cobertura no run |
+| `diff.filesChanged()` | `number` | Quantidade de arquivos modificados no diff |
+| `diff.linesChanged()` | `number` | Quantidade de linhas modificadas no diff |
+| `touched.matches(glob)` | `boolean` | Se algum arquivo modificado bate com o glob |
+| `time.phaseDurationMs(phase)` | `number` | Duração wall-clock de uma fase, em ms |
+| `cost.usd()` | `number` | Custo total em USD do run atual |
+| `findings.countBySeverity(sev)` | `number` | Quantidade de findings na severidade dada |
+
+Adicionar um predicado novo é bump MINOR; renomear ou remover é MAJOR (conforme [`SEMVER.md`](SEMVER.md)).
+
+#### Trilha de justificativa
+
+O avaliador da DSL (`src/policy/dsl/evaluator.ts`) é uma função pura: dado um AST e um contexto, retorna uma `decision` mais uma string de `justification` que rastreia cada valor de predicado, comparação e operador booleano que contribuiu. Essa justificativa é persistida na coluna `gate_decisions.justification` (migration `0003_dsl_justification.sql`) — significa que cada `pass` / `warn` / `fail` no seu trace pode ser explicado, auditado e replayado. Chega de arqueologia "por que esse gate disparou?".
+
+#### Migrando YAML legado
+
+Se você ainda tem políticas v1 (estilo `finding.severity: critical`), um comando converte in-place:
+
+```bash
+forja policies migrate                    # converte cada policies/*.yaml
+forja policies migrate --in old.yaml --dry-run   # preview do diff
+forja policies migrate --in old.yaml --out new.dsl.yaml
+```
+
+O migrator (`src/policy/dsl/migrator.ts`) é conservador: avisa em vez de silenciosamente jogar fora regras que ele não consegue traduzir.
+
+### `tools.yaml` — restrições de tool por fase
 
 ```yaml
 security:
@@ -557,9 +883,9 @@ develop:
   allow: "*"
 ```
 
-The pre-tool-use hook enforces this. A security phase cannot accidentally (or adversarially) mutate your code.
+O hook pre-tool-use aplica isso. Uma fase de security não consegue (acidentalmente ou adversarialmente) mutar seu código.
 
-### `models.yaml` — model assignment per phase
+### `models.yaml` — atribuição de modelo por fase
 
 ```yaml
 spec: claude-opus-4-7
@@ -573,79 +899,295 @@ pr: claude-haiku-4-5
 audit_*: claude-sonnet-4-6
 ```
 
-Pick the right brain for the right job: Opus for deep specification, Sonnet for the grind, Haiku for summarization. Cost drops ~5× without quality loss on the cheaper phases.
+Escolha o cérebro certo para o trabalho certo: Opus para especificação profunda, Sonnet para o grind, Haiku para sumarização. Custo cai ~5× sem perder qualidade nas fases mais leves.
 
 ---
 
-## Parallelism
+## Plugins & Extensibilidade
 
-| Phase | Agents | Parallel workload |
-|-------|--------|-------------------|
-| Spec | 2 | Linear fetch + codebase exploration |
-| Develop | N | One agent per independent module |
+A Forja oferece uma Plugin API tipada para você estender qualquer camada da pipeline — comandos custom no CLI, fases novas, categorias de finding, ações de política ou módulos de auditoria inteiros — sem forkar o codebase. Referência completa em [`PLUGIN-API.md`](PLUGIN-API.md), regenerado de `src/plugin/types.ts` via `npm run plugin-api:gen`.
+
+### O que você pode estender
+
+Todas as cinco interfaces são exportadas pelo subpath **`@forja-hq/cli/plugin`** (resolve para `dist/plugin/index.js`).
+
+| Interface | Propósito |
+|-----------|-----------|
+| **`Command`** | Adiciona um subcomando custom `forja <id>`. Recebe um `CommandContext` (`cwd`, `config`, `store`, `logger`) e retorna um exit code. |
+| **`Phase`** | Injeta uma fase nova na pipeline via `insertAfter`. Recebe um `PhaseContext` (`runId`, `previousPhases`, `store`, `abortSignal`) e retorna `pass` / `warn` / `fail`. |
+| **`FindingCategory`** | Registra uma categoria nova (`id`, `name`, `defaultSeverity`) para que seus findings sejam reconhecidos pelos predicados de gate e pelo heatmap do dashboard. |
+| **`PolicyAction`** | Define uma ação `then:` custom invocável da DSL — ex: abrir um ticket no Jira, pingar um webhook, empurrar uma métrica. |
+| **`AuditModule`** | Shippa uma auditoria completa (`detect` + `run` + `report`) que o runner agenda em paralelo com as auditorias built-in. |
+
+### Discovery
+
+O loader de plugin descobre extensões automaticamente a partir de duas fontes, com detecção de colisão entre ambas:
+
+1. **Plugins locais** — todo módulo JS/TS sob `forja/plugins/` (sobrescrever path com `FORJA_PLUGIN_DIR`). Fonte = `local`.
+2. **Plugins NPM** — todo pacote em `dependencies` ou `devDependencies` cujo nome bata com `forja-plugin-*`. Fonte = `npm`.
+
+Se o mesmo `id` de plugin é registrado por duas fontes, o bootstrap falha com `PluginCollisionError` listando cada fonte, path e ID em conflito — sem override silencioso.
+
+```bash
+forja plugins list           # tabela legível: ID | Tipo | Versão | Fonte | Path
+forja plugins list --json    # legível por máquina, para CI
+```
+
+### Lifecycle hooks
+
+Cada plugin pode opcionalmente implementar quatro lifecycle hooks (`src/plugin/hooks.ts`). Eles rodam isolados da pipeline — um erro lançado ou timeout nunca derruba um run, só aparece como finding `low`/`medium` no trace.
+
+| Hook | Quando dispara |
+|------|----------------|
+| `onRegister(ctx)` | Uma vez no bootstrap do plugin |
+| `onRun(ctx)` | Antes de cada fase da pipeline |
+| `onResult(ctx)` | Após cada fase concluir |
+| `onError(ctx)` | Quando uma fase falha |
+
+Timeout rígido por hook é **5000 ms** por padrão, sobrescrevível via a key de config `plugin_hook_timeout_ms`.
+
+### Autorando um plugin em 9 passos
+
+```bash
+mkdir my-forja-plugin && cd my-forja-plugin
+npm init -y && npm install --save-dev typescript
+npm install --save-peer @forja-hq/cli
+# escreva src/index.ts (snippet abaixo)
+npx tsc
+# em um projeto-alvo, registre: forja.config.ts → plugins: ['./dist/index.js']
+forja plugins list           # validar
+npm publish                  # publique como forja-plugin-<name> para auto-discovery
+```
+
+```ts
+import type { Command } from '@forja-hq/cli/plugin';
+
+export const greetCommand: Command = {
+  id: 'my-plugin:greet',
+  description: 'Prints a greeting to the log',
+  labels: ['demo'],
+  async run(ctx) {
+    ctx.logger.info('Hello from my-plugin!');
+    return { exitCode: 0, summary: 'Greeted successfully' };
+  },
+};
+```
+
+`id` deve ser globalmente único — namespace com seu prefixo de plugin (`my-plugin:greet`) para conviver bem com outros. `run` nunca deve lançar exceção: capture internamente e retorne um `exitCode` não-zero.
+
+---
+
+## Hub de Integrações
+
+O issue tracker primário é o **Linear**, integrado nativamente via Linear MCP — esse é o caminho default usado por `/forja:spec` e `/forja:run` para projetos, milestones, sub-issues, labels e sync de status.
+
+Para times em outro tracker, uma interface `IntegrationProvider` tipada (`src/integrations/base.ts`) mais uma factory (`src/integrations/factory.ts`) deixam todo tracker secundário falar o mesmo contrato de seis métodos:
+
+```ts
+interface IntegrationProvider {
+  name: string
+  createIssue(input: IssueInput): Promise<IssueOutput>
+  updateIssue(id: string, patch: IssuePatch): Promise<void>
+  closeIssue(id: string): Promise<void>
+  createPR(input: PRInput): Promise<PROutput>
+  addComment(targetId: string, body: string): Promise<void>
+  healthCheck(): Promise<HealthStatus>
+}
+```
+
+A factory é um registry de funções `(config) => Provider | null` — cada módulo de provider se auto-registra ao ser importado e retorna sua instância só quando o bloco de config dele está presente. O primeiro match não-nulo vence. Trocar de tracker é um diff de config, não um diff de código.
+
+### Providers secundários
+
+| Provider | Origem | Capacidades |
+|----------|--------|-------------|
+| **Jira** | `src/integrations/jira.ts` | REST v3, transitions dinâmicas (cadeia de fallback Done/Closed/Resolved), comentários ADF, hierarquia Epic/Story, mapeamento severity → priority (`critical→Highest`, `high→High`, etc.) |
+| **GitLab** | `src/integrations/gitlab.ts` | API v4, MRs + Issues com labels e milestones, build status, instâncias **Cloud + self-managed** |
+| **Azure DevOps** | `src/integrations/azure-devops.ts` | Work items, PRs no Azure Repos, **detecção de process template** (Agile / Scrum / CMMI), hierarquia Epic → Feature → User Story |
+| **Bitbucket** | `src/integrations/bitbucket.ts` | API v2, PRs + comentários, Issues com **fallback gracioso** (PR comment quando Issues está desabilitado), build status (INPROGRESS / SUCCESSFUL / FAILED) |
+| **GitHub Checks** | `src/integrations/github-checks.ts` | Check-run assinado a cada fim de pipeline — sua PR mostra um ✅/❌ nativo do lado do commit |
+| **Mock** | `src/integrations/mock.ts` | `MockIntegrationProvider` em memória usado pela suíte de testes |
+
+O módulo **Datadog** (`src/integrations/datadog.ts`) é um irmão — ele não implementa `IntegrationProvider` porque seu trabalho é observabilidade, não issue tracking. Emite métricas custom (`forja.run.duration`, `forja.run.cost`, `forja.findings.count`), entradas no Event Stream e logs estruturados, todos batched em janelas de 10 segundos para respeitar rate limits.
+
+### Configurando providers
+
+Config de provider vive sob o bloco `integrations:` do `forja/config.md` (parseado via `IntegrationConfig` em `src/schemas/config.ts`). Ativar Jira, por exemplo, é só adicionar uma seção `jira` com `baseUrl` + auth, mais o token relevante via env var (`JIRA_TOKEN`, `GITLAB_TOKEN`, `AZURE_DEVOPS_TOKEN`, `BITBUCKET_APP_PASSWORD`, `DD_API_KEY` + `DD_APP_KEY` para Datadog). `forja doctor` valida cada conjunto de credencial e pinga `healthCheck()` em todo provider registrado — falhas aparecem com hints de remediação e exit code 2.
+
+### Autorando um provider custom
+
+Implemente `IntegrationProvider`, depois chame `registerProviderFactory((config) => /* retorne seu provider | null */)` no carregamento do módulo. A pipeline pega o primeiro match não-nulo. Shippe como plugin (pacote `forja-plugin-*` ou em `forja/plugins/`) para auto-discovery.
+
+---
+
+## Estabilidade & Versionamento
+
+A Forja trata sua superfície pública como uma API que consumidores dependem. Cinco artefatos juntos definem o que é prometido, o que está deprecated e como upgrades acontecem.
+
+### `SEMVER.md` — o contrato
+
+[`SEMVER.md`](SEMVER.md) enumera exatamente o que está coberto por Versionamento Semântico a partir da v1.0.0:
+
+- **Flags do CLI** — todo argumento de subcomando `forja`, com tipo, default e versão de origem (`Since`)
+- **Schemas Zod** — `ConfigSchema`, `FindingSchema`, `GateDecisionSchema`, `CostEventSchema`, `RunStateEnum`, `TraceEventSchema`, `AuditFindingSchema`, `AuditReportSchema`, `StackInfoSchema`
+- **Formatos YAML de política** — gate / models / tools, todos `version: "1"`
+- **DSL de gate** — os 8 predicados canônicos e suas assinaturas
+- **Plugin API** — `Command`, `Phase`, `FindingCategory`, `PolicyAction`, `AuditModule` e seus tipos de contexto
+- **JSON Schemas de auditoria** — `schemas/audit/audit-finding.json` e `schemas/audit/audit-report.json` (Draft 7)
+
+Qualquer coisa fora dessa lista — símbolos TypeScript internos, layout das tabelas Postgres, formato binário do checkpoint, markdown dos slash commands — é explicitamente marcada como **interna** e pode mudar em qualquer release.
+
+### `DEPRECATIONS.md` + `warnDeprecated`
+
+Superfícies deprecated vivem em [`DEPRECATIONS.md`](DEPRECATIONS.md) por **duas versões minor** antes da remoção (mais, se um CVE de segurança forçar exceção). Em runtime, o helper `warnDeprecated()` emite um Node `DeprecationWarning` e escreve um evento de trace `deprecation_warning` quando `FORJA_RUN_ID` está setado — então chamadas deprecated aparecem na sua trilha de observabilidade, não só no stderr. Defina `FORJA_SUPPRESS_DEPRECATION_WARNINGS=1` para silenciar.
+
+### `CHANGELOG.md` (Keep a Changelog)
+
+[`CHANGELOG.md`](CHANGELOG.md) segue o formato [Keep a Changelog](https://keepachangelog.com/) e SemVer. Gere uma entrada draft a partir dos seus conventional commits com:
+
+```bash
+npm run changelog
+```
+
+O release script se recusa a publicar se `CHANGELOG.md` não tem entrada para a versão sendo tagged.
+
+### CI de breaking changes
+
+Cada PR roda `.github/workflows/check-breaking-changes.yml`, que:
+
+1. Re-emite JSON Schemas dos schemas Zod atuais (`scripts/check-breaking-changes.ts`)
+2. Faz diff contra o snapshot em `tests/fixtures/public-api/<major.minor>/`
+3. Sai com código `2` e posta um comentário no PR se um breaking change for detectado
+4. Bloqueia o merge a menos que o PR carregue a label `allow-breaking`
+
+Snapshots são versionados — quebrar acidentalmente a superfície pública é falha de CI, não surpresa em runtime.
+
+### Release script
+
+Tagging de release é um comando interativo:
+
+```bash
+npm run release                          # interativo
+npm run release -- --dry-run             # preview sem taggear nem pushar
+npm run release -- --bump minor --yes    # não-interativo (CI)
+```
+
+`scripts/release.ts` detecta o bump automaticamente (exit code do CI de breaking-change → MAJOR; `feat!:` / `feat:` / outros no `git log` → MAJOR / MINOR / PATCH), valida que o `docs/upgrades/v<X.Y>.md` correspondente existe sem placeholders `...` não preenchidos, exige uma referência de RFC em `SEMVER.md` para bumps MAJOR e em seguida cria a tag git.
+
+### Guias de upgrade
+
+Toda minor (e major) shippa um guia de upgrade em `docs/upgrades/v<X.Y>.md`, scaffoldado a partir de [`docs/upgrades/_template.md`](docs/upgrades/_template.md):
+
+```
+What's new   →   Breaking changes   →   Deprecations (v+2)   →   Migration steps   →   Known issues
+```
+
+O validador (`scripts/validate-upgrade-guide.ts`) parseia o arquivo e rejeita qualquer linha de placeholder restante (`...`, `- ...`, `3. ...`). O guia também carrega um link de âncora para o CHANGELOG (`[v<X.Y>](../CHANGELOG.md#vxy)`), então consumidores transitam entre changelog de alto nível e migração passo a passo num clique.
+
+### Config Gate Behavior
+
+O bloco `gate_behavior` em `forja/config.md` controla como o avaliador colapsa múltiplas ações em uma única decisão. Lógica: qualquer `fail_gate` → `fail`; senão qualquer `warn_gate` → `warn`; senão `pass`. Exit codes são estáveis e fazem parte da superfície pública: `0=pass`, `1=warn`, `2=fail` — coloque `forja gate --run <id>` na CI e você tem um gate de qualidade determinístico.
+
+---
+
+## Paralelismo
+
+| Fase | Agentes | Workload paralelo |
+|------|---------|-------------------|
+| Spec | 2 | Busca no Linear + exploração do codebase |
+| Develop | N | Um agente por módulo independente |
 | Test | 3 | Unit + integration + e2e |
-| Quality | 3 | Performance + security + review **(simultaneously)** |
+| Quality | 3 | Performance + security + review **(simultaneamente)** |
 | Perf (diff) | 2 | Backend + frontend |
-| Security (diff) | 3 | Injection / Auth / Data exposure |
-| Review | N | One agent per code area |
+| Security (diff) | 3 | Injection / Auth / Exposição de dados |
+| Review | N | Um agente por área de código |
 | audit:backend | 3 | DB+NET / CPU+MEM+CONC / CODE+CONF+ARCH |
 | audit:frontend | 3 | Rendering+Boundary / Data+Cache / Bundle+Assets |
-| audit:database | 3 | Modeling+Writes / Indexes / Queries+Config |
+| audit:database | 3 | Modelagem+Writes / Indexes / Queries+Config |
 | audit:security | 4 | Injection / Auth+Access / Data+Config / BusinessLogic+Compliance |
-| audit:run | N | All applicable audits at once |
+| audit:run | N | Toda auditoria aplicável de uma vez |
 
-Each agent writes to isolated output — no race conditions.
+Cada agente escreve em saída isolada — sem race conditions.
 
 ---
 
-## Stack Support
+## Stack suportada
 
-Detected automatically by `/forja:init`:
+Detectada automaticamente por `/forja:init`:
 
-| Category | Supported |
-|----------|-----------|
+| Categoria | Suportado |
+|-----------|-----------|
 | **Runtimes** | Node.js, Python, Go, Rust, Java, Ruby, PHP, .NET |
-| **Backend frameworks** | NestJS, Express, FastAPI, Django, Flask, Gin, Spring Boot, Rails, Laravel |
-| **Frontend frameworks** | Next.js, React, Vue, Angular, Svelte, Astro, Nuxt, Remix |
-| **Databases** | MongoDB, PostgreSQL, MySQL, Redis, SQLite, DynamoDB |
-| **Test frameworks** | Vitest, Jest, Mocha, pytest, go test, RSpec, JUnit, Playwright, Cypress |
-| **Project shapes** | Backend, frontend, fullstack, **monorepo** (workspace-aware) |
+| **Frameworks backend** | NestJS, Express, FastAPI, Django, Flask, Gin, Spring Boot, Rails, Laravel |
+| **Frameworks frontend** | Next.js, React, Vue, Angular, Svelte, Astro, Nuxt, Remix |
+| **Bancos de dados** | MongoDB, PostgreSQL, MySQL, Redis, SQLite, DynamoDB |
+| **Frameworks de teste** | Vitest, Jest, Mocha, pytest, go test, RSpec, JUnit, Playwright, Cypress |
+| **Formatos de projeto** | Backend, frontend, fullstack, **monorepo** (workspace-aware) |
 
-For monorepos, Forja detects workspaces and dispatches per-workspace agents — a change touching `apps/api` and `apps/web` triggers separate backend and frontend analyses in parallel.
+Em monorepos, a Forja detecta workspaces e despacha agentes por workspace — uma mudança que toca `apps/api` e `apps/web` dispara análises de backend e frontend separadas, em paralelo.
 
 ---
 
-## Examples
+## Exemplos práticos
 
-### Specify and ship a feature from a Linear issue
+### Especificar e entregar uma feature a partir de um issue do Linear
 
 ```
-/forja:spec PROJ-42        # Decompose into tasks, create Linear project
-/forja:run PROJ-43         # First task through the full pipeline
-/forja:run PROJ-44         # Next task
-/forja:pr                  # Ship
+/forja:spec PROJ-42        # decompõe em tarefas, cria projeto Linear
+/forja:run PROJ-43         # primeira tarefa pela pipeline completa
+/forja:run PROJ-44         # próxima tarefa
+/forja:pr                  # entrega
 ```
 
-### Quick one-off security scan on the current diff
+### Scan de segurança one-off no diff atual
 
 ```
 /forja:security
 ```
 
-3 parallel agents for injection, auth/access, and data exposure — a full OWASP pass in ~60s.
+3 agentes em paralelo para injection, auth/access e exposição de dados — um pass OWASP completo em ~60s.
 
-### Resume after a session crash
+### Comparar dois runs da mesma tarefa
 
-```bash
-forja trace --format pretty | head          # find the run ID
-forja resume <run-id>                       # continue from last checkpoint
+```
+http://localhost:4242/runs/compare?ids=<run-a>,<run-b>
 ```
 
-### See exactly what a run cost
+Ou pelo CLI: `forja replay <run-id> --compare-to <other-id>`. O diff categoriza findings como **new**, **resolved** ou **persistent** por fingerprint, mostra delta de custo / duração e flagga comparações cross-project.
+
+### Soltar uma pipeline por dry-run primeiro
+
+```bash
+forja run PROJ-42 --dry-run
+# todo notify Slack, GitHub Check, webhook e write de cost-event é logado com `[DRY-RUN]`
+# zero efeitos colaterais — perfeito para preview de mudança de config em CI
+```
+
+### Diagnosticar uma integração instável
+
+```bash
+forja doctor
+#   ✓  Node 20.11.1
+#   ✓  38 GB livres em disco
+#   ✓  Postgres acessível, 11/11 migrations aplicadas
+#   ✗  Health-check do Jira falhou: 401 Unauthorized
+#       → confira JIRA_TOKEN (rotacionado pela última vez 2026-04-12?)
+#   ⚠  Circuit breaker ABERTO para https://hooks.slack.com/...
+#       → 5 falhas em 60s; cooldown termina em 38s
+```
+
+### Retomar depois de uma sessão que travou
+
+```bash
+forja trace --format pretty | head          # localize o run ID
+forja resume <run-id>                       # continua do último checkpoint
+```
+
+### Ver exatamente quanto custou um run
 
 ```bash
 forja cost --run <run-id>
-# phase          model         tokens_in  tokens_out  usd
+# fase           modelo        tokens_in  tokens_out  usd
 # spec           opus-4-7      42_000     8_100       $1.24
 # develop        sonnet-4-6    128_400    61_200      $1.30
 # test           sonnet-4-6    88_200     32_100      $0.75
@@ -653,40 +1195,40 @@ forja cost --run <run-id>
 # TOTAL                                                $3.74
 ```
 
-### Export a full auditable report for a run
+### Exportar um relatório auditável completo de um run
 
 ```bash
 forja trace --run <run-id> --format md --output audit.md
 ```
 
-### Detect regressions in your pipeline itself
+### Detectar regressões na própria pipeline
 
 ```bash
 forja replay <run-id>
-# +3 findings added (new bugs?)
-# -1 finding removed (prev false positive or fixed?)
-# gate: pass → warn (regression!)
-# drift: dev command fingerprint changed
+# +3 findings adicionados (bugs novos?)
+# -1 finding removido (falso positivo anterior ou corrigido?)
+# gate: pass → warn (regressão!)
+# drift: fingerprint do comando dev mudou
 ```
 
-### Full project-wide audit before a release
+### Auditoria completa de projeto antes de uma release
 
 ```
 /forja:audit:run
 ```
 
-Reads `forja/config.md`, kicks off every applicable audit in parallel (backend perf + database + frontend perf + security), and produces a single consolidated PASS/WARN/FAIL report. Critical and high findings land in Linear as issues.
+Lê `forja/config.md`, dispara cada auditoria aplicável em paralelo (backend perf + database + frontend perf + security) e produz um relatório consolidado PASS/WARN/FAIL único. Findings critical e high vão para o Linear como issues.
 
-### Targeted deep audits
+### Auditorias profundas direcionadas
 
 ```
-/forja:audit:security    # OWASP Top 10, A–F score, PoC for each critical/high
-/forja:audit:database    # Index analysis, N+1, schema anti-patterns
-/forja:audit:frontend    # Core Web Vitals, bundle size, rendering strategy
-/forja:audit:backend     # N+1, concurrency, memory leaks, architecture
+/forja:audit:security    # OWASP Top 10, score A–F, PoC para cada critical/high
+/forja:audit:database    # análise de índice, N+1, anti-patterns de schema
+/forja:audit:frontend    # Core Web Vitals, bundle size, estratégia de rendering
+/forja:audit:backend     # N+1, concorrência, memory leaks, arquitetura
 ```
 
-### Schedule a nightly audit
+### Agendar uma auditoria noturna
 
 ```bash
 forja schedule create --cron "0 2 * * *" --command "/forja:audit:run"
@@ -695,74 +1237,108 @@ forja schedule list
 
 ---
 
-## Requirements
+## Próximos passos
 
-| Requirement | Required? | Notes |
-|-------------|-----------|-------|
-| [Claude Code](https://claude.ai/code) | **Yes** | CLI, desktop app, web app, or IDE extension |
-| Git repository | **Yes** | Forja diffs against git history |
-| Node.js 20+ | **Yes** | Required by the CLI binary |
-| [GitHub CLI](https://cli.github.com/) (`gh`) | Recommended | Used by `/forja:pr` to open pull requests |
-| [Linear](https://linear.app) MCP | Optional | Enables the native issue-tracking path |
-| PostgreSQL 16+ | Optional | Required for the Harness Engine (any provider: local, RDS, Neon, Supabase, etc.) |
-| Docker / Docker Compose | Optional | Easiest way to run Postgres locally via `--with-harness` |
+- **Time todo no mesmo Postgres**: aponte `store_url` para um banco gerenciado (Neon, Supabase, RDS) e cada engenheiro vê os runs dos outros no `/runs`.
+- **Auditoria semanal automática**: `forja schedule create --cron "0 2 * * 1" --command "/forja:audit:run"` agenda backend + frontend + database + security toda segunda 02:00.
+- **Plugin próprio**: implemente `IntegrationProvider`, `Phase`, `AuditModule`, `Command`, `FindingCategory` ou `PolicyAction` (veja [`PLUGIN-API.md`](PLUGIN-API.md)) e shippe como `forja-plugin-*` no npm para auto-discovery.
 
 ---
 
-## Project Layout
+## Requisitos
+
+| Requisito | Obrigatório? | Notas |
+|-----------|--------------|-------|
+| [Claude Code](https://claude.ai/code) | **Sim** | CLI, app desktop, app web ou extensão de IDE |
+| Repositório git | **Sim** | A Forja faz diff contra o histórico do git |
+| Node.js 20+ | **Sim** | Exigido pelo binário do CLI |
+| [GitHub CLI](https://cli.github.com/) (`gh`) | Recomendado | Usado por `/forja:pr` para abrir PRs |
+| MCP do [Linear](https://linear.app) | Opcional | Habilita o caminho nativo de issue tracking |
+| PostgreSQL 16+ | Opcional | Exigido pelo Harness Engine (qualquer provedor: local, RDS, Neon, Supabase, etc.) |
+| Docker / Docker Compose | Opcional | Caminho mais fácil para Postgres local via `--with-harness` |
+
+---
+
+## Layout do projeto
 
 ```
 forja/
-├── config.md                      # Project stack + conventions (from /forja:init)
+├── config.md                      # Stack + convenções do projeto (saída de /forja:init)
+├── plugins/                       # Módulos de plugin local (auto-discovery)
+│   └── my-plugin/index.js
 ├── changes/
 │   └── <feature-name>/
-│       ├── proposal.md            # Requirements, acceptance criteria, scope
-│       ├── design.md              # Architecture and technical decisions
-│       ├── tasks.md               # Granular tasks (<400 lines each)
-│       ├── report-<task>.md       # Per-task quality reports
-│       └── tracking.md            # Issue + finding tracker
-├── audits/                        # Project-wide audit reports
+│       ├── proposal.md            # Requisitos, critérios de aceitação, escopo
+│       ├── design.md              # Arquitetura e decisões técnicas
+│       ├── tasks.md               # Tarefas granulares (<400 linhas cada)
+│       ├── report-<task>.md       # Relatórios de qualidade por tarefa (com front-matter schemaVersion)
+│       └── tracking.md            # Tracker de issues + findings
+├── audits/                        # Relatórios de auditoria do projeto inteiro
 │   ├── backend-<date>.md
 │   ├── frontend-<date>.md
 │   ├── database-<date>.md
 │   ├── security-<date>.md
-│   └── run-<date>.md              # Consolidated audit suite
-└── state/                         # Harness runtime data (gitignored)
+│   └── run-<date>.md              # Suíte de auditoria consolidada
+└── state/                         # Dados de runtime do harness (gitignored)
     └── runs/<run-id>/
-        └── trace.jsonl
+        └── trace.jsonl            # JSONL com header schemaVersion
 ```
 
-When Linear MCP is connected, everything under `forja/changes/` and the Linear tracking live in Linear instead — only `config.md` stays local.
+Quando o MCP do Linear está conectado, tudo sob `forja/changes/` e o tracking moram no Linear — só `config.md` fica local.
+
+### Layout do repositório (para contribuidores)
+
+```
+.
+├── SEMVER.md                      # Contrato da API pública (CLI + schemas + DSL + Plugin API)
+├── DEPRECATIONS.md                # Itens agendados para remoção (janela de 2 minors)
+├── CHANGELOG.md                   # Formato Keep a Changelog
+├── PLUGIN-API.md                  # Referência gerada (npm run plugin-api:gen)
+├── docs/
+│   ├── gates-dsl.md               # Gramática EBNF da DSL de gate
+│   ├── adr/0001-gates-dsl-yaml-only.md
+│   └── upgrades/
+│       ├── _template.md           # Origem de todo upgrade guide
+│       └── v<X.Y>.md              # Um guide por release
+├── migrations/                    # Migrations SQL (incl. 0004_schema_versioning.sql)
+├── policies/                      # default.yaml (DSL de gate) + tools.yaml + models.yaml
+├── schemas/audit/                 # Exports JSON Schema (Draft 7)
+└── src/
+    ├── audits/{backend,frontend,database,security}/   # AuditModules tipados
+    ├── plugin/                    # Tipos, registry, loaders e hooks de plugin
+    ├── policy/dsl/                # Parser, AST, evaluator, predicados, migrator
+    └── store/migrations/          # Runners de migration trace / report / Postgres
+```
 
 ---
 
-## Contributing
+## Contribuindo
 
-Slash commands are plain markdown. No build step to edit them.
+Slash commands são markdown puro. Sem build step para editar.
 
 ```bash
 git clone https://github.com/livertonoliveira/forja
 cd forja
 npm install
-npm run dev           # tsx watch mode for the Harness
+npm run dev           # tsx watch mode para o Harness
 npm run typecheck
 npm test
-npm run build         # compile to bin/forja
-forja setup           # install your local build into a test project
+npm run build         # compila para bin/forja
+forja setup           # instala seu build local em um projeto-teste
 ```
 
-Editing a command:
+Editando um comando:
 
-1. Open `commands/forja/<name>.md`
-2. Save
-3. Re-run `forja setup` in your target project
+1. Abra `commands/forja/<name>.md`
+2. Salve
+3. Re-rode `forja setup` no projeto-alvo
 
-PRs welcome — each change should ship as atomic Conventional Commits. (Yes, we dogfood Forja for Forja.)
+PRs são bem-vindos — cada mudança deve shippar como Conventional Commits atômicos. (Sim, fazemos dogfooding da Forja com a Forja.)
 
 ---
 
-## License
+## Licença
 
 [BUSL-1.1](LICENSE) — Líverton Oliveira
 
-Business Source License 1.1: free for internal use, evaluation, and non-production workloads. See the license file for the production-use change date.
+Business Source License 1.1: gratuita para uso interno, avaliação e workloads não-produtivos. Veja o arquivo da licença para a data de mudança de uso em produção.

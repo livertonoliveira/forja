@@ -1,0 +1,22 @@
+export { commandRegistry, registerCommand } from './command-registry.js';
+export type { CommandHelp, CommandFlag, CommandExample } from './command-registry.js';
+
+import './commands/config.js';
+import './commands/cost.js';
+import './commands/gate.js';
+import './commands/help.js';
+import './commands/hook.js';
+import './commands/infra.js';
+import './commands/migrate.js';
+import './commands/plugins.js';
+import './commands/policies.js';
+import './commands/prune.js';
+import './commands/replay.js';
+import './commands/resume.js';
+import './commands/run.js';
+import './commands/schedule.js';
+import './commands/setup.js';
+import './commands/trace.js';
+import './commands/ui.js';
+import './commands/completion.js';
+import './commands/doctor.js';

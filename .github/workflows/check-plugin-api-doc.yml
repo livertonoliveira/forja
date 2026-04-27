@@ -1,0 +1,28 @@
+name: Check Plugin API Doc
+
+on:
+  pull_request:
+    paths:
+      - 'src/plugin/**'
+      - 'PLUGIN-API.md'
+      - 'scripts/generate-plugin-api-doc.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  check-plugin-api-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check PLUGIN-API.md is in sync
+        run: npm run plugin-api:check

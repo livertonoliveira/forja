@@ -38,11 +38,10 @@ describe('forja CLI integration', () => {
     expect(output).toBe('0.1.0');
   }, TIMEOUT);
 
-  it('run TEST-123 prints the stub message', () => {
+  it('run TEST-123 starts the pipeline for the given issue', () => {
     const result = spawnSync('node', [BINARY, 'run', 'TEST-123'], { timeout: TIMEOUT, encoding: 'utf-8' });
     const output = (result.stdout + result.stderr).trim();
-    expect(output).toContain('[forja] run TEST-123');
-    expect(output).toContain('ainda não implementado');
+    expect(output).toContain('TEST-123');
   }, TIMEOUT);
 
   it('hook pre-tool-use with empty stdin exits with code 0 and does not hang', () => {

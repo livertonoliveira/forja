@@ -242,6 +242,7 @@ export function runFixture(fixturesDir: string, commandName: string): FixtureRes
 export function runAll(fixturesDir: string): FixtureResult[] {
   if (!existsSync(fixturesDir)) return []
   return readdirSync(fixturesDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
+    // Only run fixture directories that follow the forja-<command-name> naming convention
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith('forja-'))
     .map((entry) => runFixture(fixturesDir, entry.name))
 }

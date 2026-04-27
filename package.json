@@ -10,6 +10,7 @@
   "files": [
     "bin/",
     "src/",
+    "schemas/",
     "commands/",
     "policies/",
     "apps/ui/.next/standalone/",
@@ -24,22 +25,49 @@
   "bin": {
     "forja": "bin/forja.js"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./plugin": {
+      "types": "./dist/plugin/index.d.ts",
+      "default": "./dist/plugin/index.js"
+    }
+  },
+  "tsd": {
+    "directory": "tests/types"
+  },
   "scripts": {
-    "build": "tsx esbuild.config.ts && npm run build:ui",
-    "build:ui": "cd apps/ui && npm install --legacy-peer-deps && npm run build && cp -r .next/static .next/standalone/.next/static",
+    "build": "tsx esbuild.config.ts && tsc --emitDeclarationOnly && npm run build:ui",
+    "build:ui": "cd apps/ui && npm install && npm run build && cp -r .next/static .next/standalone/.next/static",
     "dev": "tsx src/cli/index.ts",
     "typecheck": "tsc --noEmit",
+    "test:types": "tsd --typings src/plugin/index.ts",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run --passWithNoTests tests/",
+    "test": "vitest run --passWithNoTests tests/ src/ scripts/__tests__/",
     "test:update-golden": "UPDATE_GOLDEN=1 vitest run --passWithNoTests tests/golden.test.ts",
-    "version:bump": "bash scripts/bump-version.sh",
-    "check:schemas": "tsx scripts/check-schema-coverage.ts"
+    "release": "tsx scripts/release.ts",
+    "check:schemas": "tsx scripts/check-schema-coverage.ts",
+    "changelog": "tsx scripts/generate-changelog.ts",
+    "check:breaking": "tsx scripts/check-breaking-changes.ts",
+    "plugin-api:gen": "tsx scripts/generate-plugin-api-doc.ts",
+    "plugin-api:check": "tsx scripts/generate-plugin-api-doc.ts --check",
+    "schemas:gen": "tsx schemas/index.ts",
+    "version:bump": "bash scripts/bump-version.sh"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.73.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.215.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.215.0",
+    "@opentelemetry/resources": "^2.7.0",
+    "@opentelemetry/sdk-node": "^0.215.0",
     "commander": "^12.0.0",
     "cron-parser": "^5.5.0",
     "drizzle-orm": "^0.30.10",
     "js-yaml": "^4.1.0",
+    "minimatch": "^10.2.5",
     "nanoid": "^5.1.9",
     "pg": "^8.11.5",
     "zod": "^3.22.4"
@@ -53,8 +81,10 @@
     "drizzle-kit": "^0.21.2",
     "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
+    "tsd": "^0.33.0",
     "tsx": "^4.7.3",
     "typescript": "^5.4.5",
-    "vitest": "^1.5.0"
+    "vitest": "^1.5.0",
+    "zod-to-json-schema": "^3.25.2"
   }
 }

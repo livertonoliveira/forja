@@ -92,11 +92,37 @@ With the results from both agents, create:
 - Team ID: [ID or "not configured"]
 - Default Labels: [detected labels or "none"]
 
+## Gate Behavior
+- on_fail: ask
+- on_warn: ask
+
 ## Rules
 [Any project-specific rules discovered — to be extended over time]
 ```
 
-### 5. Present to the user
+> **Gate Behavior options:**
+> - `on_fail` — what to do when the gate finds critical/high issues:
+>   - `ask` (default): prompt the user before fixing
+>   - `fix`: apply fixes automatically without asking
+>   - `defer`: create tracking issues and continue without fixing
+> - `on_warn` — what to do when the gate finds medium issues:
+>   - `ask` (default): prompt the user before fixing
+>   - `fix`: apply fixes automatically without asking
+>   - `pass`: continue to acceptance without fixing
+
+### 5. Ask about gate behavior preference
+
+Before finalizing, ask the user:
+> "When the gate finds issues, what should the pipeline do by default?
+> - **ask** — prompt you each time (recommended for teams)
+> - **fix** — apply fixes automatically without asking (recommended for solo work)
+> - **defer** — track the issue and continue without fixing
+>
+> You can set different behaviors for critical/high findings (`on_fail`) and medium findings (`on_warn`)."
+
+Update `on_fail` and `on_warn` in the config based on the user's answer.
+
+### 6. Present to the user
 
 Display the generated configuration clearly and ask:
 - "Is the configuration correct? Would you like to adjust anything?"

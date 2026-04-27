@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import { CURRENT_SCHEMA_VERSION } from './versioning.js';
 
 export const TraceEventSchema = z.object({
+  schemaVersion: z.string().default(CURRENT_SCHEMA_VERSION),
   ts: z.string().datetime(),
   runId: z.string().uuid(),
   phaseId: z.string().uuid().optional(),
@@ -19,6 +21,8 @@ export const TraceEventSchema = z.object({
     'cost',
     'checkpoint',
     'error',
+    'deprecation_warning',
+    'plugin_registered',
   ]),
   commandFingerprint: z.string().regex(/^[0-9a-f]{32}$/).optional(),
   payload: z.record(z.string(), z.unknown()),
