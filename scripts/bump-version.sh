@@ -23,7 +23,9 @@ case "$BUMP_TYPE" in
 esac
 
 echo "$NEW_VERSION" > "$VERSION_FILE"
-npm -C "$ROOT_DIR" version "$NEW_VERSION" --no-git-tag-version --allow-same-version > /dev/null
+if [[ -f "$ROOT_DIR/package.json" ]]; then
+  npm -C "$ROOT_DIR" version "$NEW_VERSION" --no-git-tag-version --allow-same-version > /dev/null
+fi
 
 DATE="$(date +%Y-%m-%d)"
 NEW_ENTRY="## [$NEW_VERSION] — $DATE"
