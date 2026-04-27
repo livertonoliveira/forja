@@ -27,6 +27,15 @@
 - on_fail: fix
 - on_warn: fix
 
+## Pipeline Phases
+- dev: enabled
+- test: enabled
+- perf: enabled
+- security: enabled
+- review: enabled
+- homolog: enabled
+- pr: enabled
+
 ## OTel (OpenTelemetry)
 - enabled: false
 - endpoint: http://localhost:4317  # OTLP gRPC
