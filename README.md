@@ -22,7 +22,7 @@
   <a href="#por-que-forja">Por que Forja</a> ·
   <a href="#início-rápido">Início rápido</a> ·
   <a href="#instalação">Instalação</a> ·
-  <a href="#configuração">Configuração</a> ·
+  <a href="#configuração">Configuração</a> · <a href="#controle-de-fases-da-pipeline">Fases</a> ·
   <a href="#a-pipeline">A pipeline</a> ·
   <a href="#harness-engine">Harness Engine</a> ·
   <a href="#comandos-slash">Comandos slash</a> ·
@@ -255,6 +255,34 @@ forja config set artifact_language pt-BR
 ```
 
 `artifact_language` aceita `pt-BR`, `en`, `es`, `fr`, `de`, `ja`, `zh-CN`. `prompt_language` é fixo em `en` — o LLM rende mais nesse idioma e, quando ele fala com você, traduz para o idioma escolhido. Isso garante saída no idioma do time sem degradar a qualidade do raciocínio. O dashboard segue o mesmo `artifact_language` automaticamente, com catálogos completos em `apps/ui/messages/{en,pt-BR}.json`.
+
+### Controle de fases da pipeline
+
+Nem toda pipeline precisa passar por todos os gates. Se o scan de security é lento demais para o loop de desenvolvimento local — mas essencial na CI — desligue-o por projeto sem mexer em nenhum prompt ou política:
+
+```json
+// forja/.forja-config.json
+{
+  "storeUrl": "postgresql://...",
+  "phases": {
+    "security": false
+  }
+}
+```
+
+Ao rodar `forja run <issue>`, o engine loga as fases ignoradas e segue:
+
+```
+[forja] phases disabled by config: security
+[forja] → dev
+[forja] → test
+[forja] → homolog
+[forja] → pr
+```
+
+Cada fase tem um toggle independente: `dev`, `test`, `perf`, `security`, `review`, `homolog`, `pr`. Todos habilitados por default. O mesmo campo em `~/.forja/config.json` define defaults para a máquina inteira — útil para desabilitar fases pesadas localmente sem commitar no projeto.
+
+> **Escopo do toggle:** fases runtime (`dev`, `test`, `homolog`, `pr`) são controladas pelo engine. Fases skill-driven (`perf`, `security`, `review`) leem o mesmo `forja/config.md` antes de disparar — `/forja:security` respeita `security: disabled` e retorna imediatamente.
 
 ### Autocomplete no shell
 

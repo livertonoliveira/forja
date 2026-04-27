@@ -8,7 +8,7 @@ Forja follows [Semantic Versioning 2.0.0](https://semver.org/). Starting at **v1
 - **MINOR** (`x.Y.0`): backwards-compatible new functionality
 - **MAJOR** (`X.0.0`): incompatible API changes
 
-**Pre-1.0.0 notice:** Until v1.0.0 is released (current: `0.1.3`), minor versions (`0.X.0`) **may introduce breaking changes**. Build with caution.
+**Pre-1.0.0 notice:** Until v1.0.0 is released (current: `0.2.0`), minor versions (`0.X.0`) **may introduce breaking changes**. Build with caution.
 
 ---
 
@@ -59,8 +59,9 @@ All schemas re-exported from [`src/schemas/index.ts`](src/schemas/index.ts). Typ
 
 | Schema | File | Key Fields | Since |
 |--------|------|-----------|-------|
-| [`ConfigSchema`](src/schemas/config.ts#L13) | `src/schemas/config.ts` | `storeUrl`, `retentionDays`, `phasesDir`, `logLevel`, `teamId`, `linearToken`, `timeouts` | 0.1.0 |
+| [`ConfigSchema`](src/schemas/config.ts#L13) | `src/schemas/config.ts` | `storeUrl`, `retentionDays`, `phasesDir`, `logLevel`, `teamId`, `linearToken`, `timeouts`, `phases` | 0.1.0 |
 | [`PhaseTimeoutsSchema`](src/schemas/config.ts#L3) | `src/schemas/config.ts` | `dev`, `test`, `perf`, `security`, `review`, `homolog`, `pr` | 0.1.0 |
+| [`PhasesEnabledSchema`](src/schemas/config.ts) | `src/schemas/config.ts` | `dev`, `test`, `perf`, `security`, `review`, `homolog`, `pr` (all `boolean`, default `true`) | 0.2.0 |
 | [`FindingSchema`](src/schemas/finding.ts#L3) | `src/schemas/finding.ts` | `id`, `runId`, `phaseId`, `agentId`?, `severity`, `category`, `filePath`?, `line`?, `title`, `description`, `suggestion`?, `owasp`?, `cwe`?, `createdAt` | 0.1.0 |
 | [`GateDecisionSchema`](src/schemas/gate.ts#L3) | `src/schemas/gate.ts` | `id`, `runId`, `phaseId`?, `decision`, `criticalCount`, `highCount`, `mediumCount`, `lowCount`, `policyApplied`, `decidedAt` | 0.1.0 |
 | [`CostEventSchema`](src/schemas/cost.ts#L3) | `src/schemas/cost.ts` | `id`, `runId`, `phaseId`, `agentId`, `spanId`?, `model`, `tokensIn`, `tokensOut`, `cacheCreationTokens`, `cacheReadTokens`, `costUsd`, `createdAt` | 0.1.0 |
@@ -70,7 +71,7 @@ All schemas re-exported from [`src/schemas/index.ts`](src/schemas/index.ts). Typ
 | [`AuditReportSchema`](src/audits/types.ts) | `src/audits/types.ts` | `schemaVersion`, `auditId`, `stackInfo`, `startedAt`, `finishedAt`, `findings`, `markdown`, `summary` | 0.1.3 |
 | [`StackInfoSchema`](src/audits/types.ts) | `src/audits/types.ts` | `language`, `runtime`, `framework`? | 0.1.3 |
 
-Exported TypeScript types: `Config`, `PhaseTimeouts`, `Finding`, `GateDecision`, `CostEvent`, `RunState`, `TraceEvent`, `AuditFindingRecord`, `AuditReportRecord`, `StackInfoRecord`.
+Exported TypeScript types: `Config`, `PhaseTimeouts`, `PhasesEnabled`, `Finding`, `GateDecision`, `CostEvent`, `RunState`, `TraceEvent`, `AuditFindingRecord`, `AuditReportRecord`, `StackInfoRecord`.
 
 ### Policy YAML Format
 
@@ -171,6 +172,7 @@ The `forja/config.md` file in each consumer project is the source of truth for p
 | `## Stack` | yes | `Language` (toolchain detail), `Runtime` | `Build`, `Dev runner`, `Database`, `Test framework`, `Lint`, `Typecheck`, `Package manager` |
 | `## Linear Integration` | yes | `Configured` (`yes`/`no`) | `Team`, `Team ID` (required when `Configured: yes`) |
 | `## Conventions` | no | — | `Artifacts language`, `Code language`, `Commit style`, `Branch naming`, `Atomic commits`, `Co-author` |
+| `## Pipeline Phases` | no | — | Per-phase toggle: `dev`, `test`, `perf`, `security`, `review`, `homolog`, `pr` (`enabled`/`disabled`, default `enabled`). Added in 0.2.0. |
 
 > Note: `Language` appears in both `## Project` (a human-readable label, e.g., `TypeScript`) and `## Stack` (the toolchain entry with version/runtime details). Both must be present and consistent.
 

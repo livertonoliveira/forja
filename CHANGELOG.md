@@ -7,7 +7,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-04-26
+
 ### Adicionado
+
+#### Pipeline
+
+- Toggle de fases por projeto: campo `phases` em `forja/.forja-config.json` (ou `~/.forja/config.json`) permite habilitar/desabilitar fases individuais da pipeline sem alterar políticas ou prompts. Cada fase tem um boolean independente (`dev`, `test`, `perf`, `security`, `review`, `homolog`, `pr`), todos `true` por default. Fases desabilitadas são logadas no início do run e ignoradas pelo engine.
+- `PhasesEnabledSchema` e tipo `PhasesEnabled` exportados de `src/schemas/config.ts` — parte da superfície pública a partir desta versão.
 
 #### Dashboard
 
@@ -142,7 +149,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
-[Unreleased]: https://github.com/livertonoliveira/forja/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/livertonoliveira/forja/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/livertonoliveira/forja/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/livertonoliveira/forja/compare/v0.1.1...v0.1.3
 [0.1.1]: https://github.com/livertonoliveira/forja/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/livertonoliveira/forja/releases/tag/v0.1.0
