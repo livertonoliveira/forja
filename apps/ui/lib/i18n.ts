@@ -51,6 +51,7 @@ export const translations = {
       desc: 'Eventos webhook mortos — {count} total',
       no_events: 'Nenhum evento morto',
       no_events_desc: 'Todos os webhooks estão saudáveis.',
+      load_error: 'Falha ao carregar mais eventos',
       load_more: 'Carregar mais',
       columns: {
         type: 'Tipo',
@@ -155,6 +156,7 @@ export const translations = {
       desc: 'Dead webhook events — {count} total',
       no_events: 'No dead events',
       no_events_desc: 'All webhooks are healthy.',
+      load_error: 'Failed to load more events',
       load_more: 'Load more',
       columns: {
         type: 'Type',
