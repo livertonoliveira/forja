@@ -504,6 +504,7 @@ describe('config get github_token — CLI output', () => {
       loadConfig: vi.fn().mockResolvedValue({
         storeUrl: 'postgresql://localhost/db',
         retentionDays: 90,
+        projectId: 'test-project',
         githubToken: 'ghp_super_secret',
         source: 'user-file',
       }),
@@ -526,6 +527,7 @@ describe('config get github_token — CLI output', () => {
       loadConfig: vi.fn().mockResolvedValue({
         storeUrl: 'postgresql://localhost/db',
         retentionDays: 90,
+        projectId: 'test-project',
         githubToken: undefined,
         source: 'default',
       }),
@@ -546,6 +548,7 @@ describe('config get github_token — CLI output', () => {
       loadConfig: vi.fn().mockResolvedValue({
         storeUrl: 'postgresql://localhost/db',
         retentionDays: 90,
+        projectId: 'test-project',
         githubToken: 'ghp_some_token',
         source: 'project-file',
       }),
@@ -564,6 +567,7 @@ describe('config get github_token — CLI output', () => {
       loadConfig: vi.fn().mockResolvedValue({
         storeUrl: 'postgresql://localhost/db',
         retentionDays: 90,
+        projectId: 'test-project',
         githubToken: 'totally-safe-looking-value',
         source: 'env',
       }),

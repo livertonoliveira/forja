@@ -125,6 +125,7 @@ describe('createCheck — GITHUB_TOKEN from environment', () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://localhost/forja',
       retentionDays: 90,
+      projectId: 'test-project',
       githubToken: 'ghp_test_token',
       source: 'default',
     });
@@ -236,6 +237,7 @@ describe('createCheck — GITHUB_TOKEN from config', () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://localhost/forja',
       retentionDays: 90,
+      projectId: 'test-project',
       githubToken: 'ghp_config_token',
       source: 'project-file',
     });
@@ -275,6 +277,7 @@ describe('createCheck — no token available', () => {
     mockedLoadConfig.mockResolvedValue({
       storeUrl: 'postgresql://localhost/forja',
       retentionDays: 90,
+      projectId: 'test-project',
       githubToken: undefined,
       source: 'default',
     });
