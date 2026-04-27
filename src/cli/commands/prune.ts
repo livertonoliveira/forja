@@ -15,7 +15,7 @@ export const pruneCommand = new Command('prune')
     if (options.before) {
       beforeDate = new Date(options.before);
       if (isNaN(beforeDate.getTime())) {
-        console.error(`[forja] Data inválida: ${options.before}`);
+        console.error(`[forja] Invalid date: ${options.before}`);
         process.exit(1);
       }
     } else {
@@ -27,23 +27,23 @@ export const pruneCommand = new Command('prune')
     const isDryRun = !!options.dryRun;
 
     if (isDryRun) {
-      console.log(`[forja] Dry run — runs que seriam deletados antes de ${beforeDate.toISOString().split('T')[0]}:`);
+      console.log(`[forja] Dry run — runs that would be deleted before ${beforeDate.toISOString().split('T')[0]}:`);
     }
 
     try {
       const result = await pruneRuns(store, { beforeDate, dryRun: isDryRun });
 
       if (isDryRun) {
-        console.log(`[forja] ${result.deletedRuns} run(s) seriam removidos, liberando ~${formatBytes(result.freedBytes)}`);
+        console.log(`[forja] ${result.deletedRuns} run(s) would be removed, freeing ~${formatBytes(result.freedBytes)}`);
       } else {
-        console.log(`[forja] Prunado ${result.deletedRuns} runs, liberado ${formatBytes(result.freedBytes)}`);
+        console.log(`[forja] Pruned ${result.deletedRuns} run(s), freed ${formatBytes(result.freedBytes)}`);
         if (result.deletedRuns > 0) {
-          console.log(`\nDica: Execute \`forja schedule prune --cron "0 2 * * 0"\` para automatizar a limpeza semanal.`);
+          console.log(`\nTip: Run \`forja schedule prune --cron "0 2 * * 0"\` to automate weekly cleanup.`);
         }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[forja] Erro ao executar prune: ${message}`);
+      console.error(`[forja] Error running prune: ${message}`);
       process.exit(1);
     } finally {
       await store.close().catch(() => {});

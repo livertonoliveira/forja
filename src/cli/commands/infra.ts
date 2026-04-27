@@ -11,7 +11,7 @@ export const infraCommand = new Command('infra')
   .argument('<action>', `action to perform: ${ALLOWED_ACTIONS.join(', ')}`)
   .action(async (action: string) => {
     if (!ALLOWED_ACTIONS.includes(action as Action)) {
-      console.error(`Ação desconhecida: ${action}. Use: ${ALLOWED_ACTIONS.join(', ')}`);
+      console.error(`Unknown action: ${action}. Use: ${ALLOWED_ACTIONS.join(', ')}`);
       process.exit(1);
     }
 
@@ -26,21 +26,21 @@ export const infraCommand = new Command('infra')
 
     try {
       if (action === 'up') {
-        console.log('Iniciando Postgres...');
+        console.log('Starting Postgres...');
         await composeUp();
         await waitForHealthy('postgres');
-        console.log('Executando migrations...');
+        console.log('Running migrations...');
         await runMigrations(connectionString);
-        console.log(`Postgres pronto em ${redactDsn(connectionString)}`);
+        console.log(`Postgres ready at ${redactDsn(connectionString)}`);
       } else if (action === 'down') {
         await composeDown();
-        console.log('Postgres encerrado.');
+        console.log('Postgres stopped.');
       } else if (action === 'status') {
         const output = await composeStatus();
-        console.log(output || 'Nenhum serviço em execução.');
+        console.log(output || 'No services running.');
       }
     } catch (err) {
-      console.error(`Erro ao executar infra ${action}: ${(err as Error).message}`);
+      console.error(`Error running infra ${action}: ${(err as Error).message}`);
       process.exit(1);
     }
   });
