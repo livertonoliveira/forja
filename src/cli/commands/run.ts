@@ -75,7 +75,7 @@ export const runCommand = new Command('run')
     const loadedConfig = await loadConfig();
     initOTel(readOTelConfig());
 
-    const enabledPhases = PhasesEnabledSchema.parse(loadedConfig.phases ?? {});
+    const enabledPhases = PhasesEnabledSchema.parse(loadedConfig.phases ?? {}) as Record<string, boolean | undefined>;
     const activeSequence = PIPELINE_SEQUENCE.filter((phase) => enabledPhases[phase] !== false);
     const skippedPhases = PIPELINE_SEQUENCE.filter((phase) => enabledPhases[phase] === false);
     if (skippedPhases.length > 0) {
