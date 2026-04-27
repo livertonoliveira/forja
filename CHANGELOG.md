@@ -7,6 +7,22 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.4] — 2026-04-27
+
+### Adicionado
+
+- Campo `project_id` na tabela `runs` — identifica o projeto explicitamente, sem depender do prefixo da issue do Linear
+- Detecção automática de `projectId` pelo nome do repositório git (`git remote get-url origin`) com fallback para o nome do diretório
+- Campo `projectId` configurável em `forja/.forja-config.json` e via variável de ambiente `FORJA_PROJECT_ID`
+- Migration `0011_project_id.sql`: adiciona coluna, faz backfill dos registros existentes via `SPLIT_PART(issue_id, '-', 1)` e cria índice
+
+### Corrigido
+
+- Dashboard: filtro de projeto usava `ILIKE issue_id%` (frágil) — substituído por `project_id = $n` (exato)
+- Dashboard: custo por projeto usava `SPLIT_PART(issue_id, '-', 1)` — substituído por `project_id`
+- Dashboard: detecção de runs cross-project usava regex no `issueId` — substituído por comparação de `projectId`
+- Budget cap verificava prefixo do `issueId` — agora usa `projectId` do config
+
 ## [0.2.3] — 2026-04-27
 
 ### Corrigido

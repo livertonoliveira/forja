@@ -56,10 +56,11 @@ export const runCommand = new Command('run')
     const defaultTimeouts = PhaseTimeoutsSchema.parse({});
     const effectiveTimeouts: Record<string, number> = { ...defaultTimeouts, ...timeoutOverrides };
 
-    const projectPrefix = issueId.replace(/-\d+$/, '');
-    const capCheck = await isProjectCapped(projectPrefix).catch(() => ({ capped: false, currentCost: 0, limit: 0 }));
+    const loadedConfigEarly = await loadConfig();
+    const projectId = loadedConfigEarly.projectId;
+    const capCheck = await isProjectCapped(projectId).catch(() => ({ capped: false, currentCost: 0, limit: 0 }));
     if (capCheck.capped) {
-      console.error(`[forja] Budget cap reached for project ${projectPrefix}. Current cost: $${capCheck.currentCost.toFixed(4)}, limit: $${capCheck.limit}`);
+      console.error(`[forja] Budget cap reached for project ${projectId}. Current cost: $${capCheck.currentCost.toFixed(4)}, limit: $${capCheck.limit}`);
       process.exit(2);
     }
 
@@ -72,7 +73,7 @@ export const runCommand = new Command('run')
       console.warn('[forja] could not load models policy — FORJA_MODEL will not be set per phase');
     }
 
-    const loadedConfig = await loadConfig();
+    const loadedConfig = loadedConfigEarly;
     initOTel(readOTelConfig());
 
     const enabledPhases = PhasesEnabledSchema.parse(loadedConfig.phases ?? {}) as Record<string, boolean | undefined>;
@@ -95,6 +96,7 @@ export const runCommand = new Command('run')
 
     const run = await store.createRun({
       issueId,
+      projectId,
       startedAt: new Date().toISOString(),
       finishedAt: null,
       status: 'init',

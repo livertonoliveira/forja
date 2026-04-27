@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
+import { execSync } from 'node:child_process';
 import type { PhasesEnabled } from '../schemas/config.js';
 
 export type ConfigSource = 'env' | 'project-file' | 'user-file' | 'default';
@@ -8,6 +9,7 @@ export type ConfigSource = 'env' | 'project-file' | 'user-file' | 'default';
 export interface LoadedConfig {
   storeUrl: string;
   retentionDays: number;
+  projectId: string;
   slackWebhookUrl?: string;
   githubToken?: string;
   artifactLanguage?: string;
@@ -31,10 +33,22 @@ const USER_CONFIG_PATH = path.join(os.homedir(), '.forja', 'config.json');
 interface ConfigFile {
   storeUrl?: string;
   retentionDays?: number;
+  projectId?: string;
   slackWebhookUrl?: string;
   githubToken?: string;
   artifactLanguage?: string;
   phases?: Partial<PhasesEnabled>;
+}
+
+function detectProjectId(): string {
+  try {
+    const remote = execSync('git remote get-url origin', { stdio: 'pipe' }).toString().trim();
+    const match = remote.match(/\/([^/]+?)(?:\.git)?$/);
+    if (match?.[1]) return match[1];
+  } catch {
+    // not a git repo or no remote
+  }
+  return path.basename(process.cwd());
 }
 
 async function readJsonFile(filePath: string): Promise<ConfigFile | null> {
@@ -83,15 +97,20 @@ export async function loadConfig(): Promise<LoadedConfig> {
   const phases: Partial<PhasesEnabled> | undefined =
     projectConfig?.phases ?? userConfig?.phases;
 
+  const projectId =
+    process.env.FORJA_PROJECT_ID
+    ?? projectConfig?.projectId
+    ?? detectProjectId();
+
   if (process.env.FORJA_STORE_URL) {
-    result = { storeUrl: process.env.FORJA_STORE_URL, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'env' };
+    result = { storeUrl: process.env.FORJA_STORE_URL, retentionDays, projectId, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'env' };
   } else {
     if (projectConfig?.storeUrl) {
-      result = { storeUrl: projectConfig.storeUrl, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'project-file' };
+      result = { storeUrl: projectConfig.storeUrl, retentionDays, projectId, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'project-file' };
     } else if (userConfig?.storeUrl) {
-      result = { storeUrl: userConfig.storeUrl, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'user-file' };
+      result = { storeUrl: userConfig.storeUrl, retentionDays, projectId, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'user-file' };
     } else {
-      result = { storeUrl: DEFAULT_STORE_URL, retentionDays, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'default' };
+      result = { storeUrl: DEFAULT_STORE_URL, retentionDays, projectId, slackWebhookUrl, githubToken, artifactLanguage, phases, source: 'default' };
     }
   }
 

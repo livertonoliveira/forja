@@ -31,6 +31,7 @@ export const dlqStatusEnum = pgEnum('dlq_status', ['dead', 'reprocessed', 'ignor
 export const runs = pgTable('runs', {
   id: uuid('id').primaryKey().defaultRandom(),
   issueId: text('issue_id').notNull(),
+  projectId: text('project_id').notNull(),
   startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
   finishedAt: timestamp('finished_at', { withTimezone: true }),
   status: runStatusEnum('status').notNull(),
@@ -43,6 +44,7 @@ export const runs = pgTable('runs', {
   searchVector: tsvector('search_vector'),
 }, (t) => ({
   issueIdIdx: index('runs_issue_id_idx').on(t.issueId),
+  projectIdIdx: index('runs_project_id_idx').on(t.projectId),
   statusIdx: index('runs_status_idx').on(t.status),
 }));
 

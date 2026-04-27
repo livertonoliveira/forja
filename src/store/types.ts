@@ -8,6 +8,7 @@
 export interface Run {
   id: string;
   issueId: string;
+  projectId: string;
   startedAt: string;
   finishedAt: string | null;
   status: 'init' | 'spec' | 'dev' | 'test' | 'perf' | 'security' | 'review' | 'homolog' | 'pr' | 'done' | 'failed';

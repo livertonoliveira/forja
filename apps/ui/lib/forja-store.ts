@@ -325,8 +325,8 @@ async function queryFindingsTrend(
   const params: unknown[] = [granularity, from, to];
 
   if (project) {
-    params.push(`${project}%`);
-    conditions.push(`r.issue_id ILIKE $${params.length}`);
+    params.push(project);
+    conditions.push(`r.project_id = $${params.length}`);
   }
 
   const where = conditions.join(' AND ');
@@ -508,6 +508,7 @@ export interface ComparedFinding {
 export interface RunMeta {
   id: string;
   issueId: string;
+  projectId: string;
   startedAt: string;
   finishedAt: string | null;
   totalCost: string;
@@ -546,12 +547,13 @@ export async function compareRuns(ids: string[]): Promise<CompareResult> {
     const { rows: runRows } = await db.query<{
       id: string;
       issue_id: string;
+      project_id: string;
       started_at: string;
       finished_at: string | null;
       total_cost: string;
       gate: GateDecision | null;
     }>(
-      `SELECT r.id, r.issue_id, r.started_at, r.finished_at, r.total_cost,
+      `SELECT r.id, r.issue_id, r.project_id, r.started_at, r.finished_at, r.total_cost,
               g.decision AS gate
        FROM runs r
        LEFT JOIN LATERAL (
@@ -572,6 +574,7 @@ export async function compareRuns(ids: string[]): Promise<CompareResult> {
     const runs: RunMeta[] = runRows.map((r) => ({
       id: r.id,
       issueId: r.issue_id,
+      projectId: r.project_id,
       startedAt: r.started_at,
       finishedAt: r.finished_at,
       totalCost: r.total_cost,
@@ -583,8 +586,8 @@ export async function compareRuns(ids: string[]): Promise<CompareResult> {
     }));
 
     // crossProject: runs belong to different issue prefixes (e.g. MOB vs ABC)
-    const projectPrefixes = new Set(runs.map((r) => r.issueId.replace(/-\d+$/, '')));
-    const crossProject = projectPrefixes.size > 1;
+    const projectIds = new Set(runs.map((r) => r.projectId));
+    const crossProject = projectIds.size > 1;
 
     // Fetch all findings for these runs. Order in application code using runOrder
     // (avoids joining runs table just for ORDER BY).
@@ -868,13 +871,13 @@ export async function getCostBreakdownByProject(
     type Row = { project: string; total_cost: string; run_count: string };
 
     const { rows } = await db.query<Row>(
-      `SELECT SPLIT_PART(r.issue_id, '-', 1) AS project,
+      `SELECT r.project_id AS project,
               SUM(c.cost_usd)::text AS total_cost,
               COUNT(DISTINCT c.run_id)::text AS run_count
        FROM cost_events c
        JOIN runs r ON c.run_id = r.id
        WHERE c.created_at BETWEEN $1 AND $2
-       GROUP BY project
+       GROUP BY r.project_id
        ORDER BY SUM(c.cost_usd) DESC
        LIMIT $3`,
       [from, to, limit],
