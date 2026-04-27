@@ -109,14 +109,14 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
     navigator.clipboard.writeText(
       `${window.location.origin}/runs/${runId}/findings/${findingId}`
     ).then(() => {
-      toast.success('Link copiado!');
+      toast.success(t('copy_link_success'));
     });
   }
 
   function handleCopyFingerprint() {
     if (!finding?.fingerprint) return;
     navigator.clipboard.writeText(finding.fingerprint).then(() => {
-      toast.success('Fingerprint copiado!');
+      toast.success(t('copy_fingerprint_success'));
     });
   }
 
@@ -137,7 +137,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                 ) : (
                   <>
                     <SheetTitle className="leading-tight">
-                      {finding?.title ?? (error || isNotFound ? 'Finding' : '')}
+                      {finding?.title ?? ''}
                     </SheetTitle>
                     {finding && (
                       <Badge variant={SEVERITY_VARIANT[finding.severity] ?? 'unknown'}>
@@ -215,7 +215,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                   </h3>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-forja-text-muted w-20 shrink-0">Run</span>
+                      <span className="text-xs text-forja-text-muted w-20 shrink-0">{t('run_label')}</span>
                       <a
                         href={`/runs/${finding.runId}`}
                         className="text-sm text-forja-text-gold hover:underline font-mono"
@@ -225,7 +225,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                     </div>
                     {finding.run.gitSha && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-forja-text-muted w-20 shrink-0">Commit</span>
+                        <span className="text-xs text-forja-text-muted w-20 shrink-0">{t('commit_label')}</span>
                         <a
                           href={`https://github.com/org/repo/commit/${finding.run.gitSha}`}
                           target="_blank"
@@ -238,7 +238,7 @@ export function FindingDetailSheet({ findingId, runId, open, onOpenChange }: Fin
                     )}
                     {finding.run.gitBranch && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-forja-text-muted w-20 shrink-0">Branch</span>
+                        <span className="text-xs text-forja-text-muted w-20 shrink-0">{t('branch_label')}</span>
                         <span className="text-sm text-forja-text-secondary font-mono">
                           {finding.run.gitBranch}
                         </span>

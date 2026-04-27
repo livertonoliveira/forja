@@ -181,6 +181,7 @@
     "no_events": "No dead events",
     "no_events_desc": "All webhooks are healthy.",
     "load_more": "Load more",
+    "load_error": "Failed to load more events",
     "columns": {
       "type": "Type",
       "status": "Status",
@@ -197,11 +198,14 @@
   "findings": {
     "none": "No findings recorded in this run.",
     "title": "Findings ({count})",
+    "diff_empty": "No findings in this category.",
     "columns": {
       "severity": "Severity",
       "category": "Category",
       "message": "Message",
       "file": "File",
+      "line": "Line",
+      "fingerprint": "Fingerprint",
       "phase": "Phase"
     },
     "create_issue": "Create Issue",
@@ -224,7 +228,12 @@
       "category_label": "Category",
       "file_label": "File",
       "fingerprint_label": "Fingerprint",
+      "run_label": "Run",
+      "commit_label": "Commit",
+      "branch_label": "Branch",
       "copy_link": "Copy link",
+      "copy_link_success": "Link copied!",
+      "copy_fingerprint_success": "Fingerprint copied!",
       "close": "Close",
       "create_issue": "Create Issue"
     }
@@ -278,7 +287,13 @@
   "filters": {
     "search_placeholder": "Search by issue ID...",
     "today": "Today",
-    "reset": "Reset"
+    "reset": "Reset",
+    "no_results_query": "No results for \"{query}\"",
+    "try_different": "Try different terms or remove active filters."
+  },
+  "common_actions": {
+    "copy_link": "Copy link",
+    "copy_link_success": "Link copied!"
   },
   "charts": {
     "load_error": "Failed to load data.",

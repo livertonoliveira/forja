@@ -10,6 +10,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { useTranslations } from 'next-intl';
 
 type Variant = 'new' | 'resolved' | 'persistent';
 
@@ -32,10 +33,12 @@ interface FindingDiffTableProps {
 }
 
 export function FindingDiffTable({ findings, variant }: FindingDiffTableProps) {
+  const t = useTranslations('findings');
+
   if (findings.length === 0) {
     return (
       <p className="text-sm text-forja-text-muted py-4 px-1">
-        Nenhum finding nesta categoria.
+        {t('diff_empty')}
       </p>
     );
   }
@@ -47,11 +50,11 @@ export function FindingDiffTable({ findings, variant }: FindingDiffTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-forja-border-default">
-            <TableHead>Severidade</TableHead>
-            <TableHead>Mensagem</TableHead>
-            <TableHead>Arquivo</TableHead>
-            <TableHead>Linha</TableHead>
-            <TableHead>Fingerprint</TableHead>
+            <TableHead>{t('columns.severity')}</TableHead>
+            <TableHead>{t('columns.message')}</TableHead>
+            <TableHead>{t('columns.file')}</TableHead>
+            <TableHead>{t('columns.line')}</TableHead>
+            <TableHead>{t('columns.fingerprint')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody className="[&_tr]:bg-transparent">

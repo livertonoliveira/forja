@@ -181,6 +181,7 @@
     "no_events": "Nenhum evento morto",
     "no_events_desc": "Todos os webhooks estão saudáveis.",
     "load_more": "Carregar mais",
+    "load_error": "Falha ao carregar mais eventos",
     "columns": {
       "type": "Tipo",
       "status": "Status",
@@ -197,11 +198,14 @@
   "findings": {
     "none": "Nenhum finding registrado neste run.",
     "title": "Findings ({count})",
+    "diff_empty": "Nenhum finding nesta categoria.",
     "columns": {
       "severity": "Severidade",
       "category": "Categoria",
       "message": "Mensagem",
       "file": "Arquivo",
+      "line": "Linha",
+      "fingerprint": "Fingerprint",
       "phase": "Fase"
     },
     "create_issue": "Criar Issue",
@@ -224,7 +228,12 @@
       "category_label": "Categoria",
       "file_label": "Arquivo",
       "fingerprint_label": "Fingerprint",
+      "run_label": "Run",
+      "commit_label": "Commit",
+      "branch_label": "Branch",
       "copy_link": "Copiar link",
+      "copy_link_success": "Link copiado!",
+      "copy_fingerprint_success": "Fingerprint copiado!",
       "close": "Fechar",
       "create_issue": "Criar Issue"
     }
@@ -278,7 +287,13 @@
   "filters": {
     "search_placeholder": "Buscar por issue ID...",
     "today": "Hoje",
-    "reset": "Resetar"
+    "reset": "Resetar",
+    "no_results_query": "Nenhum resultado para \"{query}\"",
+    "try_different": "Tente outros termos ou remova os filtros ativos."
+  },
+  "common_actions": {
+    "copy_link": "Copiar link",
+    "copy_link_success": "Link copiado!"
   },
   "charts": {
     "load_error": "Falha ao carregar dados.",

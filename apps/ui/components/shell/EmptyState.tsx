@@ -98,11 +98,12 @@ export function EmptyComparison() {
 }
 
 export function EmptySearch({ query }: { query: string }) {
+  const t = useTranslations('filters');
   const safeQuery = query.replace(/[<>"'&]/g, '');
   return (
     <EmptyState
-      title={`Nenhum resultado para "${safeQuery}"`}
-      description="Tente outros termos ou remova os filtros ativos."
+      title={t('no_results_query', { query: safeQuery })}
+      description={t('try_different')}
     />
   );
 }

@@ -72,11 +72,11 @@ export function DLQClient({
       if (currentHookType) params.set('hookType', currentHookType)
 
       const res = await fetch(`/api/dlq?${params.toString()}`)
-      if (!res.ok) throw new Error('Failed to load more events')
+      if (!res.ok) throw new Error(t.dlq.load_error)
       const data: { events: DLQEvent[] } = await res.json()
       setEvents((prev) => [...prev, ...data.events])
     } catch {
-      toast.error('Failed to load more events')
+      toast.error(t.dlq.load_error)
     } finally {
       setLoading(false)
     }

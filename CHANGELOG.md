@@ -7,6 +7,19 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.6] — 2026-04-27
+
+### Corrigido
+
+- Dashboard: textos hardcoded em inglês/português substituídos pelo sistema de i18n em 6 componentes:
+  - `dlq/page.tsx`: título e descrição agora usam `getTranslations('dlq')`
+  - `FindingDetailSheet`: toasts e labels Run/Commit/Branch passam pelo catálogo de traduções
+  - `FindingDiffTable`: headers da tabela e mensagem de vazio agora traduzidos
+  - `CopyLinkButton`: botão e toast passam pelo catálogo
+  - `DLQClient`: mensagem de erro de carregamento traduzida
+  - `EmptySearch`: mensagem de busca sem resultado traduzida via `filters.no_results_query`
+- Adicionadas novas chaves em `en.json` e `pt-BR.json`: `findings.diff_empty`, `findings.columns.line/fingerprint`, `findings.detail.run_label/commit_label/branch_label/copy_link_success/copy_fingerprint_success`, `dlq.load_error`, `filters.no_results_query/try_different`, `common_actions.copy_link/copy_link_success`
+
 ## [0.2.5] — 2026-04-27
 
 ### Corrigido

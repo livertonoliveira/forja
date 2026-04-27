@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { DLQClient } from '@/components/dlq/DLQClient'
 import type { DLQEvent } from '@/components/dlq/PayloadModal'
 
@@ -32,6 +33,7 @@ async function getDLQEvents(
 }
 
 export default async function DLQPage({ searchParams }: DLQPageProps) {
+  const t = await getTranslations('dlq')
   const status = searchParams.status && VALID_STATUSES.has(searchParams.status)
     ? searchParams.status
     : undefined
@@ -43,10 +45,10 @@ export default async function DLQPage({ searchParams }: DLQPageProps) {
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-forja-text-primary">
-          Dead Letter Queue
+          {t('title')}
         </h1>
         <p className="text-forja-text-secondary text-sm mt-1">
-          Dead webhook events &mdash; {total} total
+          {t('desc', { count: total })}
         </p>
       </div>
 
