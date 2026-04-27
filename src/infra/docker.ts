@@ -11,16 +11,18 @@ export async function checkDockerAvailable(): Promise<void> {
   }
 }
 
+const COMPOSE_FILE = 'docker-compose.forja.yml';
+
 export async function composeUp(): Promise<void> {
-  await execAsync('docker compose up -d', { cwd: process.cwd() });
+  await execAsync(`docker compose -f ${COMPOSE_FILE} up -d`, { cwd: process.cwd() });
 }
 
 export async function composeDown(): Promise<void> {
-  await execAsync('docker compose down', { cwd: process.cwd() });
+  await execAsync(`docker compose -f ${COMPOSE_FILE} down`, { cwd: process.cwd() });
 }
 
 export async function composeStatus(): Promise<string> {
-  const { stdout } = await execAsync('docker compose ps', { cwd: process.cwd() });
+  const { stdout } = await execAsync(`docker compose -f ${COMPOSE_FILE} ps`, { cwd: process.cwd() });
   return stdout;
 }
 
@@ -28,7 +30,7 @@ export async function waitForHealthy(serviceName: string, timeoutMs = 30000): Pr
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
-    const { stdout } = await execAsync('docker compose ps --format json', { cwd: process.cwd() });
+    const { stdout } = await execAsync(`docker compose -f ${COMPOSE_FILE} ps --format json`, { cwd: process.cwd() });
 
     const lines = stdout.trim().split('\n').filter(Boolean);
     for (const line of lines) {

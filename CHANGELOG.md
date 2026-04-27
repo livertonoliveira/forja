@@ -7,6 +7,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.2] — 2026-04-27
+
+### Corrigido
+
+- `forja infra up` e `forja setup --with-harness` agora sempre usam `docker-compose.forja.yml` — anteriormente o `docker compose up -d` sem `-f` sobrescrevia o arquivo e tentava subir o `docker-compose.yml` do projeto do usuário, causando falha no setup
+
 ## [0.2.1] — 2026-04-27
 
 ### Corrigido
