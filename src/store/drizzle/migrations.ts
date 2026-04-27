@@ -1,10 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 
-const MIGRATIONS_FOLDER = './migrations';
+// Resolve relative to the installed package root (bin/ → ../migrations)
+const MIGRATIONS_FOLDER = path.join(path.dirname(fileURLToPath(import.meta.url)), '../migrations');
 const JOURNAL_PATH = path.join(MIGRATIONS_FOLDER, 'meta', '_journal.json');
 
 export async function runMigrations(connectionString: string): Promise<void> {

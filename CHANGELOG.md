@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.3] — 2026-04-27
+
+### Corrigido
+
+- Migrations do Drizzle não encontradas ao rodar `forja infra up` com pacote instalado globalmente: caminho `./migrations` era relativo ao CWD do usuário. Agora é resolvido relativo ao binário instalado (`bin/forja.js → ../migrations`)
+- Pasta `migrations/` adicionada ao campo `files` do `package.json` — anteriormente não era publicada no npm
+
 ## [0.2.2] — 2026-04-27
 
 ### Corrigido
