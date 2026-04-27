@@ -17,7 +17,7 @@ import type { DoctorCheck } from '../../doctor/check.js'
 // ---------------------------------------------------------------------------
 
 const { mockGetChecks, mockListCircuitBreakers } = vi.hoisted(() => ({
-  mockGetChecks: vi.fn<[], DoctorCheck[]>(),
+  mockGetChecks: vi.fn<() => DoctorCheck[]>(),
   mockListCircuitBreakers: vi.fn(() => []),
 }))
 

@@ -47,7 +47,7 @@ function jsonResponse(data: unknown, status = 200): Response {
 // ---------------------------------------------------------------------------
 
 describe('GitLabProvider — createPR', () => {
-  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>
+  let fetchSpy: MockInstance<typeof fetch>
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
@@ -99,7 +99,7 @@ describe('GitLabProvider — createPR', () => {
 // ---------------------------------------------------------------------------
 
 describe('GitLabProvider — createIssue with existing label', () => {
-  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>
+  let fetchSpy: MockInstance<typeof fetch>
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch')
@@ -135,7 +135,7 @@ describe('GitLabProvider — createIssue with existing label', () => {
 // ---------------------------------------------------------------------------
 
 describe('GitLabProvider — createIssue with non-existing label', () => {
-  let fetchSpy: MockInstance<Parameters<typeof fetch>, ReturnType<typeof fetch>>
+  let fetchSpy: MockInstance<typeof fetch>
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch')

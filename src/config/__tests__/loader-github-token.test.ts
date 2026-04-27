@@ -487,7 +487,7 @@ describe('setConfigValue("github_token", ...) integration', () => {
 // ---------------------------------------------------------------------------
 
 describe('config get github_token — CLI output', () => {
-  let consoleLogSpy: MockInstance<Parameters<typeof console.log>, void>;
+  let consoleLogSpy: MockInstance<typeof console.log>;
 
   beforeEach(() => {
     vi.resetModules();
@@ -513,7 +513,7 @@ describe('config get github_token — CLI output', () => {
     const { configCommand } = await import('../../cli/commands/config.js');
     await configCommand.parseAsync(['node', 'forja', 'get', 'github_token']);
 
-    const allLogs = consoleLogSpy.mock.calls.map((args) => args.join(' ')).join('\n');
+    const allLogs = consoleLogSpy.mock.calls.map((args: unknown[]) => args.join(' ')).join('\n');
     expect(allLogs).toContain('[set]');
     expect(allLogs).not.toContain('ghp_super_secret');
   });
@@ -535,7 +535,7 @@ describe('config get github_token — CLI output', () => {
     const { configCommand } = await import('../../cli/commands/config.js');
     await configCommand.parseAsync(['node', 'forja', 'get', 'github_token']);
 
-    const allLogs = consoleLogSpy.mock.calls.map((args) => args.join(' ')).join('\n');
+    const allLogs = consoleLogSpy.mock.calls.map((args: unknown[]) => args.join(' ')).join('\n');
     expect(allLogs).toContain('(not set)');
 
     if (savedGithubToken !== undefined) process.env.GITHUB_TOKEN = savedGithubToken;
@@ -555,7 +555,7 @@ describe('config get github_token — CLI output', () => {
     const { configCommand } = await import('../../cli/commands/config.js');
     await configCommand.parseAsync(['node', 'forja', 'get', 'github_token']);
 
-    const allLogs = consoleLogSpy.mock.calls.map((args) => args.join(' ')).join('\n');
+    const allLogs = consoleLogSpy.mock.calls.map((args: unknown[]) => args.join(' ')).join('\n');
     expect(allLogs).toContain('project-file');
   });
 
@@ -573,7 +573,7 @@ describe('config get github_token — CLI output', () => {
     const { configCommand } = await import('../../cli/commands/config.js');
     await configCommand.parseAsync(['node', 'forja', 'get', 'github_token']);
 
-    const allLogs = consoleLogSpy.mock.calls.map((args) => args.join(' ')).join('\n');
+    const allLogs = consoleLogSpy.mock.calls.map((args: unknown[]) => args.join(' ')).join('\n');
     expect(allLogs).not.toContain('totally-safe-looking-value');
     expect(allLogs).toContain('[set]');
   });
