@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
 // resolve relative to this source file location: src/cli/__tests__ → project root
@@ -32,10 +33,11 @@ describe('forja CLI integration', () => {
     }
   }, TIMEOUT);
 
-  it('--version prints 0.2.0', () => {
+  it('--version prints the current package version', () => {
     const result = spawnSync('node', [BINARY, '--version'], { timeout: TIMEOUT, encoding: 'utf-8' });
     const output = (result.stdout + result.stderr).trim();
-    expect(output).toBe('0.2.0');
+    const { version } = JSON.parse(readFileSync(resolve(PROJECT_ROOT, 'package.json'), 'utf-8'));
+    expect(output).toBe(version);
   }, TIMEOUT);
 
   it('run TEST-123 starts the pipeline for the given issue', () => {
