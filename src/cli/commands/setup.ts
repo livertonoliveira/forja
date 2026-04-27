@@ -134,7 +134,7 @@ async function startPostgres(packageRoot: string): Promise<void> {
 
 async function runMigrations(): Promise<void> {
   console.log('[forja] Running database migrations...');
-  execSync('forja infra migrate', { stdio: 'inherit' });
+  execSync('forja infra up', { stdio: 'inherit' });
 }
 
 export const setupCommand = new Command('setup')

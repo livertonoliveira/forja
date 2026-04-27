@@ -152,9 +152,9 @@ describe('infraCommand integration', () => {
       expect(mockComposeDown).toHaveBeenCalledOnce();
     });
 
-    it('prints "Postgres encerrado"', async () => {
+    it('prints "Postgres stopped"', async () => {
       const { logs } = await runAction('down');
-      expect(logs.join('\n')).toContain('Postgres encerrado');
+      expect(logs.join('\n')).toContain('Postgres stopped');
     });
 
     it('does not call composeUp or runMigrations', async () => {
@@ -184,7 +184,7 @@ describe('infraCommand integration', () => {
     it('prints fallback message when composeStatus returns empty string', async () => {
       mockComposeStatus.mockResolvedValue('');
       const { logs } = await runAction('status');
-      expect(logs.join('\n')).toContain('Nenhum serviço em execução');
+      expect(logs.join('\n')).toContain('No services running');
     });
   });
 

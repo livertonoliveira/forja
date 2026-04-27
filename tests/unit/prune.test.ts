@@ -132,10 +132,10 @@ describe('pruneCommand — action (mocked store)', () => {
       expect(logs.join('\n')).toContain('Dry run');
     });
 
-    it('output contains "seriam removidos"', async () => {
+    it('output contains "would be removed"', async () => {
       mockPruneRuns.mockResolvedValue({ deletedRuns: 5, freedBytes: 10240 });
       const { logs } = await runPruneAction(['--dry-run']);
-      expect(logs.join('\n')).toContain('seriam removidos');
+      expect(logs.join('\n')).toContain('would be removed');
     });
 
     it('calls pruneRuns with dryRun: true', async () => {
@@ -161,10 +161,10 @@ describe('pruneCommand — action (mocked store)', () => {
       expect(exitCode).toBeUndefined();
     });
 
-    it('output contains "Prunado"', async () => {
+    it('output contains "Pruned"', async () => {
       mockPruneRuns.mockResolvedValue({ deletedRuns: 1, freedBytes: 1024 });
       const { logs } = await runPruneAction(['--before', '2026-01-01']);
-      expect(logs.join('\n')).toContain('Prunado');
+      expect(logs.join('\n')).toContain('Pruned');
     });
 
     it('calls pruneRuns with beforeDate matching the provided date', async () => {
@@ -231,10 +231,10 @@ describe('pruneCommand — action (mocked store)', () => {
       expect(cutoff).toBeLessThanOrEqual(after);
     });
 
-    it('output contains "Prunado" on success', async () => {
+    it('output contains "Pruned" on success', async () => {
       mockPruneRuns.mockResolvedValue({ deletedRuns: 2, freedBytes: 4096 });
       const { logs } = await runPruneAction([]);
-      expect(logs.join('\n')).toContain('Prunado');
+      expect(logs.join('\n')).toContain('Pruned');
     });
   });
 
