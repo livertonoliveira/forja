@@ -7,6 +7,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.7] — 2026-04-27
+
+### Corrigido
+
+- `DLQClient`: chave `load_error` adicionada ao objeto de traduções `useI18n()` (`lib/i18n.ts`) em `pt` e `en` — build TypeScript falhava porque a chave existia apenas no catálogo `next-intl` mas não no tipo derivado do `useI18n`
+
 ## [0.2.6] — 2026-04-27
 
 ### Corrigido
