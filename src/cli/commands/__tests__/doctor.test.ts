@@ -17,7 +17,7 @@ import type { DoctorCheck } from '../../doctor/check.js'
 // ---------------------------------------------------------------------------
 
 const { mockGetChecks, mockListCircuitBreakers } = vi.hoisted(() => ({
-  mockGetChecks: vi.fn<() => DoctorCheck[]>(),
+  mockGetChecks: vi.fn<() => DoctorCheck[]>(() => []),
   mockListCircuitBreakers: vi.fn(() => []),
 }))
 
@@ -58,7 +58,7 @@ async function runDoctorCommand(args: string[] = []): Promise<{ logs: string[]; 
   })
 
   try {
-    await doctorCommand.parseAsync(['doctor', ...args], { from: 'user' })
+    await doctorCommand.parseAsync([...args], { from: 'user' })
   } catch (e) {
     // swallow the artificial process.exit error
     if (!(e instanceof Error) || !e.message.startsWith('process.exit(')) {

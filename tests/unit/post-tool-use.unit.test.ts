@@ -9,7 +9,7 @@ import path from 'path';
 
 vi.mock('../../src/trace/dual-writer.js', () => {
   const writeCostEvent = vi.fn().mockResolvedValue(undefined);
-  const DualWriter = vi.fn().mockImplementation(() => ({ writeCostEvent }));
+  const DualWriter = vi.fn().mockImplementation(function() { return { writeCostEvent }; });
   return { DualWriter };
 });
 
@@ -303,9 +303,9 @@ describe('handlePostToolUse — DualWriter PG failure falls back gracefully', ()
     setEnv({ FORJA_RUN_ID: runId, DATABASE_URL: 'postgres://bad-host/test' });
 
     // Make writeCostEvent reject this time
-    vi.mocked(DualWriter).mockImplementationOnce(() => ({
+    vi.mocked(DualWriter).mockImplementationOnce(function() { return {
       writeCostEvent: vi.fn().mockRejectedValue(new Error('Connection refused')),
-    }));
+    }; });
 
     // Promise.allSettled in the hook ensures this resolves even if PG fails
     await expect(handlePostToolUse(makePayload())).resolves.toBeUndefined();
@@ -316,9 +316,9 @@ describe('handlePostToolUse — DualWriter PG failure falls back gracefully', ()
     createdRunIds.push(runId);
     setEnv({ FORJA_RUN_ID: runId, DATABASE_URL: 'postgres://bad-host/test' });
 
-    vi.mocked(DualWriter).mockImplementationOnce(() => ({
+    vi.mocked(DualWriter).mockImplementationOnce(function() { return {
       writeCostEvent: vi.fn().mockRejectedValue(new Error('Connection refused')),
-    }));
+    }; });
 
     await handlePostToolUse(makePayload());
 

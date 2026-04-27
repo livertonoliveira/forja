@@ -23,7 +23,7 @@ import type { ToolsPolicy } from '../../src/policy/tools-policy.js';
 
 const mockWrite = vi.fn().mockResolvedValue(undefined);
 vi.mock('../../src/trace/writer.js', () => {
-  const TraceWriter = vi.fn().mockImplementation(() => ({ write: mockWrite }));
+  const TraceWriter = vi.fn().mockImplementation(function() { return { write: mockWrite }; });
   return { TraceWriter };
 });
 
