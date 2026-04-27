@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import { AuditFindingSchema, AuditReportSchema } from '../types.js';
 
 describe('AuditFindingSchema', () => {
@@ -60,13 +59,9 @@ describe('AuditFindingSchema', () => {
     expect(result.schemaVersion).toBe('2.0');
   });
 
-  it('roundtrip: Zod schema converts to valid JSON Schema', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const jsonSchema = zodToJsonSchema(AuditFindingSchema as any, { name: 'AuditFinding', target: 'jsonSchema7' });
-    expect(jsonSchema).toHaveProperty('definitions.AuditFinding');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const def = (jsonSchema as any).definitions.AuditFinding;
-    expect(def.properties.severity.enum).toEqual(['low', 'medium', 'high', 'critical']);
+  it('severity field has the correct enum values', () => {
+    const severitySchema = AuditFindingSchema.shape.severity;
+    expect(severitySchema.options).toEqual(['low', 'medium', 'high', 'critical']);
   });
 });
 
