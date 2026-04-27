@@ -7,6 +7,19 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-04-27
+
+### Corrigido
+
+- Comando `setup --with-harness` quebrado devido a caminho de migration incorreto
+- Mensagens de saída da CLI traduzidas para inglês, alinhando com o idioma interno do projeto
+
+### Alterado
+
+- Migração de Zod v3 para v4: validação UUID mais estrita, asserções de shape atualizadas nos testes
+- Dependências atualizadas: commander, drizzle-orm, drizzle-kit e vitest para versões mais recentes
+- npm atualizado para v11 no CI (alinhado com ambiente local)
+
 ## [0.2.0] — 2026-04-26
 
 ### Adicionado
