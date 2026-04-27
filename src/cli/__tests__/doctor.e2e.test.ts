@@ -20,11 +20,13 @@ test('forja doctor --json outputs valid JSON array', () => {
     output = (err as { stdout?: Buffer }).stdout?.toString() ?? ''
   }
 
-  const parsed = JSON.parse(output)
-  expect(Array.isArray(parsed)).toBe(true)
-  expect(parsed.length).toBeGreaterThan(0)
+  const parsed = JSON.parse(output) as Record<string, unknown>
+  // Output is { checks: [...], circuitBreakers: [...] }
+  const checks = (parsed['checks'] ?? parsed) as Array<{ name: string; status: string; message: string }>
+  expect(Array.isArray(checks)).toBe(true)
+  expect(checks.length).toBeGreaterThan(0)
   // Each item has name, status, message
-  for (const item of parsed) {
+  for (const item of checks) {
     expect(item).toHaveProperty('name')
     expect(item).toHaveProperty('status')
     expect(['pass', 'warn', 'fail']).toContain(item.status)

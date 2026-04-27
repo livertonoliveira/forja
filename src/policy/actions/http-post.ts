@@ -60,7 +60,7 @@ export async function httpPost(options: {
         if (!response.ok) throw new HttpError(response.status, response.headers.get('Retry-After'));
       },
       undefined,
-      async (err) => console.warn('[forja] Webhook POST failed after retries:', err.message),
+      async (err) => console.warn(`[forja] Webhook POST failed after retries (${maskUrl(options.url)}): ${err.message}`),
       'http-post'
     );
   });

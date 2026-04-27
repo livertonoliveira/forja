@@ -111,14 +111,13 @@ describe('http_post e2e — in-memory policy with mocked fetch', () => {
   let mockFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-    } as Response);
+    vi.useFakeTimers();
+    mockFetch = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
     vi.stubGlobal('fetch', mockFetch);
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.clearAllMocks();
   });
@@ -189,13 +188,16 @@ describe('http_post e2e — in-memory policy with mocked fetch', () => {
   });
 
   it('executeActions does not throw when fetch returns non-200', async () => {
-    mockFetch.mockResolvedValue({ ok: false, status: 503 } as Response);
+    mockFetch.mockResolvedValue(new Response('{}', { status: 503 }));
     const policy = makeHttpPostPolicy(WEBHOOK_URL);
     const finding = makeFinding();
     const { actions } = evaluatePolicy([finding], policy);
 
-    await expect(executeActions(actions, { runId: RUN_ID })).resolves.not.toThrow();
-    expect(mockFetch).toHaveBeenCalledOnce();
+    const p = executeActions(actions, { runId: RUN_ID });
+    await vi.runAllTimersAsync();
+    await expect(p).resolves.not.toThrow();
+    // 1 initial + 4 retries = 5 fetch calls; 6th attempt hits open circuit (no fetch call)
+    expect(mockFetch).toHaveBeenCalledTimes(5);
   });
 
   it('executeActions does not throw when fetch rejects (network error)', async () => {
@@ -205,9 +207,11 @@ describe('http_post e2e — in-memory policy with mocked fetch', () => {
     const finding = makeFinding();
     const { actions } = evaluatePolicy([finding], policy);
 
-    await expect(executeActions(actions, { runId: RUN_ID })).resolves.not.toThrow();
-    // 1 initial attempt + 2 retries = 3 calls total
-    expect(mockFetch).toHaveBeenCalledTimes(3);
+    const p = executeActions(actions, { runId: RUN_ID });
+    await vi.runAllTimersAsync();
+    await expect(p).resolves.not.toThrow();
+    // 1 initial + 4 retries = 5 fetch calls; 6th attempt hits open circuit (no fetch call)
+    expect(mockFetch).toHaveBeenCalledTimes(5);
   });
 
   it('executeActions skips http_post when url is missing and does not throw', async () => {

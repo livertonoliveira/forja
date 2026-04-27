@@ -66,16 +66,18 @@ export class JiraProvider implements IntegrationProvider {
           body: body !== undefined ? JSON.stringify(body) : undefined,
           signal: AbortSignal.timeout(10_000),
         })
-        if (r.status === 401) {
-          throw new Error(
-            'Token Jira inválido ou expirado. Gere novo em: https://id.atlassian.com/manage-profile/security/api-tokens',
-          )
-        }
         if (!r.ok) throw new HttpError(r.status, r.headers.get('Retry-After'))
         return r
       },
       undefined,
-      async (err) => { throw err },
+      async (err) => {
+        if (err instanceof HttpError && err.status === 401) {
+          throw new Error(
+            'Token Jira inválido ou expirado. Gere novo em: https://id.atlassian.com/manage-profile/security/api-tokens',
+          )
+        }
+        throw err
+      },
       'jira',
     ) as Response
     return result.json() as Promise<T>

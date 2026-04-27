@@ -325,13 +325,17 @@ describe('BitbucketProvider — healthCheck', () => {
   })
 
   it('returns ok:false when fetch throws (network error)', async () => {
+    vi.useFakeTimers()
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('ECONNREFUSED'))
     const provider = new BitbucketProvider(BASIC_CONFIG)
 
-    const result = await provider.healthCheck()
+    const p = provider.healthCheck()
+    await vi.runAllTimersAsync()
+    const result = await p
 
     expect(result.ok).toBe(false)
     expect(result.latencyMs).toBeGreaterThanOrEqual(0)
+    vi.useRealTimers()
   })
 
   it('calls /2.0/user endpoint with Authorization header', async () => {

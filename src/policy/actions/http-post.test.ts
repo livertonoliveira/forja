@@ -23,7 +23,7 @@ beforeEach(() => { resetCircuitBreakers(); });
 const makeContext = (runId = 'run-abc-123'): ActionContext => ({ runId });
 
 function makeOkResponse(status = 200): Response {
-  return { ok: status >= 200 && status < 300, status } as Response;
+  return new Response('{}', { status });
 }
 
 // ---------------------------------------------------------------------------
@@ -162,25 +162,29 @@ describe('httpPost — non-200 response', () => {
   let warnSpy: any;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     fetchMock = vi.fn().mockResolvedValue(makeOkResponse(500));
     vi.stubGlobal('fetch', fetchMock);
     warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     warnSpy.mockRestore();
   });
 
   it('does NOT throw on HTTP 500', async () => {
-    await expect(
-      httpPost({ url: 'https://example.com/hook', context: makeContext() })
-    ).resolves.toBeUndefined();
+    const p = httpPost({ url: 'https://example.com/hook', context: makeContext() });
+    await vi.runAllTimersAsync();
+    await expect(p).resolves.toBeUndefined();
   });
 
-  it('logs a warning containing the status code on non-200', async () => {
-    await httpPost({ url: 'https://example.com/hook', context: makeContext() });
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('500'));
+  it('logs a warning on non-200 after retries are exhausted', async () => {
+    const p = httpPost({ url: 'https://example.com/hook', context: makeContext() });
+    await vi.runAllTimersAsync();
+    await p;
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[forja] Webhook POST failed after retries'));
   });
 
   it('does NOT throw on HTTP 404', async () => {
@@ -236,14 +240,10 @@ describe('httpPost — retry on network error', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const postPromise = httpPost({ url: 'https://example.com/hook', context: makeContext() });
-
-    // Advance timers through all retry backoffs (attempt 1 → +1s, attempt 2 → +1s)
-    await vi.advanceTimersByTimeAsync(1000);
-    await vi.advanceTimersByTimeAsync(1000);
-
+    await vi.runAllTimersAsync();
     await expect(postPromise).resolves.toBeUndefined();
-    // 1 original + 2 retries = 3 total calls
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    // 1 initial + 4 retries = 5 fetch calls; 6th attempt hits open circuit (no fetch call)
+    expect(fetchMock).toHaveBeenCalledTimes(5);
   });
 
   it('logs a warning after exhausting all retries', async () => {
@@ -253,8 +253,7 @@ describe('httpPost — retry on network error', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const postPromise = httpPost({ url: 'https://example.com/hook', context: makeContext() });
-    await vi.advanceTimersByTimeAsync(1000);
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.runAllTimersAsync();
     await postPromise;
 
     // Should warn about the final failure after retries
@@ -324,19 +323,22 @@ describe('httpPost — secret masking in logs', () => {
   let warnSpy: any;
 
   beforeEach(() => {
-    vi.useRealTimers();
+    vi.useFakeTimers();
     fetchMock = vi.fn().mockResolvedValue(makeOkResponse(500));
     vi.stubGlobal('fetch', fetchMock);
     warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     warnSpy.mockRestore();
   });
 
   it('masks query string in warning log on non-200', async () => {
-    await httpPost({ url: 'https://example.com/hook?token=super-secret', context: makeContext() });
+    const p = httpPost({ url: 'https://example.com/hook?token=super-secret', context: makeContext() });
+    await vi.runAllTimersAsync();
+    await p;
     const warnMessage: string = warnSpy.mock.calls[0][0];
     expect(warnMessage).not.toContain('super-secret');
     expect(warnMessage).toContain('<redacted>');

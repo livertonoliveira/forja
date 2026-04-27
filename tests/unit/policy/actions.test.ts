@@ -144,12 +144,19 @@ describe('executeActions — notify_slack action', () => {
   });
 
   it('warns but does not throw when fetch rejects', async () => {
+    vi.useFakeTimers();
     process.env.FORJA_SLACK_WEBHOOK_URL = 'https://hooks.slack.com/test';
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network error'));
     const actions: PolicyAction[] = [{ action: 'notify_slack', message: 'alert' }];
-    await expect(executeActions(actions, makeContext())).resolves.toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith('[forja] Slack notification failed: network error');
+    const p = executeActions(actions, makeContext());
+    await vi.runAllTimersAsync();
+    await expect(p).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[forja] Slack notification failed after retries:'),
+      expect.any(String)
+    );
     fetchSpy.mockRestore();
+    vi.useRealTimers();
   });
 
   it('sends only one notification per channel even with multiple critical findings', async () => {
