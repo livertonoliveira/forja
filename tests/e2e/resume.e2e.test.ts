@@ -26,7 +26,7 @@ const TSX = path.resolve('node_modules/.bin/tsx');
 const CLI_ENTRY = path.resolve('tests/e2e/_resume-runner.ts');
 const PROJECT_ROOT = path.resolve('.');
 
-const RUN_ID_STUB = '00000000-0000-0000-0000-000000000042';
+const RUN_ID_STUB = '00000000-0000-4000-8000-000000000042';
 const ISO_NOW = '2025-01-15T10:00:00.000Z';
 
 const createdRunIds: string[] = [];

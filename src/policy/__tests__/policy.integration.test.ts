@@ -11,9 +11,9 @@ const POLICY_PATH = join(process.cwd(), 'policies/default.yaml');
 function makeFinding(severity: Finding['severity'], title = 'Test'): Finding {
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    id: '00000000-0000-0000-0000-000000000001',
-    runId: '00000000-0000-0000-0000-000000000002',
-    phaseId: '00000000-0000-0000-0000-000000000003',
+    id: '00000000-0000-4000-8000-000000000001',
+    runId: '00000000-0000-4000-8000-000000000002',
+    phaseId: '00000000-0000-4000-8000-000000000003',
     severity,
     category: 'test',
     title,

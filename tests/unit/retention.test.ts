@@ -141,8 +141,8 @@ describe('pruneRuns() — dryRun: false', () => {
   });
 
   it('calls fs.rm for each returned runId', async () => {
-    const id1 = '00000000-0000-0000-0000-000000000001';
-    const id2 = '00000000-0000-0000-0000-000000000002';
+    const id1 = '00000000-0000-4000-8000-000000000001';
+    const id2 = '00000000-0000-4000-8000-000000000002';
     const store = buildMockStore({
       deleteRunsBefore: vi.fn().mockResolvedValue({ runIds: [id1, id2] }),
     });
@@ -161,9 +161,9 @@ describe('pruneRuns() — dryRun: false', () => {
   it('returns deletedRuns equal to the number of runIds', async () => {
     const store = buildMockStore({
       deleteRunsBefore: vi.fn().mockResolvedValue({ runIds: [
-        '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0000-000000000002',
-        '00000000-0000-0000-0000-000000000003',
+        '00000000-0000-4000-8000-000000000001',
+        '00000000-0000-4000-8000-000000000002',
+        '00000000-0000-4000-8000-000000000003',
       ] }),
     });
 

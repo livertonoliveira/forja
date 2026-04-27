@@ -7,7 +7,7 @@ import type { Run } from '../../src/store/types.js';
 // Helpers
 // ---------------------------------------------------------------------------
 
-const RUN_ID = '00000000-0000-0000-0000-000000000001';
+const RUN_ID = '00000000-0000-4000-8000-000000000001';
 const ISO = '2024-01-01T00:00:00.000Z';
 
 function makeRun(status: Run['status']): Run {

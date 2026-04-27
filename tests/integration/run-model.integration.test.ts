@@ -144,7 +144,7 @@ const { runCommand, PIPELINE_SEQUENCE } = await import('../../src/cli/commands/r
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const RUN_ID = '00000000-0000-0000-0000-000000000011';
+const RUN_ID = '00000000-0000-4000-8000-000000000011';
 const ISO = '2024-01-01T00:00:00.000Z';
 
 const STUB_MODELS_POLICY: ModelsPolicy = {

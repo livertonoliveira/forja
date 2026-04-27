@@ -4,8 +4,8 @@ import type { HookRunnerOptions, PluginWithHooks } from '../hooks.js';
 import type { TraceWriter } from '../../trace/writer.js';
 import type { ForjaStore } from '../../store/interface.js';
 
-const RUN_ID = '00000000-0000-0000-0000-000000000001';
-const PHASE_ID = '00000000-0000-0000-0000-000000000002';
+const RUN_ID = '00000000-0000-4000-8000-000000000001';
+const PHASE_ID = '00000000-0000-4000-8000-000000000002';
 
 function makeTrace(): TraceWriter {
   return {

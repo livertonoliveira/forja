@@ -37,7 +37,7 @@ import type { PipelineState } from '../../src/engine/fsm.js';
 // Constants
 // ---------------------------------------------------------------------------
 
-const RUN_ID = '00000000-0000-0000-0000-000000000099';
+const RUN_ID = '00000000-0000-4000-8000-000000000099';
 const ISO_1 = '2024-06-01T10:00:00.000Z';
 const ISO_2 = '2024-06-01T11:00:00.000Z';
 
@@ -47,7 +47,7 @@ const ISO_2 = '2024-06-01T11:00:00.000Z';
 
 function makePhase(overrides: Partial<Phase> = {}): Phase {
   return {
-    id: 'aaaaaaaa-0000-0000-0000-000000000001',
+    id: 'aaaaaaaa-0000-4000-8000-000000000001',
     runId: RUN_ID,
     name: 'dev',
     startedAt: ISO_1,

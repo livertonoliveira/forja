@@ -33,8 +33,8 @@ const TSX = path.resolve('node_modules/.bin/tsx');
 const CLI_ENTRY = path.resolve('tests/e2e/_replay-runner.ts');
 const PROJECT_ROOT = path.resolve('.');
 
-const VALID_UUID = '00000000-0000-0000-0000-000000000001';
-const VALID_UUID_2 = '00000000-0000-0000-0000-000000000002';
+const VALID_UUID = '00000000-0000-4000-8000-000000000001';
+const VALID_UUID_2 = '00000000-0000-4000-8000-000000000002';
 const ISO_NOW = '2025-01-15T10:00:00.000Z';
 
 function makeId(): string {

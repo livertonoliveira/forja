@@ -184,7 +184,7 @@ describe('pre-1.0 fixtures', () => {
     const fm = parseFrontMatter(result);
 
     expect(fm['schemaVersion']).toBe(CURRENT_SCHEMA_VERSION);
-    expect(fm['runId']).toBe('00000000-0000-0000-0000-000000000001');
+    expect(fm['runId']).toBe('00000000-0000-4000-8000-000000000001');
     expect(fm['status']).toBe('ok');
     expect(fm['gate']).toBe('pass');
   });

@@ -1,9 +1,9 @@
 {
   "runs": [
-    {"id":"00000000-0000-0000-0000-000000000001","issueId":"MOB-000","status":"ok","gitBranch":"main","gitSha":"abc123","model":"claude-sonnet","totalCost":0.01,"totalTokens":1000}
+    {"id":"00000000-0000-4000-8000-000000000001","issueId":"MOB-000","status":"ok","gitBranch":"main","gitSha":"abc123","model":"claude-sonnet","totalCost":0.01,"totalTokens":1000}
   ],
   "findings": [],
   "gateDecisions": [
-    {"id":"00000000-0000-0000-0000-000000000002","runId":"00000000-0000-0000-0000-000000000001","decision":"pass","counts":{"critical":0,"high":0,"medium":0,"low":0},"policyApplied":"default","decidedAt":"2025-01-01T00:00:01.000Z"}
+    {"id":"00000000-0000-4000-8000-000000000002","runId":"00000000-0000-4000-8000-000000000001","decision":"pass","counts":{"critical":0,"high":0,"medium":0,"low":0},"policyApplied":"default","decidedAt":"2025-01-01T00:00:01.000Z"}
   ]
 }

@@ -1,3 +1,3 @@
-{"type":"header","schemaVersion":"1.0","createdAt":"2025-01-01T00:00:00.000Z","runId":"00000000-0000-0000-0000-000000000010"}
-{"schemaVersion":"1.0","ts":"2025-01-01T00:00:00.100Z","runId":"00000000-0000-0000-0000-000000000010","eventType":"run_start","payload":{"command":"test"}}
-{"schemaVersion":"1.0","ts":"2025-01-01T00:00:01.000Z","runId":"00000000-0000-0000-0000-000000000010","eventType":"run_end","payload":{"status":"ok"}}
+{"type":"header","schemaVersion":"1.0","createdAt":"2025-01-01T00:00:00.000Z","runId":"00000000-0000-4000-8000-000000000010"}
+{"schemaVersion":"1.0","ts":"2025-01-01T00:00:00.100Z","runId":"00000000-0000-4000-8000-000000000010","eventType":"run_start","payload":{"command":"test"}}
+{"schemaVersion":"1.0","ts":"2025-01-01T00:00:01.000Z","runId":"00000000-0000-4000-8000-000000000010","eventType":"run_end","payload":{"status":"ok"}}
