@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "storeUrl": {
+      "type": "string"
+    },
+    "retentionDays": {
+      "default": 90,
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "phasesDir": {
+      "type": "string"
+    },
+    "logLevel": {
+      "type": "string",
+      "enum": [
+        "debug",
+        "info",
+        "warn",
+        "error"
+      ]
+    },
+    "teamId": {
+      "type": "string"
+    },
+    "linearToken": {
+      "type": "string"
+    },
+    "jira": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectKey": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "baseUrl",
+        "email",
+        "token",
+        "projectKey"
+      ],
+      "additionalProperties": false
+    },
+    "gitlab": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "baseUrl",
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "azure": {
+      "type": "object",
+      "properties": {
+        "orgUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "project": {
+          "type": "string",
+          "minLength": 1
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "orgUrl",
+        "project",
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "bitbucket": {
+      "type": "object",
+      "properties": {
+        "workspace": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^/\\\\?#\\s]+$"
+        },
+        "repoSlug": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^/\\\\?#\\s]+$"
+        },
+        "username": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appPassword": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accessToken": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "workspace",
+        "repoSlug"
+      ],
+      "additionalProperties": false
+    },
+    "datadog": {
+      "type": "object",
+      "properties": {
+        "apiKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "site": {
+          "default": "datadoghq.com",
+          "type": "string",
+          "enum": [
+            "datadoghq.com",
+            "datadoghq.eu"
+          ]
+        }
+      },
+      "required": [
+        "apiKey",
+        "appKey",
+        "site"
+      ],
+      "additionalProperties": false
+    },
+    "otel": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "endpoint": {
+          "default": "http://localhost:4317",
+          "type": "string"
+        },
+        "protocol": {
+          "default": "grpc",
+          "type": "string",
+          "enum": [
+            "grpc",
+            "http"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "endpoint",
+        "protocol"
+      ],
+      "additionalProperties": false
+    },
+    "timeouts": {
+      "default": {
+        "dev": 600,
+        "test": 300,
+        "perf": 180,
+        "security": 180,
+        "review": 180,
+        "homolog": 60,
+        "pr": 120
+      },
+      "type": "object",
+      "properties": {
+        "dev": {
+          "default": 600,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "test": {
+          "default": 300,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "perf": {
+          "default": 180,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "security": {
+          "default": 180,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "review": {
+          "default": 180,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "homolog": {
+          "default": 60,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pr": {
+          "default": 120,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "dev",
+        "test",
+        "perf",
+        "security",
+        "review",
+        "homolog",
+        "pr"
+      ],
+      "additionalProperties": false
+    },
+    "phases": {
+      "default": {
+        "dev": true,
+        "test": true,
+        "perf": true,
+        "security": true,
+        "review": true,
+        "homolog": true,
+        "pr": true
+      },
+      "type": "object",
+      "properties": {
+        "dev": {
+          "default": true,
+          "type": "boolean"
+        },
+        "test": {
+          "default": true,
+          "type": "boolean"
+        },
+        "perf": {
+          "default": true,
+          "type": "boolean"
+        },
+        "security": {
+          "default": true,
+          "type": "boolean"
+        },
+        "review": {
+          "default": true,
+          "type": "boolean"
+        },
+        "homolog": {
+          "default": true,
+          "type": "boolean"
+        },
+        "pr": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "dev",
+        "test",
+        "perf",
+        "security",
+        "review",
+        "homolog",
+        "pr"
+      ],
+      "additionalProperties": false
+    },
+    "pluginHookTimeoutMs": {
+      "default": 5000,
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "artifact_language": {
+      "default": "en",
+      "type": "string",
+      "enum": [
+        "en",
+        "pt-BR",
+        "es",
+        "fr",
+        "de",
+        "ja",
+        "zh-CN"
+      ]
+    }
+  },
+  "required": [
+    "storeUrl",
+    "retentionDays",
+    "phasesDir",
+    "logLevel",
+    "teamId",
+    "timeouts",
+    "phases",
+    "pluginHookTimeoutMs",
+    "artifact_language"
+  ],
+  "additionalProperties": false
+}

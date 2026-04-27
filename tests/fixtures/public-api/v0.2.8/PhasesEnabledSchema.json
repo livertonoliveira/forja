@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "dev": {
+      "default": true,
+      "type": "boolean"
+    },
+    "test": {
+      "default": true,
+      "type": "boolean"
+    },
+    "perf": {
+      "default": true,
+      "type": "boolean"
+    },
+    "security": {
+      "default": true,
+      "type": "boolean"
+    },
+    "review": {
+      "default": true,
+      "type": "boolean"
+    },
+    "homolog": {
+      "default": true,
+      "type": "boolean"
+    },
+    "pr": {
+      "default": true,
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "dev",
+    "test",
+    "perf",
+    "security",
+    "review",
+    "homolog",
+    "pr"
+  ],
+  "additionalProperties": false
+}

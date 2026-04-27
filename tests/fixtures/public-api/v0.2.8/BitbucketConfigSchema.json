@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "workspace": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/\\\\?#\\s]+$"
+    },
+    "repoSlug": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/\\\\?#\\s]+$"
+    },
+    "username": {
+      "type": "string",
+      "minLength": 1
+    },
+    "appPassword": {
+      "type": "string",
+      "minLength": 1
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "workspace",
+    "repoSlug"
+  ],
+  "additionalProperties": false
+}

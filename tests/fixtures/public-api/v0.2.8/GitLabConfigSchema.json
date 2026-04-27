@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "baseUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "token": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectId": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "baseUrl",
+    "token"
+  ],
+  "additionalProperties": false
+}
