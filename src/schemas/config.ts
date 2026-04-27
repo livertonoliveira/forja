@@ -93,8 +93,8 @@ export const ConfigSchema = z.object({
   bitbucket: BitbucketConfigSchema.optional(),
   datadog: DatadogConfigSchema.optional(),
   otel: OTelConfigSchema.optional(),
-  timeouts: PhaseTimeoutsSchema.default({}),
-  phases: PhasesEnabledSchema.default({}),
+  timeouts: PhaseTimeoutsSchema.default({ dev: 600, test: 300, perf: 180, security: 180, review: 180, homolog: 60, pr: 120 }),
+  phases: PhasesEnabledSchema.default({ dev: true, test: true, perf: true, security: true, review: true, homolog: true, pr: true }),
   pluginHookTimeoutMs: z.number().int().positive().default(5000),
   artifact_language: z.enum(SUPPORTED_ARTIFACT_LANGUAGES).default('en'),
 });

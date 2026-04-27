@@ -71,7 +71,7 @@
     "minimatch": "^10.2.5",
     "nanoid": "^5.1.9",
     "pg": "^8.11.5",
-    "zod": "^3.22.4"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

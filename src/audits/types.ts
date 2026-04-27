@@ -35,7 +35,7 @@ export const AuditReportSchema = z.object({
   markdown: z.string().max(65536),
   summary: z.object({
     total: z.number(),
-    bySeverity: z.record(z.number()),
+    bySeverity: z.record(z.string(), z.number()),
   }),
 });
 

@@ -61,7 +61,8 @@ describe('AuditFindingSchema', () => {
   });
 
   it('roundtrip: Zod schema converts to valid JSON Schema', () => {
-    const jsonSchema = zodToJsonSchema(AuditFindingSchema, { name: 'AuditFinding', target: 'jsonSchema7' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const jsonSchema = zodToJsonSchema(AuditFindingSchema as any, { name: 'AuditFinding', target: 'jsonSchema7' });
     expect(jsonSchema).toHaveProperty('definitions.AuditFinding');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const def = (jsonSchema as any).definitions.AuditFinding;
