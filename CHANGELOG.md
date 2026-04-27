@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.2.5] — 2026-04-27
+
+### Corrigido
+
+- `forja ui`: path `../../../apps/ui` era relativo ao arquivo fonte — após bundle aponta para `bin/`, correto agora como `../apps/ui`
+- `forja run`: path de `policies/models.yaml` tinha o mesmo problema, corrigido para `../policies/models.yaml`
+
 ## [0.2.4] — 2026-04-27
 
 ### Adicionado

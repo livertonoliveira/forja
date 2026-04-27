@@ -16,7 +16,7 @@ import { isProjectCapped, evaluate } from '../../cost/alerts-evaluator.js';
 import { initOTel, readOTelConfig, shutdownOTel } from '../../otel/index.js';
 import { withSpan } from '../../otel/tracer.js';
 
-const MODELS_POLICY_PATH = join(dirname(fileURLToPath(import.meta.url)), '../../../policies/models.yaml');
+const MODELS_POLICY_PATH = join(dirname(fileURLToPath(import.meta.url)), '../policies/models.yaml');
 
 // PIPELINE_SEQUENCE uses FSM state names ('dev'); policies/*.yaml uses canonical phase names ('develop').
 const PHASE_POLICY_NAMES: Partial<Record<PipelineState, string>> = {

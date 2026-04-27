@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const UI_DIR = resolve(__dirname, '../../../apps/ui');
+const UI_DIR = resolve(__dirname, '../apps/ui');
 const STANDALONE_SERVER = resolve(UI_DIR, '.next/standalone/server.js');
 
 const PORT_RE = /^\d{1,5}$/;
