@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "baseUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+    },
+    "token": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectKey": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "baseUrl",
+    "email",
+    "token",
+    "projectKey"
+  ],
+  "additionalProperties": false
+}

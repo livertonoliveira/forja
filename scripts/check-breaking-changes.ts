@@ -12,7 +12,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 import type { ZodType } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -80,7 +80,7 @@ function findLatestBaselineDir(): string | null {
 export function serializeSchemas(schemas: Record<string, ZodType>): Record<string, JsonSchema> {
   const result: Record<string, JsonSchema> = {};
   for (const [name, schema] of Object.entries(schemas)) {
-    result[name] = zodToJsonSchema(schema, { name, errorMessages: false }) as JsonSchema;
+    result[name] = (z as unknown as { toJSONSchema: (s: ZodType) => JsonSchema }).toJSONSchema(schema);
   }
   return result;
 }

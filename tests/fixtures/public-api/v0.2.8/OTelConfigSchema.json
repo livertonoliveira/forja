@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "default": false,
+      "type": "boolean"
+    },
+    "endpoint": {
+      "default": "http://localhost:4317",
+      "type": "string"
+    },
+    "protocol": {
+      "default": "grpc",
+      "type": "string",
+      "enum": [
+        "grpc",
+        "http"
+      ]
+    }
+  },
+  "required": [
+    "enabled",
+    "endpoint",
+    "protocol"
+  ],
+  "additionalProperties": false
+}

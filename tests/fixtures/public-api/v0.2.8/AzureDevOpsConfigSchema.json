@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "orgUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "token": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "orgUrl",
+    "project",
+    "token"
+  ],
+  "additionalProperties": false
+}
