@@ -9,6 +9,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 _Nenhuma mudança desde o último release._
 
+## [0.4.0] — 2026-04-28
+
+> Upgrade guide: [docs/upgrades/v0.4.0.md](docs/upgrades/v0.4.0.md)
+
+### Adicionado
+- propagar artifact_language e pipeline phases do config para os comandos do pipeline (#155)
+
+### Corrigido
+- skip npm publish if version already exists on registry (#154)
+
+
 ## [0.3.0] — 2026-04-28
 
 > Upgrade guide: [docs/upgrades/v0.3.0.md](docs/upgrades/v0.3.0.md)
@@ -243,7 +254,8 @@ _Nenhuma mudança desde o último release._
 
 ---
 
-[Unreleased]: https://github.com/livertonoliveira/forja/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/livertonoliveira/forja/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/livertonoliveira/forja/compare/v0.2.6...v0.4.0
 [0.3.0]: https://github.com/livertonoliveira/forja/compare/v0.2.6...v0.3.0
 [0.2.0]: https://github.com/livertonoliveira/forja/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/livertonoliveira/forja/compare/v0.1.1...v0.1.3
