@@ -64,7 +64,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check if version already exists on npm
+        id: npm_check
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if npm view "@forja-hq/cli@${VERSION}" version --registry https://registry.npmjs.org 2>/dev/null | grep -qF "${VERSION}"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${VERSION} already published on npm, skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to npm
+        if: steps.npm_check.outputs.exists == 'false'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
