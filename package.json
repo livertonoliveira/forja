@@ -40,7 +40,8 @@
     "directory": "tests/types"
   },
   "scripts": {
-    "build": "tsx esbuild.config.ts && tsc --emitDeclarationOnly && npm run build:ui",
+    "build": "npm run build:core && npm run build:ui",
+    "build:core": "tsx esbuild.config.ts && tsc --emitDeclarationOnly",
     "build:ui": "cd apps/ui && npm install && npm run build && cp -r .next/static .next/standalone/.next/static",
     "prepublishOnly": "npm run build",
     "dev": "tsx src/cli/index.ts",
