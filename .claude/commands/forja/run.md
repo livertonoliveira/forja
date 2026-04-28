@@ -76,6 +76,7 @@ Report to the user: `Run ID: <uuid>` so they can monitor progress in the dashboa
 2. Use `mcp__linear-server__get_project` to get the project context
 3. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the Proposal and Design documents linked to the project
 4. Read `forja/config.md` for project stack and conventions
+5. Read the `Pipeline Phases` section from `forja/config.md` — build the set of enabled phases for this run
 
 > **MANDATORY — LINEAR MODE: Set issue to "In Progress" before doing anything else**
 >
@@ -87,8 +88,11 @@ Report to the user: `Run ID: <uuid>` so they can monitor progress in the dashboa
 2. Read `forja/changes/<feature>/proposal.md` for overall feature context
 3. Read `forja/changes/<feature>/design.md` for technical decisions
 4. Read `forja/config.md` for project stack and conventions
+5. Read the `Pipeline Phases` section from `forja/config.md` — build the set of enabled phases for this run
 
 ### 2. PHASE: Development
+
+> **Phase check**: If `dev` is `disabled` in `forja/config.md → Pipeline Phases`, skip this phase entirely and proceed to Phase 3.
 
 Use the **Agent** tool to execute development. Instruct the agent to:
 
@@ -107,6 +111,8 @@ Use the **Agent** tool to execute development. Instruct the agent to:
 
 ### 3. PHASE: Testing
 
+> **Phase check**: If `test` is `disabled` in `forja/config.md → Pipeline Phases`, skip this phase entirely and proceed to Phase 4.
+
 Use the **Agent** tool to execute tests. Instruct the agent to:
 
 1. Read `.claude/commands/forja/test.md` for full instructions
@@ -121,19 +127,23 @@ If any test fails after fix attempts:
 
 ### 4. PHASES: Quality Checks (PARALLEL)
 
-Launch **3 agents in parallel** using the Agent tool in a SINGLE call:
+> **Phase check**: Check each quality phase individually against `forja/config.md → Pipeline Phases`:
+> - If all three (`perf`, `security`, `review`) are `disabled`: skip this step entirely and proceed to Phase 5.
+> - If some are `disabled`: launch only the agents for enabled phases. Skip the disabled ones.
 
-**Agent 1 — Performance:**
+Launch **up to 3 agents in parallel** using the Agent tool in a SINGLE call (only for enabled phases):
+
+**Agent 1 — Performance** *(only if `perf` is `enabled`)*:
 - Read `.claude/commands/forja/perf.md` for full instructions
 - Analyze the diff for this task only
 - Write findings to a temporary file (local mode: `forja/changes/<feature>/perf-findings-<task-id>.md`)
 
-**Agent 2 — Security:**
+**Agent 2 — Security** *(only if `security` is `enabled`)*:
 - Read `.claude/commands/forja/security.md` for full instructions
 - Analyze the diff for this task only
 - Write findings to a temporary file (local mode: `forja/changes/<feature>/security-findings-<task-id>.md`)
 
-**Agent 3 — Code Review:**
+**Agent 3 — Code Review** *(only if `review` is `enabled`)*:
 - Read `.claude/commands/forja/review.md` for full instructions
 - Analyze the diff for this task only
 - Write findings to a temporary file (local mode: `forja/changes/<feature>/review-findings-<task-id>.md`)
@@ -178,6 +188,8 @@ The gate command persists the decision to both the JSONL trace and Postgres auto
 Continue automatically.
 
 ### 6. PHASE: User Acceptance
+
+> **Phase check**: If `homolog` is `disabled` in `forja/config.md → Pipeline Phases`, skip this phase entirely and proceed to Phase 7.
 
 Use the **Agent** tool to execute acceptance. Instruct the agent to:
 
@@ -234,6 +246,8 @@ When working on multiple tasks (`--project`, `--milestone`, or multiple IDs):
 - **Parallelism within phases is mandatory**: Quality checks ALWAYS run in parallel. Tests use 3 parallel agents.
 - **Quality gates are non-negotiable for FAIL**: Critical/high findings MUST be resolved.
 - **Line count awareness**: Warn (don't block) if a task exceeds 400 lines.
+- **Respect pipeline phases**: Always read `Pipeline Phases` from `forja/config.md` before executing. Any phase marked `disabled` MUST be skipped — inform the user: "Skipping [phase] (disabled in config)." and move to the next enabled phase.
+- **Language**: All messages and status updates produced by the orchestrator follow `Conventions → artifact_language` from `forja/config.md`.
 - **Linear mode = zero local artifacts**: When Linear is configured, do NOT create `forja/changes/` directories. Task context comes from Linear, quality reports go as comments.
 - **Local mode = full workspace**: When Linear is not configured, create all markdown artifacts locally.
 - **Do not create the PR automatically**: The pipeline ends at acceptance. The user runs `/forja:pr` separately.
