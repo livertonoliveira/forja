@@ -86,6 +86,18 @@ With the results from both agents, create:
 - Import style: [detected pattern]
 - Error handling: [detected pattern]
 - Commit style: [detected pattern]
+- artifact_language: [e.g. pt-BR | en]
+- prompt_language: [e.g. pt-BR | en]
+- code_language: en
+
+## Pipeline Phases
+- dev: enabled
+- test: enabled
+- perf: enabled
+- security: enabled
+- review: enabled
+- homolog: enabled
+- pr: enabled
 
 ## Linear Integration
 - Configured: [yes | no]
@@ -110,17 +122,26 @@ With the results from both agents, create:
 >   - `fix`: apply fixes automatically without asking
 >   - `pass`: continue to acceptance without fixing
 
-### 5. Ask about gate behavior preference
+### 5. Ask interactive configuration questions
 
-Before finalizing, ask the user:
-> "When the gate finds issues, what should the pipeline do by default?
+Ask the user the following questions **one block at a time** (present all at once, wait for a single reply):
+
+> **1. Gate behavior** — When the gate finds issues, what should the pipeline do?
 > - **ask** — prompt you each time (recommended for teams)
 > - **fix** — apply fixes automatically without asking (recommended for solo work)
-> - **defer** — track the issue and continue without fixing
+> - **defer** — track and continue (only for `on_fail`)
 >
-> You can set different behaviors for critical/high findings (`on_fail`) and medium findings (`on_warn`)."
+> You can set different behaviors for critical/high (`on_fail`) and medium (`on_warn`).
 
-Update `on_fail` and `on_warn` in the config based on the user's answer.
+> **2. Language** — Which language should Forja use for artifacts (specs, issues, reports) and prompts?
+> - Examples: `pt-BR`, `en`, `es`
+> - Code, commits, and PRs always stay in English (`code_language: en`).
+
+> **3. Pipeline phases** — Which phases do you want enabled?
+> - All enabled by default: dev, test, perf, security, review, homolog, pr
+> - Say which ones you want to disable, or press Enter to keep all.
+
+Update `on_fail`, `on_warn`, `artifact_language`, `prompt_language`, and the pipeline phases in the config based on the user's answers.
 
 ### 6. Present to the user
 
