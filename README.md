@@ -249,6 +249,121 @@ Then open Claude Code and run `/forja:init`. If it detects your stack and create
 
 Practical capabilities you can enable in seconds after setup.
 
+### forja/config.md reference
+
+`forja/config.md` is the single source of truth for every Forja command in a project. It is created by `/forja:init` and read automatically by all pipeline and audit commands — no flags needed at runtime.
+
+#### Stack
+
+Auto-detected by `/forja:init`. Documents the project's runtime, framework, database, package manager, test framework, lint and typecheck commands. You can edit it manually after init if detection missed something.
+
+```markdown
+## Stack
+- Runtime: Node.js 20+
+- Framework: NestJS
+- Database: PostgreSQL 16 (Drizzle ORM)
+- Package Manager: npm
+- Test Framework: vitest
+- Typecheck: tsc --noEmit
+- Lint: eslint src --ext .ts
+```
+
+#### Conventions
+
+Controls the language of all Forja-generated artifacts and defines project-wide coding conventions that agents follow.
+
+```markdown
+## Conventions
+- artifact_language: pt-BR   # language for specs, issues, docs, PR descriptions, reports
+- prompt_language: en        # LLM system prompts — fixed at en, do not change
+- code_language: en          # code, variable names, commits, branch names
+- Commit style: Conventional Commits (feat:, fix:, refactor:, test:, chore:)
+- Branch naming: <type>/<issue-id>-<short-description>
+- Atomic commits: one logical change per commit
+```
+
+`artifact_language` accepts any BCP 47 tag: `pt-BR`, `en`, `es`, `fr`, `de`, `ja`, `zh-CN`. `prompt_language` is always `en` — the LLM reasons in English and translates output to `artifact_language`. `code_language` is always `en` by convention.
+
+#### Pipeline Phases
+
+Each phase can be independently enabled or disabled. Disabled phases are skipped silently and logged.
+
+```markdown
+## Pipeline Phases
+- dev: enabled       # /forja:develop — code implementation
+- test: enabled      # /forja:test — unit, integration, e2e
+- perf: enabled      # /forja:perf — performance analysis of the diff
+- security: enabled  # /forja:security — OWASP scan of the diff
+- review: enabled    # /forja:review — SOLID/DRY/KISS code review
+- homolog: enabled   # /forja:homolog — consolidated report + acceptance gate
+- pr: enabled        # /forja:pr — atomic commits + PR creation
+```
+
+Change `enabled` to `disabled` for any phase. `/forja:run` respects these toggles and skips the corresponding steps. Individual commands (e.g. `/forja:security`) also return immediately when their phase is disabled.
+
+#### Gate Behavior
+
+Controls what the pipeline does when a quality gate finds issues.
+
+```markdown
+## Gate Behavior
+- on_fail: ask    # action when critical or high findings are detected
+- on_warn: ask    # action when medium findings are detected
+```
+
+| Value | Applies to | Behavior |
+|-------|-----------|----------|
+| `ask` | `on_fail`, `on_warn` | Pause and prompt the user before proceeding (default) |
+| `fix` | `on_fail`, `on_warn` | Apply fixes automatically without asking |
+| `defer` | `on_fail` only | Create tracking issues and continue without fixing |
+| `pass` | `on_warn` only | Continue to acceptance without fixing |
+
+#### Linear Integration
+
+Populated automatically by `/forja:init` when Linear MCP is connected. Controls where Forja stores artifacts (Linear Documents, issues, comments) instead of local markdown files.
+
+```markdown
+## Linear Integration
+- Configured: yes
+- Team: Acme Engineering
+- Team ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+- Default Labels: bug, feature, chore
+```
+
+Set `Configured: no` to fall back to local markdown storage under `forja/changes/`.
+
+#### OTel (OpenTelemetry)
+
+Enables distributed tracing export to any OpenTelemetry Collector (Jaeger, Tempo, Datadog Agent, Honeycomb).
+
+```markdown
+## OTel
+- enabled: false
+- endpoint: http://localhost:4317   # OTLP gRPC
+- protocol: grpc                    # grpc | http | console
+```
+
+Can also be configured via environment variables (preferred for CI):
+
+```bash
+export FORJA_OTEL_ENABLED=true
+export FORJA_OTEL_ENDPOINT=http://otel-collector:4317
+export FORJA_OTEL_PROTOCOL=grpc
+```
+
+#### Rules
+
+Free-form section for project-specific rules that all Forja agents will follow. Grows over time as you refine conventions.
+
+```markdown
+## Rules
+- Never use `any` in TypeScript — use `unknown` and narrow explicitly
+- All public functions must have a JSDoc comment
+- Database queries must go through the repository layer, never directly in controllers
+```
+
+---
+
 ### Artifact language
 
 Forja separates the artifact language (specs, issues, docs, PR descriptions) from the LLM's internal prompt language:
@@ -264,29 +379,31 @@ forja config set artifact_language en
 
 Not every pipeline needs to go through every gate. If the security scan is too slow for the local development loop — but essential in CI — disable it per project without touching any prompt or policy:
 
-```json
-// forja/.forja-config.json
-{
-  "storeUrl": "postgresql://...",
-  "phases": {
-    "security": false
-  }
-}
+```markdown
+## Pipeline Phases
+- dev: enabled
+- test: enabled
+- perf: enabled
+- security: disabled  # ← skipped by /forja:run and /forja:security
+- review: enabled
+- homolog: enabled
+- pr: enabled
 ```
 
-When running `forja run <issue>`, the engine logs the skipped phases and continues:
+When running `/forja:run`, the engine logs the skipped phases and continues:
 
 ```
 [forja] phases disabled by config: security
 [forja] → dev
 [forja] → test
+[forja] → review
 [forja] → homolog
 [forja] → pr
 ```
 
-Each phase has an independent toggle: `dev`, `test`, `perf`, `security`, `review`, `homolog`, `pr`. All enabled by default. The same field in `~/.forja/config.json` sets machine-wide defaults — useful for disabling heavy phases locally without committing to the project.
+Each phase has an independent toggle: `dev`, `test`, `perf`, `security`, `review`, `homolog`, `pr`. All enabled by default. See the [forja/config.md reference](#forjaconfigmd-reference) for the full list of options.
 
-> **Toggle scope:** runtime phases (`dev`, `test`, `homolog`, `pr`) are controlled by the engine. Skill-driven phases (`perf`, `security`, `review`) read the same `forja/config.md` before firing — `/forja:security` respects `security: disabled` and returns immediately.
+> **Toggle scope:** runtime phases (`dev`, `test`, `homolog`, `pr`) are controlled by the engine. Skill-driven phases (`perf`, `security`, `review`) read `forja/config.md` before firing — `/forja:security` respects `security: disabled` and returns immediately.
 
 ### Shell autocomplete
 
