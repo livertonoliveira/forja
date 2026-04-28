@@ -7,6 +7,25 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+_Nenhuma mudança desde o último release._
+
+## [0.3.0] — 2026-04-28
+
+> Upgrade guide: [docs/upgrades/v0.3.0.md](docs/upgrades/v0.3.0.md)
+
+### Alterado
+- update package-lock after npm install
+- add upgrade guide for v0.3.0
+- bilingual README (pt-BR + English) (#152)
+- remove redundant title below logo in README (#151)
+
+### Adicionado
+- add language and pipeline phases config to forja:init (#153)
+
+### Corrigido
+- sync VERSION/package.json and repair CI pipeline (0.2.6→0.2.8) (#150)
+
+
 ## [0.2.8] — 2026-04-27
 
 ### Corrigido
@@ -224,7 +243,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
-[Unreleased]: https://github.com/livertonoliveira/forja/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/livertonoliveira/forja/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/livertonoliveira/forja/compare/v0.2.6...v0.3.0
 [0.2.0]: https://github.com/livertonoliveira/forja/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/livertonoliveira/forja/compare/v0.1.1...v0.1.3
 [0.1.1]: https://github.com/livertonoliveira/forja/compare/v0.1.0...v0.1.1
