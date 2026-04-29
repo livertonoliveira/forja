@@ -9,6 +9,18 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 _Nenhuma mudança desde o último release._
 
+## [0.4.1] — 2026-04-29
+
+### Corrigido
+- register 0011_project_id migration in journal and fix release pipeline (#160)
+
+### Alterado
+- enforce artifact_language for all user-facing pipeline text (#159)
+- otimizar CI — artefatos entre jobs, gate de UI, remover trigger de push (#158)
+- otimizar CI — remover double trigger, paralelizar jobs, storybook condicional (#157)
+- add forja/config.md reference to README (EN + PT-BR) (#156)
+
+
 ## [0.4.0] — 2026-04-28
 
 > Upgrade guide: [docs/upgrades/v0.4.0.md](docs/upgrades/v0.4.0.md)
@@ -254,7 +266,8 @@ _Nenhuma mudança desde o último release._
 
 ---
 
-[Unreleased]: https://github.com/livertonoliveira/forja/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/livertonoliveira/forja/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/livertonoliveira/forja/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/livertonoliveira/forja/compare/v0.2.6...v0.4.0
 [0.3.0]: https://github.com/livertonoliveira/forja/compare/v0.2.6...v0.3.0
 [0.2.0]: https://github.com/livertonoliveira/forja/compare/v0.1.3...v0.2.0
