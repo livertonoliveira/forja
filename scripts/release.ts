@@ -183,7 +183,15 @@ async function main(): Promise<void> {
     process.stdout.write('Upgrade guide validated.\n');
   }
 
-  // 4e. Run tests
+  // 4e. Build core (required before tests that invoke the compiled binary)
+  if (args.dryRun) {
+    process.stdout.write('[dry-run] Would run: npm run build:core\n');
+  } else {
+    const buildResult = run('npm', ['run', 'build:core']);
+    if (buildResult.code !== 0) die(`Build failed:\n${buildResult.stderr}`);
+  }
+
+  // 4f. Run tests
   if (args.dryRun) {
     process.stdout.write('[dry-run] Would run: npm test\n');
   } else {
@@ -191,7 +199,7 @@ async function main(): Promise<void> {
     if (testResult.code !== 0) die('Tests failed. Fix before releasing.');
   }
 
-  // 4f. Typecheck
+  // 4g. Typecheck
   if (args.dryRun) {
     process.stdout.write('[dry-run] Would run: npx tsc --noEmit\n');
   } else {
@@ -199,7 +207,7 @@ async function main(): Promise<void> {
     if (tscResult.code !== 0) die('TypeScript errors found. Fix before releasing.');
   }
 
-  // 4g. Lint
+  // 4h. Lint
   if (args.dryRun) {
     process.stdout.write('[dry-run] Would run: npx eslint src --ext .ts\n');
   } else {

@@ -5,7 +5,7 @@ import { resolve } from 'path';
 
 // resolve relative to this source file location: src/cli/__tests__ → project root
 const PROJECT_ROOT = resolve(new URL('.', import.meta.url).pathname, '../../..');
-const BINARY = resolve(PROJECT_ROOT, 'bin/forja');
+const BINARY = resolve(PROJECT_ROOT, 'bin/forja.js');
 const TIMEOUT = 10_000;
 
 describe('forja CLI integration', () => {
