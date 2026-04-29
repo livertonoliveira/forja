@@ -206,6 +206,6 @@ Format:
 - **Consider the context**: an internal API has a different threat model than a public API
 - **Do not recommend security theater**: avoid suggestions that add complexity without real benefit
 - **ALWAYS launch 3 agents in parallel**: each one focuses on its attack category
-- **Language**: All findings and reports follow `Conventions → artifact_language` from `forja/config.md`.
+- **Language**: All user-facing text during execution (findings, reports, summaries, gate results, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - **Linear mode**: read design context from Linear document instead of local file; findings are still written to a local temporary file
 - **Local mode**: read design context from local `design.md`; findings are written to local file

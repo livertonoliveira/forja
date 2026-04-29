@@ -263,5 +263,6 @@ Each agent must produce findings in the following format:
 - **Stack-specific fixes**: solutions must use the project's language and framework conventions from `forja/config.md`.
 - **Highlight quick wins**: flag findings fixable in ≤1 day separately.
 - **ALWAYS launch 3 agents in parallel** — never sequentially.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - For project-wide security issues, run `/forja:audit:security`.
 - For database-specific deep audit, run `/forja:audit:database`.

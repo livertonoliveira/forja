@@ -110,5 +110,5 @@ After all 3 agents complete:
 - **Use the project's patterns**: if the project uses factories, use factories. If it uses fixtures, use fixtures.
 - **Do not install test frameworks**: use what is already configured in the project
 - **Acceptance criteria guide the tests**: each criterion from proposal.md must have at least one corresponding test
-- **Everything in English**: test names, describes, expects, comments
+- **Language**: Test names, describes, expects, and code are always in English. All other user-facing text (quality reports, findings, summaries, gate results, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - **ALWAYS launch 3 agents in parallel**: even if one of them concludes there are no tests to generate for its type, it must report this

@@ -410,7 +410,7 @@ After creating everything:
 - **Technical context must reference real code**: Cite existing files and patterns, not generic examples.
 - **Milestones represent deliverable value**: Not time-based sprints. Each milestone should produce something demonstrable.
 - **Labels reflect the area of work**: Use labels from `forja/config.md`. In monorepos, workspace names become labels.
-- **Language**: Read `Conventions → Artifacts language` from `forja/config.md`. Write ALL human-readable artifacts (documents, issue titles, descriptions, milestones, section headers) in that language. Code, file paths, and technical identifiers are always in English.
+- **Language**: Read the `Artifact language` field from `forja/config.md → Conventions`. Write ALL human-readable artifacts (documents, issue titles, descriptions, milestones, section headers) AND all user-facing text during execution (summaries, questions, gate results, status updates) in that language. Code, file paths, and technical identifiers are always in English.
 - **Always use parallel agents**: The data gathering phase MUST use parallel agents.
 - **Line estimation is critical**: Be conservative. If unsure, estimate higher and split the task.
 - **Linear mode = zero local files**: When Linear is configured, do NOT create `forja/changes/` directories. Everything lives in Linear.

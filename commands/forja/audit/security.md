@@ -48,3 +48,4 @@ Gate rules: critical/high → **FAIL** | medium → **WARN** | low only → **PA
 - PoC required for critical/high (example request/payload).
 - Fix must include a code example using the project's patterns.
 - Always launch 4 agents in parallel — never sequentially.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.

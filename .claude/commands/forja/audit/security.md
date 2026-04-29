@@ -337,3 +337,4 @@ Run `pnpm audit` / `npm audit` and include output summary here.
 - **Consider the context**: an internal API has a different threat model than a public multi-tenant SaaS.
 - **GDPR/LGPD**: evaluate only if the project handles personal data.
 - **ALWAYS launch 4 agents in parallel** — never sequentially.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.

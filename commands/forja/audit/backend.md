@@ -38,6 +38,7 @@ Gate rules: `critical`/`high` → **FAIL** · `medium` → **WARN** · `low`/non
 
 - **Linear mode:** creates a dedicated project, document, milestones, and issues automatically.
 - **Local mode:** writes to `forja/audits/backend-<YYYY-MM-DD>.md`.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
 
 ## Tests
 

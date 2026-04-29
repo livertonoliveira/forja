@@ -39,3 +39,5 @@ Read `forja/config.md` → `Linear Integration`:
 | Any `critical` or `high` | **FAIL** |
 | Any `medium` (no critical/high) | **WARN** |
 | Only `low` or none | **PASS** |
+
+**Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
