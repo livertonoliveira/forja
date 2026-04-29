@@ -1413,6 +1413,14 @@ forja schedule list
 ```
 forja/
 ├── config.md                      # Stack + convenções do projeto (saída de /forja:init)
+├── shared-patterns.md             # Índice de padrões canônicos de prompt (navegação humana apenas)
+├── patterns/                      # Fragmentos atômicos de prompt — inclua apenas o que precisar
+│   ├── storage-mode.md            # Detecção de modo Linear vs Local
+│   ├── load-artifacts.md          # Matriz de carregamento de artefatos por contexto
+│   ├── gates.md                   # Regras de gate (PASS/WARN/FAIL)
+│   ├── severity.md                # Definições de severidade por domínio
+│   ├── parallelism.md             # Estratégia de agentes paralelos
+│   └── language.md                # Regra de idioma dos artefatos
 ├── plugins/                       # Módulos de plugin local (auto-discovery)
 │   └── my-plugin/index.js
 ├── changes/

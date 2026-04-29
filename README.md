@@ -1413,6 +1413,14 @@ forja schedule list
 ```
 forja/
 ├── config.md                      # Stack + project conventions (output of /forja:init)
+├── shared-patterns.md             # Index of canonical prompt patterns (human navigation only)
+├── patterns/                      # Atomic prompt fragments — include only what you need
+│   ├── storage-mode.md            # Linear vs Local mode detection
+│   ├── load-artifacts.md          # Artifact loading matrix by context
+│   ├── gates.md                   # Gate rules (PASS/WARN/FAIL)
+│   ├── severity.md                # Severity definitions by domain
+│   ├── parallelism.md             # Parallel agent strategy
+│   └── language.md                # Artifact language rule
 ├── plugins/                       # Local plugin modules (auto-discovery)
 │   └── my-plugin/index.js
 ├── changes/
