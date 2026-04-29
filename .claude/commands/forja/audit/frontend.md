@@ -372,3 +372,4 @@ Methodology: <Next.js 5-layer | Generic 11-category>
 - **Distinguish lab vs field data**: if Lighthouse data is available, note it's lab (simulated); CrUX is field (real users).
 - **Highlight quick wins**: flag findings fixable in ≤1 day.
 - **ALWAYS launch 3 agents in parallel** — never sequentially.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.

@@ -380,3 +380,4 @@ Database: <MongoDB | PostgreSQL | MySQL>
 - **Flag migrations explicitly**: any change requiring transformation of existing data must be clearly marked with "Requires migration: Yes".
 - **No sharding recommendation without clear evidence**: only recommend sharding when write throughput or working set clearly exceeds single-node capacity.
 - **ALWAYS launch 3 agents in parallel** — never sequentially.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.

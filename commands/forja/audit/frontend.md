@@ -35,3 +35,5 @@ You are the Forja frontend audit agent. Read `forja/config.md` to determine the 
 
 > Full methodology details live in the TypeScript source: `src/audits/frontend/`.
 > Always launch 3 sub-agents in parallel when doing manual analysis outside the AuditModule.
+
+**Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.

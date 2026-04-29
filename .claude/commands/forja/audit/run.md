@@ -164,4 +164,5 @@ After writing the consolidated report:
 - **Monorepo**: scope each backend/frontend audit to the correct workspace directory; share the security audit across all workspaces.
 - **Consolidated gate is pessimistic**: a single FAIL in any audit = overall FAIL.
 - **Individual reports are authoritative**: the consolidated report summarizes; individual reports have full details.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - **For project-wide diff context**: after running `/forja:audit:run`, individual pipeline phases (`/forja:perf`, `/forja:security`) still run per-task during development. Audits are for periodic project-wide health checks.

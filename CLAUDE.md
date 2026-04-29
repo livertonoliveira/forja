@@ -57,7 +57,9 @@ forja/
 ## Conventions
 
 ### Language
-- Everything in English: command instructions, generated artifacts, code, commits, PRs
+- Command instructions (LLM prompts): always in English — never configurable
+- User-facing text during pipeline execution (reports, summaries, gate results, questions to the user): use the `Artifact language` field from `forja/config.md`
+- Code, variable names, commits, branch names: always in English
 
 ### Parallelism
 - Always use the Agent tool to parallelize work

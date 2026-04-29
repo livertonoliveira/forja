@@ -194,5 +194,6 @@ Format:
 - **Stack-specific**: adapt the analysis based on the stack from config.md. Do not recommend React patterns for a Vue project.
 - **Suggestions with code**: when possible, show what the corrected code would look like
 - **ALWAYS adapt to the project type**: monorepo launches agents per workspace, backend focuses on DB/algo, frontend focuses on bundle/render
+- **Language**: All user-facing text during execution (findings, reports, summaries, gate results, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - **Linear mode**: read design context from Linear document instead of local file; findings are still written to a local temporary file
 - **Local mode**: read design context from local `design.md`; findings are written to local file

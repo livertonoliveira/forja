@@ -214,3 +214,4 @@ When working on multiple tasks (`--project`, `--milestone`, or multiple IDs):
 - **Local mode = full workspace**: When Linear is not configured, create all markdown artifacts locally.
 - **Do not create the PR automatically**: The pipeline ends at acceptance. The user runs `/forja:pr` separately.
 - **Each agent reads its command file**: This ensures each phase follows its own detailed instructions.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.

@@ -207,7 +207,7 @@ Format:
 - **DRY with caution**: accidental duplication (coincidence) is NOT a DRY violation. Only flag intentional duplication that truly should be shared.
 - **KISS is the most important principle**: if the code is simple and works, do not suggest complicating it for "elegance"
 - **Suggestions with code**: every suggestion must include a concrete example of what the code would look like
-- **Language**: All findings, suggestions, and reports follow `Conventions → Artifacts language` from `forja/config.md`.
+- **Language**: All user-facing text during execution (findings, suggestions, reports, summaries, gate results) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - **Parallelism by module**: if the diff is large, ALWAYS use parallel agents per code area
 - **Linear mode**: read design context from Linear document instead of local file; findings are still written to a local temporary file
 - **Local mode**: read design context from local `design.md`; findings are written to local file

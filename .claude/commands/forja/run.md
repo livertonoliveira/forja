@@ -247,7 +247,7 @@ When working on multiple tasks (`--project`, `--milestone`, or multiple IDs):
 - **Quality gates are non-negotiable for FAIL**: Critical/high findings MUST be resolved.
 - **Line count awareness**: Warn (don't block) if a task exceeds 400 lines.
 - **Respect pipeline phases**: Always read `Pipeline Phases` from `forja/config.md` before executing. Any phase marked `disabled` MUST be skipped — inform the user: "Skipping [phase] (disabled in config)." and move to the next enabled phase.
-- **Language**: All messages and status updates produced by the orchestrator follow `Conventions → artifact_language` from `forja/config.md`.
+- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - **Linear mode = zero local artifacts**: When Linear is configured, do NOT create `forja/changes/` directories. Task context comes from Linear, quality reports go as comments.
 - **Local mode = full workspace**: When Linear is not configured, create all markdown artifacts locally.
 - **Do not create the PR automatically**: The pipeline ends at acceptance. The user runs `/forja:pr` separately.

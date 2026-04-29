@@ -271,7 +271,7 @@ After approval:
 - **Do not make decisions for the user**: present the data and let the user approve or reject
 - **Be transparent with warnings**: do not minimize medium-level findings. Present them clearly.
 - **Acceptance criteria belong to the user**: present them as a checklist for manual verification, not as automated tests
-- **Everything in English**: the report and findings are in English
+- **Language**: All user-facing text during execution (reports, findings, summaries, gate results, questions to the user) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - **Do not proceed without approval**: acceptance is a manual gate, never automatic
 - **Linear mode**: quality report is posted as a comment on the task issue, no local report.md is created
 - **Local mode**: quality report is written to report.md in the feature directory

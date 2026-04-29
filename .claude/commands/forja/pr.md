@@ -282,7 +282,7 @@ Inform the user:
 - **Validation before push**: typecheck and tests must pass
 - **Resolve conflicts**: if there are conflicts during rebase, resolve them (ask for confirmation if ambiguous)
 - **Never force push**: unless the user explicitly requests it
-- **Language**: Commit messages and branch names are always in English (Conventional Commits). PR title, body, and quality report follow `Conventions → Artifacts language` from `forja/config.md`.
+- **Language**: Commit messages and branch names are always in English (Conventional Commits). All other user-facing text (PR title, body, quality report, status updates, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
 - **Verify acceptance**: never create a PR without approved acceptance
 - **Linear mode**: attach PR URL and post PR link comment — do NOT change issue status (already "Done" from homolog)
 - **Local mode**: archive the feature folder after PR creation
