@@ -12,23 +12,24 @@ Navigation index for human reference. **Do not reference this file from command 
 | [`forja/patterns/severity.md`](patterns/severity.md) | Command classifies findings by severity | 48 |
 | [`forja/patterns/parallelism.md`](patterns/parallelism.md) | Command launches parallel agents | 5 |
 | [`forja/patterns/language.md`](patterns/language.md) | All commands (language rule) | 4 |
+| [`forja/patterns/stack-detection.md`](patterns/stack-detection.md) | Command needs to read or detect the project's stack | 44 |
 
 ## Which patterns each command needs
 
-| Command | storage-mode | load-artifacts | gates | severity | parallelism | language |
-|---------|:---:|:---:|:---:|:---:|:---:|:---:|
-| develop.md | ✓ | ✓ | | | ✓ | ✓ |
-| test.md | ✓ | ✓ | | | ✓ | ✓ |
-| perf.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| security.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| review.md | ✓ | ✓ | ✓ | ✓ | | ✓ |
-| homolog.md | ✓ | ✓ | | | | ✓ |
-| run.md | ✓ | ✓ | | | ✓ | ✓ |
-| pr.md | ✓ | ✓ | | | | ✓ |
-| spec.md | ✓ | ✓ | | | ✓ | ✓ |
-| init.md | | | | | | ✓ |
-| audit/backend.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| audit/frontend.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| audit/security.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| audit/database.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| audit/run.md | ✓ | ✓ | | | ✓ | ✓ |
+| Command | storage-mode | load-artifacts | gates | severity | parallelism | language | stack-detection |
+|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| develop.md | ✓ | ✓ | | | ✓ | ✓ | |
+| test.md | ✓ | ✓ | | | ✓ | ✓ | |
+| perf.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| security.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| review.md | ✓ | ✓ | ✓ | ✓ | | ✓ | |
+| homolog.md | ✓ | ✓ | | | | ✓ | |
+| run.md | ✓ | ✓ | | | ✓ | ✓ | ✓ |
+| pr.md | ✓ | ✓ | | | | ✓ | |
+| spec.md | ✓ | ✓ | | | ✓ | ✓ | |
+| init.md | | | | | | ✓ | ✓ |
+| audit/backend.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| audit/frontend.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| audit/security.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| audit/database.md | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| audit/run.md | ✓ | ✓ | | | ✓ | ✓ | ✓ |
