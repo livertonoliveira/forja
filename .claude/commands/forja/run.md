@@ -23,9 +23,7 @@ Check if `forja/config.md` exists at the project root.
 
 ### 2. Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode**
-- If `Configured: no` → **Local mode**
+See @forja/patterns/storage-mode.md.
 
 ### 3. Check for specification
 
@@ -75,7 +73,7 @@ Report to the user: `Run ID: <uuid>` so they can monitor progress in the dashboa
 1. Use `mcp__linear-server__get_issue` to get task title, description, acceptance criteria, labels, milestone
 2. Use `mcp__linear-server__get_project` to get the project context
 3. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the Proposal and Design documents linked to the project
-4. Read `forja/config.md` for project stack and conventions
+4. Read `forja/config.md` (see @forja/patterns/stack-detection.md for stack detection logic).
 5. Read the `Pipeline Phases` section from `forja/config.md` — build the set of enabled phases for this run
 
 > **MANDATORY — LINEAR MODE: Set issue to "In Progress" before doing anything else**
@@ -84,11 +82,11 @@ Report to the user: `Run ID: <uuid>` so they can monitor progress in the dashboa
 > Do NOT continue to the development phase until this API call is confirmed.
 
 **Local mode:**
-1. Read the task section from `forja/changes/<feature>/tasks.md`
-2. Read `forja/changes/<feature>/proposal.md` for overall feature context
-3. Read `forja/changes/<feature>/design.md` for technical decisions
-4. Read `forja/config.md` for project stack and conventions
-5. Read the `Pipeline Phases` section from `forja/config.md` — build the set of enabled phases for this run
+
+Follow @forja/patterns/load-artifacts.md for the Local mode artifact loading steps.
+
+Additionally:
+- Read the `Pipeline Phases` section from `forja/config.md` — build the set of enabled phases for this run
 
 ### 2. PHASE: Development
 
@@ -247,7 +245,7 @@ When working on multiple tasks (`--project`, `--milestone`, or multiple IDs):
 - **Quality gates are non-negotiable for FAIL**: Critical/high findings MUST be resolved.
 - **Line count awareness**: Warn (don't block) if a task exceeds 400 lines.
 - **Respect pipeline phases**: Always read `Pipeline Phases` from `forja/config.md` before executing. Any phase marked `disabled` MUST be skipped — inform the user: "Skipping [phase] (disabled in config)." and move to the next enabled phase.
-- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md for language rules.
 - **Linear mode = zero local artifacts**: When Linear is configured, do NOT create `forja/changes/` directories. Task context comes from Linear, quality reports go as comments.
 - **Local mode = full workspace**: When Linear is not configured, create all markdown artifacts locally.
 - **Do not create the PR automatically**: The pipeline ends at acceptance. The user runs `/forja:pr` separately.
