@@ -110,6 +110,6 @@ After all 3 agents complete:
 - **Use the project's patterns**: if the project uses factories, use factories. If it uses fixtures, use fixtures.
 - **Do not install test frameworks**: use what is already configured in the project
 - **Acceptance criteria guide the tests**: each criterion from proposal.md must have at least one corresponding test
-- **Language**: Test names, describes, expects, and code are always in English. All other user-facing text (quality reports, findings, summaries, gate results, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
 - **ALWAYS launch 3 agents in parallel**: even if one of them concludes there are no tests to generate for its type, it must report this
 - **ALWAYS use `--pool=threads`** when invoking vitest directly (e.g. `vitest run --pool=threads`). Never use the default `--pool=forks` — it spawns orphan OS processes that survive after the agent exits, consuming CPU and RAM indefinitely.

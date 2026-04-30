@@ -13,9 +13,7 @@ You are the Forja development agent. Your mission is to implement the code descr
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode** (artifacts live in Linear)
-- If `Configured: no` → **Local mode** (artifacts live in `forja/changes/`)
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -31,17 +29,7 @@ Check if you are running inside the `/forja:run` pipeline:
 
 ### 1. Load context
 
-**Linear mode:**
-1. Read `forja/config.md` — Stack, conventions, project rules
-2. Use `mcp__linear-server__get_issue` to fetch the task issue details (title, description, acceptance criteria, labels, milestone)
-3. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the **Design** document for technical decisions, files to create/modify, and conventions context
-4. Optionally read the **Proposal** document for broader feature context if needed
-
-**Local mode:**
-1. `forja/config.md` — Stack, conventions, project rules
-2. `forja/changes/<feature>/proposal.md` — Requirements and acceptance criteria
-3. `forja/changes/<feature>/design.md` — Technical decisions, files to create/modify
-4. `forja/changes/<feature>/tasks.md` — Implementation checklist
+See @forja/patterns/load-artifacts.md (pipeline phase context).
 
 ### 2. Mark issue as In Progress
 
@@ -127,7 +115,7 @@ If typecheck fails:
 - **Do not add dependencies unnecessarily**: if the project already has a library that does X, use it instead of installing another
 - **Do not add comments, docstrings, or type annotations to code you did not modify**: touch only what is necessary
 - **Each file created/modified must be functional on its own**: do not leave TODOs or partial implementations
-- **Language**: Code, variables, file names, and commit messages are always in English. All user-facing text during execution (reports, summaries, status updates, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
 - **Maximize parallelism**: if there are independent modules, ALWAYS use parallel agents
 - **Linear mode**: read task details and design from Linear, no local artifact updates
 - **Local mode**: read from and update local markdown files in `forja/changes/<feature>/`
