@@ -27,6 +27,10 @@
 - on_fail: fix
 - on_warn: fix
 
+## Pipeline Profile
+- profile: standard   # lite | standard | strict
+                      # explicit entries in Pipeline Phases below override the profile
+
 ## Pipeline Phases
 - dev: enabled
 - test: enabled
