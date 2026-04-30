@@ -11,9 +11,7 @@ You are the Forja audit orchestrator. Your mission is to determine which audits 
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode**
-- If `Configured: no` → **Local mode**
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -164,5 +162,5 @@ After writing the consolidated report:
 - **Monorepo**: scope each backend/frontend audit to the correct workspace directory; share the security audit across all workspaces.
 - **Consolidated gate is pessimistic**: a single FAIL in any audit = overall FAIL.
 - **Individual reports are authoritative**: the consolidated report summarizes; individual reports have full details.
-- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
 - **For project-wide diff context**: after running `/forja:audit:run`, individual pipeline phases (`/forja:perf`, `/forja:security`) still run per-task during development. Audits are for periodic project-wide health checks.
