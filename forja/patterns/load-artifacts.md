@@ -10,3 +10,5 @@ Matrix of artifact loading by context and storage mode:
 | **Audit** | `forja/config.md` only | `forja/config.md` only |
 
 All contexts also read `forja/config.md` for stack and conventions.
+
+**Pipeline phases only** (perf, security, review): after loading artifacts, run `git diff` to get the full diff of new/modified code — this is the primary analysis input.
