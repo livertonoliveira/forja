@@ -32,9 +32,7 @@ You are the Forja specification agent. Your mission is to transform raw input (a
 
 ### 2. Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode** (all artifacts in Linear)
-- If `Configured: no` → **Local mode** (all artifacts in `forja/changes/`)
+See @forja/patterns/storage-mode.md.
 
 ### 3. Gather context (2 agents in parallel)
 
@@ -43,14 +41,11 @@ Launch **2 agents in parallel** using the Agent tool:
 **Agent A — Source Data:**
 
 If the input is a Linear issue:
-1. Use `mcp__linear-server__get_issue` to fetch: title, description, priority, status, labels, assignee
-2. Use `mcp__linear-server__list_comments` to fetch discussion and additional context
-3. Fetch linked documents if there are references
-4. Extract:
-   - Explicit and implicit functional requirements
-   - Acceptance criteria (if mentioned)
-   - Constraints and dependencies
-   - Business context and motivation
+See @forja/patterns/load-artifacts.md for context loading (also fetch `mcp__linear-server__list_comments` for discussion). Extract:
+- Explicit and implicit functional requirements
+- Acceptance criteria (if mentioned)
+- Constraints and dependencies
+- Business context and motivation
 
 If the input is free text:
 - Decompose the text into structured requirements
@@ -410,7 +405,7 @@ After creating everything:
 - **Technical context must reference real code**: Cite existing files and patterns, not generic examples.
 - **Milestones represent deliverable value**: Not time-based sprints. Each milestone should produce something demonstrable.
 - **Labels reflect the area of work**: Use labels from `forja/config.md`. In monorepos, workspace names become labels.
-- **Language**: Read the `Artifact language` field from `forja/config.md → Conventions`. Write ALL human-readable artifacts (documents, issue titles, descriptions, milestones, section headers) AND all user-facing text during execution (summaries, questions, gate results, status updates) in that language. Code, file paths, and technical identifiers are always in English.
+- **Language**: See @forja/patterns/language.md.
 - **Always use parallel agents**: The data gathering phase MUST use parallel agents.
 - **Line estimation is critical**: Be conservative. If unsure, estimate higher and split the task.
 - **Linear mode = zero local files**: When Linear is configured, do NOT create `forja/changes/` directories. Everything lives in Linear.
