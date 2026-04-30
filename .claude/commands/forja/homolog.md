@@ -13,9 +13,7 @@ You are the Forja acceptance agent. Your mission is to consolidate all pipeline 
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode** (artifacts live in Linear)
-- If `Configured: no` → **Local mode** (artifacts live in `forja/changes/`)
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -42,35 +40,9 @@ Check if you are running inside the `/forja:run` pipeline:
 
 ### 2. Consolidate quality report
 
-Consolidate findings from the temporary local files into a single quality report:
+Consolidate findings from the temporary local files into a single quality report.
 
-```markdown
-# Quality Report — <Feature Title>
-
-## Summary
-| Phase | Gate | Critical | High | Medium | Low |
-|-------|------|----------|------|--------|-----|
-| Performance | <gate> | <n> | <n> | <n> | <n> |
-| Security | <gate> | <n> | <n> | <n> | <n> |
-| Code Review | <gate> | <n> | <n> | <n> | <n> |
-
-## Performance Findings
-<consolidate from perf-findings or "No findings.">
-
-## Security Findings
-<consolidate from security-findings or "No findings.">
-
-## Code Review Findings
-<consolidate from review-findings or "No findings.">
-
-## Fixes Applied
-<list any fixes that were applied during the pipeline>
-
-## Homologation
-- [ ] User has reviewed all changes
-- [ ] User has verified acceptance criteria
-- [ ] User approves for PR
-```
+Follow @forja/report-templates.md#quality-report for the report structure.
 
 ### 3. Verify task completeness
 
@@ -82,38 +54,9 @@ If any critical item is not completed, flag it to the user.
 
 ### 4. Present the report to the user
 
-Present clearly and in an organized manner:
+Present clearly and in an organized manner.
 
-```
-## Acceptance Report — <Feature Title>
-
-### What was implemented
-<Concise summary from the Proposal document — 3-5 bullet points>
-
-### Technical decisions
-<Summary from the Design document — key decisions>
-
-### Tests
-- Unit tests: X created, all passing
-- Integration tests: Y created, all passing
-- E2E tests: Z created (or "not applicable")
-
-### Quality Gates
-| Phase | Status | Details |
-|-------|--------|---------|
-| Performance | PASS / WARN / FAIL | X findings |
-| Security | PASS / WARN / FAIL | X findings |
-| Code Review | PASS / WARN / FAIL | X findings |
-
-### Pending warnings (if any)
-<List of medium-level findings that were not fixed>
-
-### Acceptance criteria — Manual verification
-<List of acceptance criteria from the Proposal document for the user to verify>
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] ...
-```
+Follow @forja/report-templates.md#acceptance-report for the report structure.
 
 ### 5. Await approval
 
@@ -158,47 +101,18 @@ After approval, execute ALL of the following steps without skipping any:
 
 ### 1. Load all artifacts
 
-Read:
-1. `forja/changes/<feature>/proposal.md` — Requirements and acceptance criteria
-2. `forja/changes/<feature>/design.md` — Technical decisions
-3. `forja/changes/<feature>/tasks.md` — Status of each task
-4. `forja/changes/<feature>/report.md` — Quality report (if already consolidated)
-5. `forja/changes/<feature>/perf-findings.md` — Performance findings (if separate file exists)
-6. `forja/changes/<feature>/security-findings.md` — Security findings (if separate file exists)
-7. `forja/changes/<feature>/review-findings.md` — Code review findings (if separate file exists)
-8. `forja/changes/<feature>/tracking.md` — Issue tracking (if it exists)
+Follow @forja/patterns/load-artifacts.md for Local mode artifact loading, then additionally load:
+- `forja/changes/<feature>/report.md` — Quality report (if already consolidated)
+- `forja/changes/<feature>/perf-findings.md` — Performance findings (if separate file exists)
+- `forja/changes/<feature>/security-findings.md` — Security findings (if separate file exists)
+- `forja/changes/<feature>/review-findings.md` — Code review findings (if separate file exists)
+- `forja/changes/<feature>/tracking.md` — Issue tracking (if it exists)
 
 ### 2. Consolidate report.md
 
-If findings are still in separate files (perf-findings.md, security-findings.md, review-findings.md), consolidate everything into a single `report.md`:
+If findings are still in separate files (perf-findings.md, security-findings.md, review-findings.md), consolidate everything into a single `report.md`.
 
-```markdown
-# Quality Report — <Feature Title>
-
-## Summary
-| Phase | Gate | Critical | High | Medium | Low |
-|-------|------|----------|------|--------|-----|
-| Performance | <gate> | <n> | <n> | <n> | <n> |
-| Security | <gate> | <n> | <n> | <n> | <n> |
-| Code Review | <gate> | <n> | <n> | <n> | <n> |
-
-## Performance Findings
-<consolidate from perf-findings.md or "No findings.">
-
-## Security Findings
-<consolidate from security-findings.md or "No findings.">
-
-## Code Review Findings
-<consolidate from review-findings.md or "No findings.">
-
-## Fixes Applied
-<list any fixes that were applied during the pipeline>
-
-## Homologation
-- [ ] User has reviewed all changes
-- [ ] User has verified acceptance criteria
-- [ ] User approves for PR
-```
+Follow @forja/report-templates.md#quality-report for the report structure.
 
 ### 3. Verify task completeness
 
@@ -211,38 +125,9 @@ If any critical item is not completed, flag it to the user.
 
 ### 4. Present the report to the user
 
-Present clearly and in an organized manner:
+Present clearly and in an organized manner.
 
-```
-## Acceptance Report — <Feature Title>
-
-### What was implemented
-<Concise summary from proposal.md — 3-5 bullet points>
-
-### Technical decisions
-<Summary from design.md — key decisions>
-
-### Tests
-- Unit tests: X created, all passing
-- Integration tests: Y created, all passing
-- E2E tests: Z created (or "not applicable")
-
-### Quality Gates
-| Phase | Status | Details |
-|-------|--------|---------|
-| Performance | PASS / WARN / FAIL | X findings |
-| Security | PASS / WARN / FAIL | X findings |
-| Code Review | PASS / WARN / FAIL | X findings |
-
-### Pending warnings (if any)
-<List of medium-level findings that were not fixed>
-
-### Acceptance criteria — Manual verification
-<List of acceptance criteria from proposal.md for the user to verify>
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] ...
-```
+Follow @forja/report-templates.md#acceptance-report for the report structure.
 
 ### 5. Await approval
 
@@ -271,7 +156,7 @@ After approval:
 - **Do not make decisions for the user**: present the data and let the user approve or reject
 - **Be transparent with warnings**: do not minimize medium-level findings. Present them clearly.
 - **Acceptance criteria belong to the user**: present them as a checklist for manual verification, not as automated tests
-- **Language**: All user-facing text during execution (reports, findings, summaries, gate results, questions to the user) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md for language rules.
 - **Do not proceed without approval**: acceptance is a manual gate, never automatic
 - **Linear mode**: quality report is posted as a comment on the task issue, no local report.md is created
 - **Local mode**: quality report is written to report.md in the feature directory
