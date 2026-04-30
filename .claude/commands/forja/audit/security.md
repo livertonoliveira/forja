@@ -11,9 +11,7 @@ You are the Forja security audit agent. Your mission is to conduct a comprehensi
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode**
-- If `Configured: no` → **Local mode**
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -21,11 +19,8 @@ Read `forja/config.md` and check the `Linear Integration` section:
 
 ### 1. Load context
 
-Read `forja/config.md` and extract:
-- **Runtime** and **Framework**
-- **Database** (affects injection surface)
-- **Project Type** (backend | frontend | fullstack | monorepo)
-- **Stack** details (auth libraries, HTTP framework, ORM)
+See @forja/patterns/load-artifacts.md.
+Read `forja/config.md` and extract stack fields per @forja/patterns/stack-detection.md.
 
 ### 2. Collect context from codebase automatically
 
@@ -168,77 +163,15 @@ Scan the entire codebase looking for:
 
 ### 4. Consolidate findings
 
-Each agent must produce findings in the following format:
+Each agent must produce findings per @forja/report-templates.md#finding-entry with the Security audit domain extensions (OWASP, CWE, Vector, Proof of Concept, Effort, Urgent deploy).
 
-```markdown
-### [SEVERITY] <Descriptive Title>
-- **Category:** INJ | AUTH | AUTHZ | DATA | CFG | LOGIC | DEPS | PRIV
-- **OWASP:** <e.g., A01:2021 Broken Access Control>
-- **CWE:** <e.g., CWE-639 Authorization Bypass Through User-Controlled Key>
-- **File:** <path>:<line>
-- **Vector:** <how this could be exploited — 1-2 sentences>
-- **Impact:** <what an attacker or data breach would yield>
-- **Proof of Concept:** <example malicious request/payload for critical/high findings>
-- **Fix:** <specific code change with example using the project's patterns>
-- **Effort:** <Hours | Days | Weeks>
-- **Urgent deploy:** <Yes | No>
-```
-
-**Severity:**
-- **critical**: Remote exploitation without authentication, or unrestricted access to sensitive data. Fix immediately.
-- **high**: Exploitation possible with authentication or specific conditions. Significant impact risk.
-- **medium**: Hard to exploit but relevant impact, or easy to exploit with limited impact.
-- **low**: Theoretical risk, defense-in-depth, or best practice not followed.
+See @forja/patterns/severity.md (## Security).
 
 ### 5. Write report
 
 **Local mode:** Write to `forja/audits/security-<YYYY-MM-DD>.md`
 
-**Linear mode:**
-1. Create a **new** Linear project named "Security Audit — <YYYY-MM-DD>" (use `save_project`) with a description that includes:
-   - Project/app name (from `forja/config.md`)
-   - Stack (runtime, framework, database)
-   - Overall score (A–F) and findings count (e.g., "1 critical, 2 high, 3 medium")
-   - One-sentence summary of the highest-severity risk found
-   **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
-2. Create a Linear Document in this new project titled "Security Audit — <YYYY-MM-DD>" with the full report
-3. Create milestones (use `save_milestone`) linked to this project — only create a milestone if there are findings at that severity:
-   - **"Critical Fixes"** — if any `critical` findings exist
-   - **"High Fixes"** — if any `high` findings exist
-   - **"Medium Fixes"** — if any `medium` findings exist
-   - **"Low Fixes"** — if any `low` findings exist
-4. For each finding at any severity (critical, high, medium, low), create a Linear issue linked to this new project with:
-   - Title: "[SEC] <finding title>"
-   - Description (rich, structured):
-     ```markdown
-     ## Vulnerability
-     <What the vulnerability is, with concrete evidence. Cite file and line. Include OWASP category and CWE.>
-
-     ## Attack Vector
-     <How this could be exploited — step-by-step. Who can trigger it (unauthenticated / authenticated).>
-
-     ## Impact
-     <What an attacker or a data breach would yield. Data exposed, accounts compromised, system access gained.>
-
-     ## Proof of Concept
-     <For critical/high: example malicious request, payload, or exploit flow that demonstrates the vulnerability.>
-
-     ## Fix
-     <Specific code change with example using the project's patterns.>
-
-     ## Acceptance Criteria
-     - [ ] <Specific, verifiable criterion — e.g., "input is validated server-side before being used in query">
-     - [ ] <Another verifiable criterion>
-     - [ ] Security-related tests pass
-     - [ ] No regressions in related tests
-
-     ## Notes
-     - **Effort:** <Hours | Days | Weeks>
-     - **Urgent deploy required:** <Yes | No>
-     ```
-   - Label: `security` or closest available
-   - Priority: Urgent (critical) / High (high) / Medium (medium) / Low (low)
-   - Milestone: link to the corresponding severity milestone ("Critical Fixes", "High Fixes", "Medium Fixes", or "Low Fixes")
+**Linear mode:** See @forja/linear-audit-template.md. Use prefix `[SEC]`, label `security`, and apply the Security category variation (includes Attack Vector and Proof of Concept fields).
 
 **Report format:**
 
@@ -320,10 +253,7 @@ Run `pnpm audit` / `npm audit` and include output summary here.
 |------------|----------------|-----------------|
 ```
 
-**Gate rules:**
-- Any `critical` or `high` → **FAIL**
-- Any `medium` → **WARN**
-- Only `low` or none → **PASS**
+See @forja/patterns/gates.md.
 
 ---
 
@@ -337,4 +267,4 @@ Run `pnpm audit` / `npm audit` and include output summary here.
 - **Consider the context**: an internal API has a different threat model than a public multi-tenant SaaS.
 - **GDPR/LGPD**: evaluate only if the project handles personal data.
 - **ALWAYS launch 4 agents in parallel** — never sequentially.
-- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
