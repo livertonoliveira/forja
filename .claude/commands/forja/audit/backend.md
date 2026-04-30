@@ -11,9 +11,7 @@ You are the Forja backend audit agent. Your mission is to conduct a comprehensiv
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode**
-- If `Configured: no` → **Local mode**
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -29,12 +27,8 @@ Read `forja/config.md` → check `Project Type`:
 
 ### 1. Load context
 
-Read `forja/config.md` and extract:
-- **Runtime** (Node.js, Python, Go, Java, etc.)
-- **Framework** (NestJS, Express, FastAPI, Spring Boot, etc.)
-- **Database** (MongoDB, PostgreSQL, MySQL, Redis, etc.)
-- **Project Type** (backend | fullstack | monorepo)
-- **Workspaces** (if monorepo — identify which are backend)
+See @forja/patterns/load-artifacts.md.
+Read `forja/config.md` and extract stack fields per @forja/patterns/stack-detection.md.
 
 ### 2. Launch 3 agents in parallel
 
@@ -143,71 +137,13 @@ Analyze the entire backend codebase looking for:
 
 ### 3. Consolidate findings
 
-Each agent must produce findings in the following format:
+Use the finding format from @forja/report-templates.md#finding-entry (backend audit extension).
 
-```markdown
-### [SEVERITY] <Descriptive Title>
-- **Category:** DB | NET | CPU | MEM | CONC | CODE | CONF | ARCH
-- **File:** <path>:<line>
-- **Description:** <what the problem is, with concrete evidence from the code>
-- **Impact:** <estimated impact — include projection with data growth if relevant>
-- **Suggestion:** <specific fix with code example in the project's language/framework>
-- **Effort:** <Hours | Days | Weeks>
-- **Maintenance window:** <Yes | No>
-```
-
-**Severity:**
-- **critical**: Causes visible performance degradation in production now, or will under current load (e.g., N+1 on every request, full scan on large table)
-- **high**: Likely to cause issues under load or as data grows (e.g., missing pagination on growing dataset)
-- **medium**: Suboptimal but no immediate crisis (e.g., missing cache on moderately accessed data)
-- **low**: Best practice not followed, marginal impact (e.g., synchronous logging on low-traffic endpoint)
+See @forja/patterns/severity.md (## Performance).
 
 ### 4. Write report
 
-**Local mode:** Write to `forja/audits/backend-<YYYY-MM-DD>.md`
-
-**Linear mode:**
-1. Create a **new** Linear project named "Backend Performance Audit — <YYYY-MM-DD>" (use `save_project`) with a description that includes:
-   - Project/app name (from `forja/config.md`)
-   - Stack (runtime, framework, database)
-   - Gate result (PASS / WARN / FAIL) and findings count (e.g., "2 critical, 3 high, 1 medium")
-   - One-sentence summary of the most critical bottleneck found
-   **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
-2. Create a Linear Document in this new project titled "Backend Performance Audit — <YYYY-MM-DD>" with the full report
-3. Create milestones (use `save_milestone`) linked to this project — only create a milestone if there are findings at that severity:
-   - **"Critical Fixes"** — if any `critical` findings exist
-   - **"High Fixes"** — if any `high` findings exist
-   - **"Medium Fixes"** — if any `medium` findings exist
-   - **"Low Fixes"** — if any `low` findings exist
-4. For each finding at any severity (critical, high, medium, low), create a Linear issue linked to this new project with:
-   - Title: "[PERF] <finding title>"
-   - Description (rich, structured):
-     ```markdown
-     ## Problem
-     <What the problem is, with concrete evidence from the code. Cite file and line.>
-
-     ## Impact
-     <Estimated impact — latency increase, memory growth, failure rate — include projection at 10x data if relevant.>
-
-     ## Evidence
-     - **File:** <path>:<line>
-     - **Code:** <relevant snippet showing the issue>
-
-     ## Fix
-     <Specific fix with a code example in the project's language and framework.>
-
-     ## Acceptance Criteria
-     - [ ] <Specific, verifiable criterion — e.g., "query uses index (confirmed via EXPLAIN)">
-     - [ ] <Another verifiable criterion>
-     - [ ] No regressions in related tests
-
-     ## Notes
-     - **Effort:** <Hours | Days | Weeks>
-     - **Maintenance window required:** <Yes | No>
-     ```
-   - Label: `performance` or closest available
-   - Priority: Urgent (critical) / High (high) / Medium (medium) / Low (low)
-   - Milestone: link to the corresponding severity milestone ("Critical Fixes", "High Fixes", "Medium Fixes", or "Low Fixes")
+See @forja/linear-audit-template.md. Use prefix `[PERF]`.
 
 **Report format:**
 
@@ -248,10 +184,7 @@ Each agent must produce findings in the following format:
 | ... | ... | ... |
 ```
 
-**Gate rules:**
-- Any `critical` or `high` → **FAIL**
-- Any `medium` → **WARN**
-- Only `low` or none → **PASS**
+See @forja/patterns/gates.md.
 
 ---
 
@@ -263,6 +196,6 @@ Each agent must produce findings in the following format:
 - **Stack-specific fixes**: solutions must use the project's language and framework conventions from `forja/config.md`.
 - **Highlight quick wins**: flag findings fixable in ≤1 day separately.
 - **ALWAYS launch 3 agents in parallel** — never sequentially.
-- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
 - For project-wide security issues, run `/forja:audit:security`.
 - For database-specific deep audit, run `/forja:audit:database`.
