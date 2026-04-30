@@ -11,9 +11,7 @@ You are the Forja database audit agent. Your mission is to conduct a comprehensi
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode**
-- If `Configured: no` → **Local mode**
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -21,10 +19,8 @@ Read `forja/config.md` and check the `Linear Integration` section:
 
 ### 1. Load context
 
-Read `forja/config.md` and extract:
-- **Database** field (MongoDB, PostgreSQL, MySQL, SQLite, etc.)
-- **Framework** (for ORM detection: Mongoose, Prisma, TypeORM, Drizzle, Kysely, raw SQL, etc.)
-- **Runtime** and **Project Type**
+See @forja/patterns/load-artifacts.md.
+Read `forja/config.md` and extract stack fields per @forja/patterns/stack-detection.md.
 
 ### 2. Route to methodology
 
@@ -251,73 +247,35 @@ Scan migration files, ORM schemas, and DDL:
 
 ### 4. Consolidate findings
 
-Each agent must produce findings in the following format:
-
-```markdown
-### [SEVERITY] <Descriptive Title>
-- **Category:** MDL | IDX | QRY | WRT | CFG | SCH | PERF
-  (MDL=Modeling, IDX=Indexes, QRY=Queries/Aggregations, WRT=Write Ops, CFG=Configuration, SCH=Schema, PERF=Query Performance)
-- **Collection/Table:** <name(s) affected>
-- **File:** <path>:<line> (schema file, repository file, migration file)
-- **Description:** <what the problem is, with concrete evidence — cite field/query/index>
-- **Impact:** <current consequence, and projected impact at 10x data volume>
-- **Suggestion:** <specific fix with code/config example using the project's ORM/driver>
+Each agent must produce findings using the template from @forja/report-templates.md#finding-entry, extended with:
+- **Collection/Table:** <name(s) affected>  *(insert before **File**)*
 - **Effort:** <Hours | Days | Weeks>
-- **Requires migration:** <Yes | No> (if existing data must be transformed)
-```
+- **Requires migration:** <Yes | No>
 
-**Severity:**
-- **critical**: Causes active production degradation, data risk, or imminent failure as data grows
-- **high**: Significant performance degradation that worsens with data growth
-- **medium**: Relevant inefficiency, no immediate critical impact
-- **low**: Best practice not followed, marginal impact
+Category values: `MDL | IDX | QRY | WRT | CFG | SCH | PERF`
+(MDL=Modeling, IDX=Indexes, QRY=Queries/Aggregations, WRT=Write Ops, CFG=Configuration, SCH=Schema, PERF=Query Performance)
+
+For severity definitions, see @forja/patterns/severity.md (## Database).
 
 ### 5. Write report
 
 **Local mode:** Write to `forja/audits/database-<YYYY-MM-DD>.md`
 
 **Linear mode:**
-1. Create a **new** Linear project named "Database Audit — <YYYY-MM-DD>" (use `save_project`) with a description that includes:
-   - Project/app name (from `forja/config.md`)
-   - Database engine and version (MongoDB / PostgreSQL / MySQL)
-   - Gate result (PASS / WARN / FAIL) and findings count (e.g., "1 critical, 2 high, 0 medium")
-   - One-sentence summary of the most critical data access issue found
-   **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
-2. Create a Linear Document in this new project titled "Database Audit — <YYYY-MM-DD>" with the full report
-3. Create milestones (use `save_milestone`) linked to this project — only create a milestone if there are findings at that severity:
-   - **"Critical Fixes"** — if any `critical` findings exist
-   - **"High Fixes"** — if any `high` findings exist
-   - **"Medium Fixes"** — if any `medium` findings exist
-   - **"Low Fixes"** — if any `low` findings exist
-4. For each finding at any severity (critical, high, medium, low), create a Linear issue linked to this new project with:
-   - Title: "[DB] <finding title>"
-   - Description (rich, structured):
-     ```markdown
-     ## Problem
-     <What the data access problem is, with concrete evidence. Cite file and line.>
 
-     ## Impact
-     <Estimated impact — query latency, CPU/memory usage, failure risk. Include projection at 10x data if relevant.>
-
-     ## Evidence
-     - **File:** <path>:<line>
-     - **Query/Schema:** <relevant snippet — query, schema definition, or index declaration>
-
-     ## Fix
-     <Specific fix: index to add, query to rewrite, schema change to make. Use the project's ORM or query patterns.>
-
-     ## Acceptance Criteria
-     - [ ] <Specific, verifiable criterion — e.g., "EXPLAIN shows index scan, not collection scan">
-     - [ ] <Another verifiable criterion>
-     - [ ] No regressions in related tests
-
-     ## Notes
-     - **Effort:** <Hours | Days | Weeks>
-     - **Maintenance window required:** <Yes | No>
-     ```
-   - Label: `performance` or closest available
-   - Priority: Urgent (critical) / High (high) / Medium (medium) / Low (low)
-   - Milestone: link to the corresponding severity milestone ("Critical Fixes", "High Fixes", "Medium Fixes", or "Low Fixes")
+Follow @forja/linear-audit-template.md — Database variation:
+- **Issue prefix**: `[DB]`
+- **Label**: `performance`
+- **Evidence block** (replace standard `## Evidence` in issue description):
+  ```markdown
+  ## Evidence
+  - **File:** <path>:<line>
+  - **Query/Schema:** <relevant snippet — query, schema definition, or index declaration>
+  ```
+- **Extra field** (append to `## Notes` in issue description):
+  ```markdown
+  - **Maintenance window required:** <Yes | No>
+  ```
 
 **Report format:**
 
@@ -364,10 +322,7 @@ Database: <MongoDB | PostgreSQL | MySQL>
 |------------|----------------|-----------------|
 ```
 
-**Gate rules:**
-- Any `critical` or `high` → **FAIL**
-- Any `medium` → **WARN**
-- Only `low` or none → **PASS**
+**Gate rules:** See @forja/patterns/gates.md.
 
 ---
 
@@ -380,4 +335,4 @@ Database: <MongoDB | PostgreSQL | MySQL>
 - **Flag migrations explicitly**: any change requiring transformation of existing data must be clearly marked with "Requires migration: Yes".
 - **No sharding recommendation without clear evidence**: only recommend sharding when write throughput or working set clearly exceeds single-node capacity.
 - **ALWAYS launch 3 agents in parallel** — never sequentially.
-- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.

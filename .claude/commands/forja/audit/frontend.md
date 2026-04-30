@@ -11,9 +11,7 @@ You are the Forja frontend audit agent. Your mission is to conduct a comprehensi
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode**
-- If `Configured: no` → **Local mode**
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -21,10 +19,8 @@ Read `forja/config.md` and check the `Linear Integration` section:
 
 ### 1. Load context
 
-Read `forja/config.md` and extract:
-- **Frontend** field (Next.js, React, Vue, Angular, Nuxt, Svelte, Astro, etc.)
-- **Project Type** (frontend | fullstack | monorepo)
-- **Runtime** and **Framework** (for fullstack/monorepo, identify the frontend workspaces)
+See @forja/patterns/load-artifacts.md.
+Read `forja/config.md` and extract stack fields per @forja/patterns/stack-detection.md.
 
 ### 2. Route to methodology
 
@@ -234,81 +230,28 @@ Request Memoization → Data Cache → Full Route Cache → Router Cache
 
 ### 4. Consolidate findings
 
-Each agent must produce findings in the following format:
-
-```markdown
-### [SEVERITY] <Descriptive Title>
-- **Category:** NET | BUNDLE | LOAD | RENDER | JS | HYDRAT | IMG | FONT | MEM | 3P | ARCH
-  (or for Next.js: STRATEGY | BOUNDARY | CACHE | BUNDLE | STREAMING | IMG | FONT | MIDDLEWARE | BUILD | COLD | ARCH)
+Each agent must produce findings using the template from @forja/report-templates.md#finding-entry, extended with:
 - **Metric affected:** LCP | INP | CLS | FCP | TTFB | TBT | First Load JS | Bundle size
-- **File:** <path>:<line>
-- **Description:** <what the problem is, with concrete evidence>
-- **Impact:** <estimated improvement — e.g., "LCP 4.2s → ~2.1s estimated">
-- **Suggestion:** <specific fix with code example using the project's framework>
 - **Effort:** <Hours | Days | Weeks>
-```
 
-**Severity:**
-- **critical**: Core Web Vital in "Poor" range; severely impacting UX or conversion
-- **high**: Core Web Vital in "Needs Improvement"; measurable impact on bounce/conversion
-- **medium**: Relevant technical inefficiency, no immediate critical impact
-- **low**: Incremental optimization, good for backlog
+Category values: `NET | BUNDLE | LOAD | RENDER | JS | HYDRAT | IMG | FONT | MEM | 3P | ARCH`
+(Next.js: `STRATEGY | BOUNDARY | CACHE | BUNDLE | STREAMING | IMG | FONT | MIDDLEWARE | BUILD | COLD | ARCH`)
 
-**Core Web Vitals thresholds:**
-| Metric | Good | Needs Improvement | Poor |
-|--------|------|-------------------|------|
-| LCP | ≤ 2.5s | 2.5s – 4.0s | > 4.0s |
-| INP | ≤ 200ms | 200ms – 500ms | > 500ms |
-| CLS | ≤ 0.1 | 0.1 – 0.25 | > 0.25 |
-| FCP | ≤ 1.8s | 1.8s – 3.0s | > 3.0s |
-| TTFB | ≤ 800ms | 800ms – 1800ms | > 1800ms |
+For severity definitions, see @forja/patterns/severity.md (## Frontend).
 
 ### 5. Write report
 
 **Local mode:** Write to `forja/audits/frontend-<YYYY-MM-DD>.md`
 
 **Linear mode:**
-1. Create a **new** Linear project named "Frontend Performance Audit — <YYYY-MM-DD>" (use `save_project`) with a description that includes:
-   - Project/app name (from `forja/config.md`)
-   - Framework and methodology used (e.g., "Next.js App Router — 5-layer methodology")
-   - Gate result (PASS / WARN / FAIL) and findings count (e.g., "0 critical, 2 high, 4 medium")
-   - One-sentence summary of the most impactful performance issue found
-   **Never search for or reuse an existing project** — not even one that looks related. Each audit run gets its own dedicated project.
-2. Create a Linear Document in this new project titled "Frontend Performance Audit — <YYYY-MM-DD>" with the full report
-3. Create milestones (use `save_milestone`) linked to this project — only create a milestone if there are findings at that severity:
-   - **"Critical Fixes"** — if any `critical` findings exist
-   - **"High Fixes"** — if any `high` findings exist
-   - **"Medium Fixes"** — if any `medium` findings exist
-   - **"Low Fixes"** — if any `low` findings exist
-4. For each finding at any severity (critical, high, medium, low), create a Linear issue linked to this new project with:
-   - Title: "[PERF] <finding title>"
-   - Description (rich, structured):
-     ```markdown
-     ## Problem
-     <What the performance problem is, with concrete evidence from the code. Cite file and line.>
 
-     ## Impact
-     <Estimated impact on user-perceived performance — which Web Vital is affected, estimated degradation.>
-
-     ## Evidence
-     - **File:** <path>:<line>
-     - **Code:** <relevant snippet showing the issue>
-
-     ## Fix
-     <Specific fix with a code example using the project's framework and patterns.>
-
-     ## Acceptance Criteria
-     - [ ] <Specific, verifiable criterion — e.g., "LCP under 2.5s measured via Lighthouse">
-     - [ ] <Another verifiable criterion>
-     - [ ] No regressions in related tests
-
-     ## Notes
-     - **Effort:** <Hours | Days | Weeks>
-     - **Affected Web Vital:** <LCP | CLS | INP | TTFB | FCP | TBT>
-     ```
-   - Label: `performance` or closest available
-   - Priority: Urgent (critical) / High (high) / Medium (medium) / Low (low)
-   - Milestone: link to the corresponding severity milestone ("Critical Fixes", "High Fixes", "Medium Fixes", or "Low Fixes")
+Follow @forja/linear-audit-template.md — Frontend Performance variation:
+- **Issue prefix**: `[PERF]`
+- **Label**: `performance`
+- **Extra field** (append to `## Notes` in issue description):
+  ```markdown
+  - **Affected Web Vital:** <LCP | CLS | INP | TTFB | FCP | TBT>
+  ```
 
 **Report format:**
 
@@ -356,10 +299,7 @@ Methodology: <Next.js 5-layer | Generic 11-category>
 |------------|----------------|-----------------|
 ```
 
-**Gate rules:**
-- Any `critical` or `high` → **FAIL**
-- Any `medium` → **WARN**
-- Only `low` or none → **PASS**
+**Gate rules:** See @forja/patterns/gates.md.
 
 ---
 
@@ -372,4 +312,4 @@ Methodology: <Next.js 5-layer | Generic 11-category>
 - **Distinguish lab vs field data**: if Lighthouse data is available, note it's lab (simulated); CrUX is field (real users).
 - **Highlight quick wins**: flag findings fixable in ≤1 day.
 - **ALWAYS launch 3 agents in parallel** — never sequentially.
-- **Language**: All user-facing text during execution (reports, summaries, gate results, status updates) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
