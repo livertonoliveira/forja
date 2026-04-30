@@ -34,6 +34,8 @@ Explore the project to automatically detect:
 - **Monorepo detection**: pnpm-workspace.yaml, lerna.json, nx.json, turbo.json, package.json workspaces. If monorepo, map each workspace with its type (backend/frontend/shared).
 - **Project type**: backend | frontend | fullstack | monorepo
 
+> This is the canonical detection logic. The field list is also available at @forja/patterns/stack-detection.md.
+
 **Agent B — Conventions Detection:**
 Read existing code to identify:
 - **Naming conventions**: camelCase, snake_case, PascalCase for files, variables, classes, functions
@@ -133,9 +135,8 @@ Ask the user the following questions **one block at a time** (present all at onc
 >
 > You can set different behaviors for critical/high (`on_fail`) and medium (`on_warn`).
 
-> **2. Language** — Which language should Forja use for artifacts (specs, issues, reports) and prompts?
+> **2. Language** — Which language should Forja use for artifacts (specs, issues, reports) and prompts? See @forja/patterns/language.md for conventions.
 > - Examples: `pt-BR`, `en`, `es`
-> - Code, commits, and PRs always stay in English (`code_language: en`).
 
 > **3. Pipeline phases** — Which phases do you want enabled?
 > - All enabled by default: dev, test, perf, security, review, homolog, pr
