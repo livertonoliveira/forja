@@ -13,9 +13,7 @@ You are the Forja code review agent. Your mission is to review the new/modified 
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode** (design context lives in Linear)
-- If `Configured: no` → **Local mode** (design context lives in `forja/changes/`)
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -31,17 +29,9 @@ Check if you are running inside the `/forja:run` pipeline:
 
 ### 1. Load context
 
-Read:
-1. `forja/config.md` — Project conventions
+See @forja/patterns/load-artifacts.md (pipeline phase context). Run `git diff` to see the full diff.
 
-**Linear mode:**
-2. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the **Design** document (technical decisions — to avoid criticizing decisions already made)
-
-**Local mode:**
-2. `forja/changes/<feature>/design.md` — Technical decisions (to avoid criticizing decisions already made)
-
-**Both modes:**
-3. Run `git diff` to see the full diff
+Read `forja/config.md` for project conventions. Read the **Design** document to avoid criticizing decisions already made.
 
 ### 2. Determine agent strategy
 
@@ -137,37 +127,11 @@ If tests were created/modified in the diff:
 
 ### 4. Produce findings
 
-For each issue found, use the format:
+See @forja/report-templates.md#finding-entry (Code Review pipeline). Uses `Principle` instead of `Category` (`SOLID-S | SOLID-O | SOLID-L | SOLID-I | SOLID-D | DRY | KISS | CLEAN | CONSISTENCY | TEST`) and `Problem` instead of `Description`.
 
-```markdown
-### [SEVERITY] <Descriptive Title>
-- **Principle:** SOLID-S | SOLID-O | SOLID-L | SOLID-I | SOLID-D | DRY | KISS | CLEAN | CONSISTENCY | TEST
-- **File:** <path>:<line>
-- **Problem:** <what's wrong and why it matters>
-- **Suggestion:** <specific improvement with code example>
-```
+See @forja/report-templates.md#finding-schema for the JSON block to accompany each finding.
 
-### Structured Findings Format
-
-For each finding, also write a JSON block that maps to FindingSchema:
-
-```json
-{
-  "severity": "critical|high|medium|low",
-  "category": "SOLID-S|SOLID-O|SOLID-L|SOLID-I|SOLID-D|DRY|KISS|CLEAN|CONSISTENCY|TEST",
-  "filePath": "src/path/to/file.ts",
-  "line": 42,
-  "title": "...",
-  "description": "...",
-  "suggestion": "..."
-}
-```
-
-**Severity:**
-- **critical**: Architectural issue that will cause significant problems if not addressed (e.g., circular dependency, broken abstraction that leaks implementation details across the entire system)
-- **high**: Significant design issue that will make the code hard to maintain/extend (e.g., god class, tight coupling between modules)
-- **medium**: Code smell that should be addressed but does not block (e.g., duplicated logic, overly complex conditional)
-- **low**: Minor improvement opportunity (e.g., naming could be clearer, slightly long function)
+See @forja/patterns/severity.md (## Code Review) for severity definitions.
 
 ### 5. Write report
 
@@ -192,10 +156,7 @@ Format:
 [findings here, ordered by severity]
 ```
 
-**Gate rules:**
-- Any `critical` or `high` → **FAIL**
-- Any `medium` → **WARN**
-- Only `low` or none → **PASS**
+See @forja/patterns/gates.md for gate rules.
 
 ---
 
@@ -207,7 +168,7 @@ Format:
 - **DRY with caution**: accidental duplication (coincidence) is NOT a DRY violation. Only flag intentional duplication that truly should be shared.
 - **KISS is the most important principle**: if the code is simple and works, do not suggest complicating it for "elegance"
 - **Suggestions with code**: every suggestion must include a concrete example of what the code would look like
-- **Language**: All user-facing text during execution (findings, suggestions, reports, summaries, gate results) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
 - **Parallelism by module**: if the diff is large, ALWAYS use parallel agents per code area
 - **Linear mode**: read design context from Linear document instead of local file; findings are still written to a local temporary file
 - **Local mode**: read design context from local `design.md`; findings are written to local file

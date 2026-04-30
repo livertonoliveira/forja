@@ -13,9 +13,7 @@ You are the Forja performance agent. Your mission is to analyze the new/modified
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode** (design context lives in Linear)
-- If `Configured: no` → **Local mode** (design context lives in `forja/changes/`)
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -31,17 +29,9 @@ Check if you are running inside the `/forja:run` pipeline:
 
 ### 1. Load context
 
-Read:
-1. `forja/config.md` — **Project Type** (backend | frontend | fullstack | monorepo), **Stack**, **Database**
+See @forja/patterns/load-artifacts.md (pipeline phase context). Run `git diff` to see the full diff.
 
-**Linear mode:**
-2. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the **Design** document (files created/modified)
-
-**Local mode:**
-2. `forja/changes/<feature>/design.md` — Files created/modified
-
-**Both modes:**
-3. Run `git diff` to see the full diff of new/modified code
+Read `forja/config.md` for **Project Type** (backend | frontend | fullstack | monorepo), **Stack**, and **Database**.
 
 ### 2. Determine agent strategy
 
@@ -139,38 +129,11 @@ Analyze ONLY the new/modified code in the diff looking for:
 
 ### 4. Consolidate findings
 
-Each agent must produce findings in the following format:
+See @forja/report-templates.md#finding-entry (Performance pipeline). Categories: `DB | ALGO | MEM | NET | BUNDLE | RENDER | ARCH`.
 
-```markdown
-### [SEVERITY] <Title>
-- **Category:** DB | ALGO | MEM | NET | BUNDLE | RENDER | ARCH
-- **File:** <path>:<line>
-- **Description:** <what the problem is>
-- **Impact:** <estimated impact on performance>
-- **Suggestion:** <specific fix with code example if helpful>
-```
+See @forja/report-templates.md#finding-schema for the JSON block to accompany each finding.
 
-### Structured Findings Format
-
-For each finding, also write a JSON block that maps to FindingSchema:
-
-```json
-{
-  "severity": "critical|high|medium|low",
-  "category": "DB|ALGO|MEM|NET|BUNDLE|RENDER|ARCH",
-  "filePath": "src/path/to/file.ts",
-  "line": 42,
-  "title": "N+1 query in user listing",
-  "description": "...",
-  "suggestion": "..."
-}
-```
-
-**Severity:**
-- **critical**: Will cause visible performance degradation in production (e.g., N+1 on every request, full table scan on large table)
-- **high**: Likely to cause issues under load (e.g., missing pagination on growing dataset)
-- **medium**: Suboptimal but will not cause immediate issues (e.g., missing cache on moderately accessed data)
-- **low**: Best practice not followed, marginal impact (e.g., synchronous logging in low-traffic endpoint)
+See @forja/patterns/severity.md (## Performance) for severity definitions.
 
 ### 5. Write report
 
@@ -195,10 +158,7 @@ Format:
 [findings here, ordered by severity]
 ```
 
-**Gate rules:**
-- Any `critical` or `high` → **FAIL**
-- Any `medium` → **WARN**
-- Only `low` or none → **PASS**
+See @forja/patterns/gates.md for gate rules.
 
 ---
 
@@ -210,6 +170,6 @@ Format:
 - **Stack-specific**: adapt the analysis based on the stack from config.md. Do not recommend React patterns for a Vue project.
 - **Suggestions with code**: when possible, show what the corrected code would look like
 - **ALWAYS adapt to the project type**: monorepo launches agents per workspace, backend focuses on DB/algo, frontend focuses on bundle/render
-- **Language**: All user-facing text during execution (findings, reports, summaries, gate results, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
 - **Linear mode**: read design context from Linear document instead of local file; findings are still written to a local temporary file
 - **Local mode**: read design context from local `design.md`; findings are written to local file

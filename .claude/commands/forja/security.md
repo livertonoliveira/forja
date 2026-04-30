@@ -13,9 +13,7 @@ You are the Forja security agent. Your mission is to analyze the new/modified co
 
 ## Determine storage mode
 
-Read `forja/config.md` and check the `Linear Integration` section:
-- If `Configured: yes` → **Linear mode** (design context lives in Linear)
-- If `Configured: no` → **Local mode** (design context lives in `forja/changes/`)
+See @forja/patterns/storage-mode.md.
 
 ---
 
@@ -31,17 +29,9 @@ Check if you are running inside the `/forja:run` pipeline:
 
 ### 1. Load context
 
-Read:
-1. `forja/config.md` — Stack, framework, project type
+See @forja/patterns/load-artifacts.md (pipeline phase context). Run `git diff` to see the full diff.
 
-**Linear mode:**
-2. Use `mcp__linear-server__list_documents` + `mcp__linear-server__get_document` to read the **Design** document (files created/modified)
-
-**Local mode:**
-2. `forja/changes/<feature>/design.md` — Files created/modified
-
-**Both modes:**
-3. Run `git diff` to see the full diff
+Read `forja/config.md` for **Stack**, **Framework**, and **Project Type**.
 
 ### 2. Launch 3 agents in parallel
 
@@ -129,43 +119,11 @@ Analyze ONLY the new/modified code looking for:
 
 ### 3. Consolidate findings
 
-Each agent must produce findings in the following format:
+See @forja/report-templates.md#finding-entry (Security pipeline). Categories: `INJ | AUTH | AUTHZ | DATA | CFG | LOGIC`.
 
-```markdown
-### [SEVERITY] <Descriptive Title>
-- **Category:** INJ | AUTH | AUTHZ | DATA | CFG | LOGIC
-- **OWASP:** <e.g., A01:2021 Broken Access Control>
-- **CWE:** <e.g., CWE-639 Authorization Bypass Through User-Controlled Key>
-- **File:** <path>:<line>
-- **Vector:** <how this could be exploited — 1-2 sentences>
-- **Impact:** <what an attacker would gain>
-- **Proof of Concept:** <example malicious request/payload when applicable>
-- **Fix:** <specific code change with example>
-```
+See @forja/report-templates.md#finding-schema for the JSON block (includes `owasp` and `cwe` extra fields).
 
-### Structured Findings Format
-
-For each finding, also write a JSON block that maps to FindingSchema:
-
-```json
-{
-  "severity": "critical|high|medium|low",
-  "category": "INJ|AUTH|AUTHZ|DATA|CFG|LOGIC",
-  "filePath": "src/path/to/file.ts",
-  "line": 42,
-  "title": "SQL injection in search endpoint",
-  "description": "...",
-  "suggestion": "...",
-  "owasp": "A03:2021 Injection",
-  "cwe": "CWE-89"
-}
-```
-
-**Severity:**
-- **critical**: Remote exploitation without authentication, unrestricted access to sensitive data. Requires immediate fix.
-- **high**: Exploitation possible with authentication or specific conditions. Significant impact risk.
-- **medium**: Hard to exploit but relevant impact, or easy to exploit with limited impact.
-- **low**: Theoretical risk, defense-in-depth, or best practice not followed.
+See @forja/patterns/severity.md (## Security) for severity definitions.
 
 ### 4. Write report
 
@@ -190,10 +148,7 @@ Format:
 [findings here, ordered by severity]
 ```
 
-**Gate rules:**
-- Any `critical` or `high` → **FAIL**
-- Any `medium` → **WARN**
-- Only `low` or none → **PASS**
+See @forja/patterns/gates.md for gate rules.
 
 ---
 
@@ -206,6 +161,6 @@ Format:
 - **Consider the context**: an internal API has a different threat model than a public API
 - **Do not recommend security theater**: avoid suggestions that add complexity without real benefit
 - **ALWAYS launch 3 agents in parallel**: each one focuses on its attack category
-- **Language**: All user-facing text during execution (findings, reports, summaries, gate results, questions) follows the `Artifact language` field from `forja/config.md → Conventions`.
+- **Language**: See @forja/patterns/language.md.
 - **Linear mode**: read design context from Linear document instead of local file; findings are still written to a local temporary file
 - **Local mode**: read design context from local `design.md`; findings are written to local file
